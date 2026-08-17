@@ -311,6 +311,33 @@ body::before{
 .story-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px;flex:1}
 .story-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:auto}
 
+/* Guía de distribución de Posts: filosofía de la colección + orden narrativo */
+.playbook{background:linear-gradient(155deg,var(--navy),var(--navy-soft));color:#EDE7D8;border-radius:var(--r-lg);
+  box-shadow:var(--shadow);margin-bottom:22px;overflow:hidden}
+.playbook-head{display:flex;align-items:center;gap:12px;padding:18px 22px;cursor:pointer;user-select:none}
+.playbook-head svg.ico{width:20px;height:20px;color:var(--gold-soft);flex:none}
+.playbook-head h3{margin:0;font-size:17px;font-weight:600;color:#fff;flex:1}
+.playbook-head .chev{width:18px;height:18px;color:var(--gold-soft);transition:transform .2s;flex:none}
+.playbook.open .playbook-head .chev{transform:rotate(180deg)}
+.playbook-body{max-height:0;overflow:hidden;transition:max-height .25s ease}
+.playbook.open .playbook-body{max-height:2400px}
+.playbook-inner{padding:0 22px 22px}
+.playbook-inner p{margin:0 0 14px;font-size:13.5px;line-height:1.65;color:#D7CFBB;font-weight:300}
+.playbook-inner p b{color:#fff;font-weight:600}
+.playbook-inner .pillars-line{color:var(--gold-soft);font-weight:500}
+.playbook-seq{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:6px 0 18px}
+.playbook-seq .step{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:6px 13px 6px 8px;font-size:12.5px;color:#EDE7D8;
+  cursor:pointer;transition:.15s}
+.playbook-seq .step:hover{background:rgba(217,188,134,.18);border-color:var(--gold-soft)}
+.playbook-seq .step b{background:var(--gold);color:var(--navy);width:19px;height:19px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;flex:none}
+.playbook-seq .arrow{color:var(--gold-soft);opacity:.6;font-size:13px}
+.playbook-insights{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.playbook-insights li{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;
+  padding:11px 14px;font-size:13px;color:#fff;font-weight:500;font-style:italic}
+.playbook-insights li::before{content:"“";color:var(--gold-soft);font-weight:700;margin-right:2px}
+
 /* Aviso de cumplimiento (permisos, datos verificables, tono de fe) */
 .note-band{
   display:flex;align-items:flex-start;gap:10px;background:#FBF3E4;border:1px solid #EEDFC1;color:#7A5C29;
@@ -1848,7 +1875,7 @@ function seed(){
       followers:"12.5K", following:"415", avatar:"", tagline:"Plan. Create. Captivate.",
       hashtagsBase: HASHTAGS_BASE
     },
-    ui:{view:"dashboard", role:"admin", filters:{}},
+    ui:{view:"dashboard", role:"admin", filters:{}, postsGuideOpen:true},
 
     posts: CONTENT_POSTS.map((p, i) => Object.assign({
       id:uid("post"), order:i, image:"", ratio:"4:5", date:"", links:"", collapsed:false,
@@ -2294,6 +2321,54 @@ function viewDashboard(){
   </div>`;
 }
 
+/* Orden narrativo sugerido para publicar los 10 posts (no vender casa a casa,
+   sino ir revelando en secuencia: educa → acompaña → tiene valores → convierte
+   en algo entendible). Cada paso enlaza al post real por su número de banco. */
+const POSTS_SEQUENCE = [
+  {num:3,  label:"Down payment"},
+  {num:21, label:"Testimonio"},
+  {num:9,  label:"Consejo de Mila"},
+  {num:40, label:"Propósito"},
+  {num:6,  label:"Checklist"},
+  {num:12, label:"Equity"},
+  {num:49, label:"Gratitud"},
+  {num:24, label:"Servicios"},
+  {num:31, label:"Fe"},
+  {num:28, label:"Compromiso"},
+];
+const POSTS_INSIGHTS = [
+  "Me enseña.",
+  "Parece que realmente acompaña.",
+  "Tiene valores claros.",
+  "Sabe convertir real estate en algo que yo puedo entender.",
+];
+
+function postsPlaybookHTML(){
+  const open = !!S.ui.postsGuideOpen;
+  return `
+  <div class="playbook ${open ? "open" : ""}">
+    <div class="playbook-head" data-toggle-guide>
+      <svg class="ico"><use href="#i-flag"/></svg>
+      <h3>Cómo pensar y distribuir estos posts</h3>
+      <svg class="chev"><use href="#i-chev"/></svg>
+    </div>
+    <div class="playbook-body"><div class="playbook-inner">
+      <p><b>Para estos posts individuales</b> el enfoque es distinto al de los carruseles: muy poco
+      texto dentro del arte + un mensaje que se entienda instantáneamente + caption que profundice +
+      CTA específico. La pieza visual detiene el scroll; el caption convierte esa atención en confianza.</p>
+      <p>Se mantiene el principio de marca de Mila: <span class="pillars-line">educar primero, acompañar
+      sin presión, hablar de hogar y patrimonio</span> — y tratar la fe como testimonio, nunca como
+      argumento comercial.</p>
+      <p><b>No publicar los diez seguidos por categoría.</b> Alternarlos para crear una narrativa:</p>
+      <div class="playbook-seq">
+        ${POSTS_SEQUENCE.map((s,i) => `${i>0 ? '<span class="arrow">→</span>' : ""}<span class="step" data-jump-post="${s.num}"><b>${i+1}</b>${esc(s.label)}</span>`).join("")}
+      </div>
+      <p>Así, alguien que descubre el perfil entiende rápidamente cuatro cosas sobre Mila:</p>
+      <ul class="playbook-insights">${POSTS_INSIGHTS.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+    </div></div>
+  </div>`;
+}
+
 function viewPosts(q=""){
   const all = sorted("posts").filter(p => matches(p, q));
   const list = applyFilter("posts", all);
@@ -2309,6 +2384,7 @@ function viewPosts(q=""){
     </div>
   </div>
   <div class="readonly-note"><svg width="16" height="16"><use href="#i-alert"/></svg> Modo <b>Viewer</b>: la edición está bloqueada.</div>
+  ${postsPlaybookHTML()}
   ${filterBarHTML("posts", all.length, list.length)}
   ${list.length ? list.map((p,i) => postCard(p,i)).join("") : emptyState("Sin posts para esta tanda", "Ajusta el filtro o crea un nuevo post.", "posts")}`;
 }
@@ -3027,6 +3103,23 @@ document.addEventListener("click", async e => {
   // filtros: quitar tanda de mes
   const fclear = t.closest("[data-filter-clear]");
   if(fclear){ ensureFilter(fclear.dataset.coll).month = "all"; render(); return; }
+
+  // guía de distribución de Posts: plegar / desplegar
+  const guideToggle = t.closest("[data-toggle-guide]");
+  if(guideToggle){ S.ui.postsGuideOpen = !S.ui.postsGuideOpen; render(); return; }
+
+  // guía de distribución: saltar al post real de ese paso de la secuencia
+  const jumpPost = t.closest("[data-jump-post]");
+  if(jumpPost){
+    const num = Number(jumpPost.dataset.jumpPost);
+    const post = S.posts.find(x => x.num === num);
+    if(post){
+      if(post.collapsed) post.collapsed = false;
+      pendingFocus = post.id;
+      render();
+    }
+    return;
+  }
 });
 
 /* inputs de texto (sin re-render para no perder el foco) */

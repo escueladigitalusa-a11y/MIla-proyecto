@@ -70,6 +70,15 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
 - Las celdas se llenan **de abajo hacia arriba y de derecha a izquierda**; arrastra para
   reordenar manualmente o usa "Reordenar por fecha" para volver al orden cronológico.
 
+### Guía de distribución de Posts
+- Un panel plegable al inicio de la sección de Posts recoge todo lo que no pertenece a
+  una sola pieza sino a la colección completa: el enfoque de diseño (poco texto en el
+  arte + mensaje instantáneo + caption que profundiza + CTA específico), los principios
+  de marca, y el **orden narrativo sugerido de publicación** — Down payment → Testimonio
+  → Consejo de Mila → Propósito → Checklist → Equity → Gratitud → Servicios → Fe →
+  Compromiso — como una secuencia de chips clicables que saltan directo al post real.
+  Cierra con las cuatro impresiones que se busca dejar en quien descubre el perfil.
+
 ### Contenido desarrollado, campo por campo
 - **Reels:** el guion viene separado por tiempos — Hook `0–3s`, Desarrollo `3–25s` y
   Cierre + CTA `25–30s` — más el texto en pantalla de la portada, el caption final,
