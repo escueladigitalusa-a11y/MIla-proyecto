@@ -310,6 +310,26 @@ body::before{
 .story-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px;flex:1}
 .story-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:auto}
 
+/* Aviso de cumplimiento (permisos, datos verificables, tono de fe) */
+.note-band{
+  display:flex;align-items:flex-start;gap:10px;background:#FBF3E4;border:1px solid #EEDFC1;color:#7A5C29;
+  border-radius:12px;padding:11px 14px;font-size:12.5px;line-height:1.45;margin-bottom:16px
+}
+.note-band svg{width:16px;height:16px;flex:none;margin-top:1px;color:#B4894A}
+.note-band b{color:#6B4F22}
+
+/* Hashtags */
+.tags-field .input{font-size:13.5px;color:#4E6076;letter-spacing:.01em}
+.hint-line{font-size:11.5px;color:var(--muted);margin-top:6px;display:block}
+
+/* Guion de reel: numeración de tiempos */
+.timing{font-size:10px;letter-spacing:.1em;color:var(--gold-deep);background:var(--gold-pale);
+  border-radius:20px;padding:2px 8px;margin-left:6px;font-weight:600}
+
+/* Historias: chip de formato de sticker */
+.fmt-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:#fff;
+  border-radius:20px;padding:3px 9px;font-size:10.5px;color:var(--navy);letter-spacing:.02em}
+
 /* Resalte temporal al saltar desde "En Feed · #k" o desde una celda del feed */
 .flash{animation:flashHighlight 1.5s ease}
 @keyframes flashHighlight{0%,100%{box-shadow:var(--shadow-sm)}25%{box-shadow:0 0 0 4px var(--gold),var(--shadow)}}
@@ -651,367 +671,1154 @@ const STATUS = {
   draft:"Borrador", review:"En revisión", scheduled:"Programado", published:"Publicado"
 };
 
+/* ============================================================
+   CONTENIDO DESARROLLADO — Mila Meekins Real Estate
+   Guiones, captions, slide-by-slide y stickers listos para producir.
+   Cada pieza conserva su número del Banco de Ideas original.
+   ============================================================ */
+const CONTENT_REELS = [
+  {
+    "num": 1,
+    "pillar": "educacion",
+    "kind": "H",
+    "days": 70,
+    "rating": 9,
+    "status": "published",
+    "reviewed": true,
+    "title": "3 errores que cometen los compradores primerizos",
+    "coverText": "3 errores que nadie te advierte antes de comprar casa",
+    "hook": "Estos 3 errores le cuestan miles de dólares a compradores primerizos — y nadie te los dice.",
+    "desarrollo": "Error 1: Empezar a ver casas antes de hablar con un prestamista. «Te enamoras de una casa que quizás no calificas, y el golpe es peor.»\nError 2: Usar todos sus ahorros en el down payment y quedarse sin fondo de emergencia.\nError 3: No leer bien qué incluye el estimado de cierre — hay costos que sorprenden si nadie te los explica antes.",
+    "cta": "Ninguno de estos errores es tuyo por falta de capacidad — es por falta de información. Y para eso estoy aquí. Escríbeme «GUÍA» y te mando el checklist completo.",
+    "copy": "Nadie nace sabiendo comprar una casa. Yo tampoco sabía todo esto cuando empecé — lo aprendí acompañando a cientos de familias. Guárdate este reel para cuando llegue tu momento. 🏡",
+    "hashtags": "#CompradorPrimerizo #EducaciónFinanciera #TuPrimeraCasa"
+  },
+  {
+    "num": 2,
+    "pillar": "educacion",
+    "kind": "C",
+    "days": 66,
+    "rating": 8,
+    "status": "published",
+    "reviewed": true,
+    "title": "Comiquita: pre-approval vs. pre-qualification",
+    "coverText": "Pre-calificación ≠ Pre-aprobación",
+    "hook": "Personaje confundido: «¿Pre-aprobación y pre-calificación son lo mismo? 🤔»",
+    "desarrollo": "Animación con dos personajes: uno con un papel ligero («Pre-calificación: un estimado rápido, sin verificar documentos») y otro con una carpeta gruesa («Pre-aprobación: el banco ya revisó tus documentos — esta es la que los vendedores toman en serio»).",
+    "cta": "«Si vas a ofertar en serio, necesitas la carpeta gruesa, no el papelito. ¿Quieres saber cómo conseguirla? Comenta «PRE» y te explico el paso a paso.»",
+    "copy": "Estos dos términos suenan parecido pero no son lo mismo — y confundirlos puede costarte la casa que quieres. Aquí te lo explico bien clarito. 👇",
+    "hashtags": "#GlosarioInmobiliario #PreAprobación",
+    "notes": "Formato animado (comiquita): dos personajes contrastados, papel ligero vs. carpeta gruesa."
+  },
+  {
+    "num": 3,
+    "pillar": "educacion",
+    "kind": "H",
+    "days": 63,
+    "rating": 9,
+    "status": "scheduled",
+    "reviewed": true,
+    "title": "¿Cuánto necesitas realmente de down payment? Mito vs. realidad",
+    "coverText": "El mito del 20% — desmontado",
+    "hook": "¿Crees que necesitas 20% para comprar casa? Te tengo una sorpresa.",
+    "desarrollo": "Explicar que existen programas con 3%, 3.5% e incluso 0% de down payment según el perfil, que el 20% evita el seguro hipotecario pero no es un requisito universal, y que cada caso es distinto — por eso la conversación con un prestamista es el primer paso real.",
+    "cta": "No sabes en qué programa calificas hasta que alguien se sienta contigo a revisarlo. Agenda una llamada sin compromiso — el link está en mi bio.",
+    "copy": "Este mito ha detenido a más familias de las que te imaginas. La verdad es más generosa de lo que crees. Cuéntame: ¿tú también pensabas que necesitabas el 20%?",
+    "hashtags": "#MitoVsRealidad #DownPayment",
+    "notes": "Nunca prometer calificación ni garantías de crédito: hablar siempre de «programas que existen», no de aprobación asegurada."
+  },
+  {
+    "num": 10,
+    "pillar": "educacion",
+    "kind": "H",
+    "days": 60,
+    "rating": 8,
+    "status": "review",
+    "reviewed": false,
+    "title": "Pregúntame lo que quieras sobre comprar tu primera casa",
+    "coverText": "Q&A: Tu primera casa",
+    "hook": "Hoy respondo TODO lo que me preguntes sobre comprar tu primera casa.",
+    "desarrollo": "Formato Q&A rápido a cámara — grabar 3-4 respuestas cortas a preguntas reales recolectadas previamente por sticker de stories (ver Story 8). Ritmo ágil, una pregunta cada 5-6 segundos.",
+    "cta": "Se me quedaron preguntas por responder — déjamelas en los comentarios y las contesto en el próximo Q&A.",
+    "copy": "Ustedes preguntaron, yo respondí. Este es el tipo de conversación que quiero tener contigo — sin tecnicismos, sin presión, solo claridad. ¿Qué se me quedó por responder?",
+    "hashtags": "#PreguntasFrecuentes #TuPrimeraCasa",
+    "notes": "Depende de la Story 8: recolectar primero las preguntas con el sticker antes de grabar."
+  },
+  {
+    "num": 12,
+    "pillar": "patrimonio",
+    "kind": "C",
+    "days": 54,
+    "rating": 9,
+    "status": "draft",
+    "reviewed": false,
+    "title": "Árbol genealógico que crece con cada propiedad = legado familiar",
+    "coverText": "Una casa. Un árbol. Un legado.",
+    "hook": "Animación de un árbol pequeño con una casa diminuta en la raíz: «Así empieza el patrimonio de una familia.»",
+    "desarrollo": "El árbol crece con cada generación — una rama nueva por cada propiedad o inversión que la familia va sumando con el tiempo, terminando en un árbol frondoso con varias casas colgando como frutos.",
+    "cta": "«Tu primera casa no es solo tuya — es la raíz de algo que puede durar generaciones. ¿Ya empezaste a sembrar la tuya?»",
+    "copy": "El patrimonio no se construye en un cierre — se construye en generaciones. Esta es la razón real por la que hago lo que hago.",
+    "hashtags": "#PatrimonioFamiliar #LegadoGeneracional",
+    "notes": "Formato animado (comiquita): árbol que crece por generaciones."
+  },
+  {
+    "num": 15,
+    "pillar": "patrimonio",
+    "kind": "C",
+    "days": 50,
+    "rating": 8,
+    "status": "published",
+    "reviewed": true,
+    "title": "El «efecto bola de nieve» del patrimonio inmobiliario",
+    "coverText": "El tiempo es tu mejor aliado",
+    "hook": "Bola de nieve diminuta rodando desde lo alto de una colina: «Así crece tu patrimonio con el tiempo.»",
+    "desarrollo": "La bola crece a medida que rueda — cada vuelta representa un año de equity acumulado, hasta llegar a una bola grande al pie de la colina.",
+    "cta": "«Empezar pequeño no es el problema. El problema es no empezar. ¿Quieres ver cómo se vería tu propia bola de nieve? Escríbeme y lo calculamos juntos.»",
+    "copy": "El equity no crece de un día para otro — crece como una bola de nieve. Entre más pronto empiezas a rodar, más grande llega.",
+    "hashtags": "#Equity #PatrimonioInmobiliario",
+    "notes": "Formato animado (comiquita): bola de nieve, una vuelta = un año de equity."
+  },
+  {
+    "num": 17,
+    "pillar": "patrimonio",
+    "kind": "H",
+    "days": 46,
+    "rating": 9,
+    "status": "scheduled",
+    "reviewed": true,
+    "title": "Qué es el equity y cómo trabaja a tu favor",
+    "coverText": "Equity: tu dinero trabajando en silencio",
+    "hook": "Cada pago de tu hipoteca te está haciendo más rico. Así funciona.",
+    "desarrollo": "Explicar equity en términos simples: la diferencia entre lo que vale tu casa y lo que aún debes; cómo crece con cada pago y con la apreciación del mercado; un ejemplo numérico sencillo con cifras genéricas («si tu casa vale $400,000 y debes $350,000, ya tienes $50,000 en equity»).",
+    "cta": "Esto es lo que la mayoría no entiende hasta que ya compró. Yo prefiero que lo entiendas antes. ¿Tienes dudas sobre tu situación específica? Escríbeme.",
+    "copy": "El equity es la parte más subestimada de comprar casa. Aquí te explico por qué cada pago cuenta más de lo que piensas.",
+    "hashtags": "#QuéEsElEquity #EducaciónFinanciera",
+    "notes": "Las cifras del ejemplo son ilustrativas, no proyecciones ni asesoría financiera.",
+    "note": "Cifras de ejemplo: verificar que se presenten siempre como ilustrativas, nunca como garantía o asesoría financiera."
+  },
+  {
+    "num": 28,
+    "pillar": "servicio",
+    "kind": "H",
+    "days": 40,
+    "rating": 8,
+    "status": "review",
+    "reviewed": false,
+    "title": "Las preguntas más curiosas que me han hecho mis clientes",
+    "coverText": "Preguntas que me han hecho (y me encantaron)",
+    "hook": "Estas son las preguntas más curiosas que me han hecho mis clientes... y algunas me encantaron.",
+    "desarrollo": "Formato ligero, 3-4 preguntas reales (anonimizadas) con reacción genuina y respuesta breve — mezcla de humor y calidez, mostrando cercanía sin perder profesionalismo.",
+    "cta": "Ninguna pregunta es tonta cuando se trata de la decisión más grande de tu vida. La tuya, ¿cuál sería?",
+    "copy": "Parte de mi trabajo es que te sientas con la confianza de preguntar lo que sea — hasta lo que crees que «no se debe preguntar». Cuéntame la tuya en los comentarios. 😄",
+    "hashtags": "#DetrásDeCámaras #ServicioConCorazón",
+    "notes": "Anonimizar siempre las preguntas de clientes reales."
+  },
+  {
+    "num": 29,
+    "pillar": "servicio",
+    "kind": "C",
+    "days": 36,
+    "rating": 7,
+    "status": "draft",
+    "reviewed": false,
+    "title": "«El cliente ansioso vs. el agente tranquilo»",
+    "coverText": "Tú te preocupas. Yo me encargo.",
+    "hook": "Split screen animado: cliente sudando frente a una pila de papeles vs. agente tranquila con un café.",
+    "desarrollo": "Contraste humorístico y relatable: cliente imaginando escenarios catastróficos, agente respondiendo con calma cada uno con datos reales — cerrando con ambos sonriendo al final del proceso.",
+    "cta": "«Tu ansiedad es válida. Mi trabajo es sostenerte hasta que se convierta en tranquilidad. ¿Listo para vivirlo?»",
+    "copy": "Sé que comprar casa pone nervioso a cualquiera — hasta a mí me pasó. Por eso mi trabajo no termina en mostrarte propiedades: empieza en sostenerte en el proceso.",
+    "hashtags": "#AcompañamientoReal #ProcesoDeCompra",
+    "notes": "Formato animado (comiquita): split screen cliente vs. agente."
+  },
+  {
+    "num": 31,
+    "pillar": "fe",
+    "kind": "H",
+    "days": 28,
+    "rating": 10,
+    "status": "published",
+    "reviewed": true,
+    "title": "Mi historia: de inmigrante venezolana a real estate educator",
+    "coverText": "De Venezuela a ayudar a cientos de familias a tener su hogar",
+    "hook": "Llegué a este país con sueños, dudas y muy pocas certezas. Esta es mi historia.",
+    "desarrollo": "Versión corta y emotiva: salida de Venezuela, los primeros desafíos, la convicción de que nadie alcanza sus sueños completamente solo, y cómo esa experiencia se convirtió en la razón de acompañar a otras familias inmigrantes hoy.",
+    "cta": "Si hoy sientes que estás empezando de cero, quiero que sepas: yo también estuve ahí. Y se puede. Sígueme si quieres caminar este proceso conmigo.",
+    "copy": "Esta es la historia detrás de por qué hago lo que hago. No es solo un negocio — es una manera de devolver lo que a mí me dieron cuando más lo necesité. 🙏",
+    "hashtags": "#HistoriaDeInmigrante #FeYPropósito",
+    "notes": "Pieza ancla del pilar de Fe: grabar con tiempo y sin prisa."
+  },
+  {
+    "num": 34,
+    "pillar": "fe",
+    "kind": "H",
+    "days": 25,
+    "rating": 9,
+    "status": "scheduled",
+    "reviewed": true,
+    "title": "Por qué Dios va primero en mis negocios",
+    "coverText": "Dios primero. Siempre.",
+    "hook": "Antes de cada decisión de negocio, hago esto primero.",
+    "desarrollo": "Reflexión personal a cámara: cómo poner a Dios primero cambia decisiones concretas — cómo se cobra, cómo se negocia, cómo se trata a quien todavía no puede comprar. Sin predicar, solo testimoniando.",
+    "cta": "No tienes que compartir mi fe para trabajar conmigo con excelencia — pero sí quiero que sepas de dónde viene la mía.",
+    "copy": "No es una frase bonita para mi bio — es literalmente cómo tomo decisiones todos los días. Así se ve en la práctica.",
+    "hashtags": "#DiosPrimero #NegociosConPropósito",
+    "notes": "Tono testimonial del manual: se comparte lo que Dios ha hecho, nunca se predica ni se condiciona el servicio a la fe del cliente."
+  },
+  {
+    "num": 35,
+    "pillar": "fe",
+    "kind": "H",
+    "days": 22,
+    "rating": 8,
+    "status": "review",
+    "reviewed": false,
+    "title": "Gratitud de cierre de trimestre: a Dios y a mis clientes",
+    "coverText": "Fin de trimestre: gratitud primero",
+    "hook": "Cerramos el trimestre y antes de contar números, quiero dar gracias.",
+    "desarrollo": "Reflexión breve de gratitud — no cifras de venta, sino agradecimiento genuino por las familias atendidas y las lecciones del período, cerrando con una mención espontánea a Dios como sostén del trabajo.",
+    "cta": "Si fuiste parte de este trimestre, gracias por confiar en mí. Si viene tu turno pronto, aquí voy a estar.",
+    "copy": "Antes de mirar los números, quiero mirar los rostros. Gracias a cada familia que confió este trimestre — y gracias a Dios por sostener cada proceso.",
+    "hashtags": "#Gratitud #CierreDeTrimestre",
+    "notes": "Publicar al cierre de cada trimestre. No mencionar cifras de venta."
+  },
+  {
+    "num": 37,
+    "pillar": "fe",
+    "kind": "H",
+    "days": 19,
+    "rating": 9,
+    "status": "draft",
+    "reviewed": false,
+    "title": "Lo que aprendí sirviendo antes de vender",
+    "coverText": "Servir antes de vender",
+    "hook": "La lección más importante de mi carrera no fue sobre bienes raíces.",
+    "desarrollo": "Reflexión sobre cómo servir primero — ayudar sin condicionar al cierre — cambió su manera de trabajar y de medir el éxito, con un ejemplo breve y anónimo de alguien a quien ayudó sin que comprara con ella.",
+    "cta": "Servir primero no es una estrategia de venta. Es simplemente lo correcto. Y resulta que también construye lo que más dura: la confianza.",
+    "copy": "Aprendí que ayudar a alguien que no te va a comprar es la publicidad más honesta que existe — porque no es publicidad, es simplemente servir.",
+    "hashtags": "#ServirPrimero #RelaciónSobreTransacción",
+    "notes": "Mantener anónimo el ejemplo del cliente."
+  },
+  {
+    "num": 41,
+    "pillar": "relaciones",
+    "kind": "H",
+    "days": 12,
+    "rating": 9,
+    "status": "scheduled",
+    "reviewed": true,
+    "title": "Por qué digo HOGAR y no propiedad",
+    "coverText": "Propiedad vs. Hogar",
+    "hook": "Nunca me vas a escuchar decir «propiedad». Siempre digo hogar. Esta es la razón.",
+    "desarrollo": "Reflexión de marca: una propiedad es un activo; un hogar es donde una familia construye su historia. Ejemplos concretos de lo que cambia cuando se piensa en hogar en vez de transacción — más paciencia, más preguntas sobre cómo vive la familia, no solo sobre cuánto puede pagar.",
+    "cta": "Cuando trabajas conmigo, no estoy buscando venderte cuatro paredes. Estoy ayudándote a encontrar tu hogar.",
+    "copy": "Las palabras importan. Esta pequeña diferencia dice todo sobre cómo trabajo.",
+    "hashtags": "#HogarNoPropiedad #FilosofíaDeMarca",
+    "notes": "Pieza de identidad de marca: se reutiliza en la Story 88 como repost."
+  },
+  {
+    "num": 45,
+    "pillar": "relaciones",
+    "kind": "C",
+    "days": 6,
+    "rating": 9,
+    "status": "draft",
+    "reviewed": false,
+    "title": "Una familia se muda y «la casa cobra vida»",
+    "coverText": "Una casa cobra vida cuando llega una familia",
+    "hook": "Animación de una casa vacía y gris: «Una casa vacía es solo un espacio.»",
+    "desarrollo": "A medida que la familia animada va entrando con cajas, muebles y objetos personales, la casa se va llenando de color, luz y calidez — terminando en una escena cálida con la familia reunida.",
+    "cta": "«Ustedes son los que convierten una casa en hogar. Yo solo tengo el privilegio de entregarles la llave.»",
+    "copy": "Esto es lo que más me gusta de mi trabajo: ver cómo un espacio vacío se convierte en el lugar donde una familia va a construir su historia.",
+    "hashtags": "#HogarConVida #MomentoDeLasLlaves",
+    "notes": "Formato animado (comiquita): transición de gris a color al llegar la familia."
+  }
+];
+
+const CONTENT_POSTS = [
+  {
+    "num": 3,
+    "pillar": "educacion",
+    "days": 68,
+    "rating": 9,
+    "status": "published",
+    "reviewed": true,
+    "title": "Mito vs. realidad: «Necesitas 20% de down payment» — FALSO",
+    "designText": "MITO: Necesitas 20% para comprar casa.\nREALIDAD: Existen programas desde 3%.",
+    "desarrollo": "Titular grande en dos bloques contrastados (MITO / REALIDAD).\nPaleta marfil + azul profundo con acento dorado, logo discreto en la esquina.",
+    "copy": "Este mito ha detenido a más familias de las que te imaginas — y la mayoría ni siquiera sabe que existen otras opciones. Cada situación es distinta, por eso el primer paso siempre es una conversación, no una suposición. ¿Tú también creías que necesitabas el 20%?",
+    "cta": "Escríbeme «DOWN PAYMENT» y te cuento qué opciones existen para tu caso.",
+    "hashtags": "#MitoVsRealidad #DownPayment #TuPrimeraCasa"
+  },
+  {
+    "num": 6,
+    "pillar": "educacion",
+    "days": 64,
+    "rating": 8,
+    "status": "published",
+    "reviewed": true,
+    "title": "Checklist: antes de tu primera cita con tu agente",
+    "designText": "Antes de tu primera cita conmigo, ten esto listo:",
+    "desarrollo": "Lista de 5 ítems dentro de la imagen:\n1. Identificación.\n2. Dos últimos recibos de pago.\n3. Estado de cuenta reciente.\n4. Idea de presupuesto mensual cómodo.\n5. Lista de preguntas.",
+    "copy": "Llegar preparado no es requisito — pero sí hace que aprovechemos mejor el tiempo juntos desde el primer día. Guarda este post para cuando agendes tu cita.",
+    "cta": "¿Lista para tu primera cita? Escríbeme y la agendamos.",
+    "hashtags": "#ChecklistInmobiliario #PrimeraCita"
+  },
+  {
+    "num": 9,
+    "pillar": "educacion",
+    "days": 58,
+    "rating": 8,
+    "status": "scheduled",
+    "reviewed": true,
+    "title": "Consejo del día en frase corta y potente",
+    "designText": "No estás tan lejos de tu primera casa como crees.",
+    "desarrollo": "Frase única en tipografía grande sobre fondo de marca.\nSin elementos que compitan con el texto; logo discreto en la esquina.",
+    "copy": "A veces la única distancia entre tú y tu hogar es la información que aún no tienes. Hoy quiero recordarte esto, sin importar en qué etapa estés.",
+    "cta": "Cuéntame en los comentarios: ¿qué es lo que más te detiene hoy?",
+    "hashtags": "#ConsejoDelDía #TuPrimeraCasa"
+  },
+  {
+    "num": 12,
+    "pillar": "patrimonio",
+    "days": 48,
+    "rating": 8,
+    "status": "review",
+    "reviewed": false,
+    "title": "Gráfico simple: crecimiento de equity a 5, 10 y 15 años",
+    "designText": "Así crece tu equity: 5, 10 y 15 años.",
+    "desarrollo": "Gráfico de barras ilustrativo con el crecimiento de equity en tres momentos (5, 10 y 15 años).\nIncluir en la pieza la nota visible: «ejemplo ilustrativo, no es asesoría financiera».",
+    "copy": "El equity no crece de la noche a la mañana — crece con el tiempo, con cada pago y con la paciencia de quien decidió empezar. Esto es solo un ejemplo ilustrativo: tu caso puede verse distinto, y con gusto lo revisamos juntos.",
+    "cta": "¿Quieres ver cómo se vería tu propio camino de equity? Escríbeme.",
+    "hashtags": "#Equity #PatrimonioInmobiliario #EjemploIlustrativo",
+    "note": "Datos y estadísticas: verificar siempre la fuente y la fecha antes de publicar. Nunca presentar cifras de ejemplo como si fueran garantías."
+  },
+  {
+    "num": 21,
+    "pillar": "servicio",
+    "days": 38,
+    "rating": 10,
+    "status": "review",
+    "reviewed": false,
+    "title": "Testimonio en cita con foto del cliente y su nueva casa",
+    "designText": "Otra familia con las llaves en la mano. 🔑",
+    "desarrollo": "Foto del cliente frente a su nueva casa + cita breve suya sobre el proceso.\nUsar solo con permiso explícito y por escrito del cliente.",
+    "copy": "[Nombre del cliente, con su autorización] llegó con dudas y hoy tiene su hogar. Este es el momento que hace que todo valga la pena. Gracias por confiar en el proceso — y en mí.",
+    "cta": "¿Quieres ser la próxima historia? Escríbeme y empezamos.",
+    "hashtags": "#TestimonioReal #LlavesEnMano",
+    "note": "Testimonio: requiere autorización explícita y por escrito del cliente antes de publicar (nombre, imagen y cita)."
+  },
+  {
+    "num": 24,
+    "pillar": "servicio",
+    "days": 34,
+    "rating": 9,
+    "status": "scheduled",
+    "reviewed": true,
+    "title": "Lista: qué incluye trabajar conmigo",
+    "designText": "Trabajar conmigo incluye:",
+    "desarrollo": "Lista dentro de la imagen:\n• Educación financiera desde el día uno.\n• Acompañamiento antes, durante y después del cierre.\n• Honestidad aunque la respuesta sea «todavía no».\n• Seguimiento real después de las llaves.",
+    "copy": "No es solo mostrarte casas. Es acompañarte en una de las decisiones más importantes de tu vida, con la misma atención que le daría a mi propia familia.",
+    "cta": "¿Quieres saber si es tu momento? Hablemos.",
+    "hashtags": "#AcompañamientoIntegral #MiCompromiso"
+  },
+  {
+    "num": 28,
+    "pillar": "servicio",
+    "days": 30,
+    "rating": 9,
+    "status": "published",
+    "reviewed": true,
+    "title": "«Mi compromiso contigo»: promesa de marca en formato visual",
+    "designText": "Nunca tomarás una decisión sin entenderla.\nY nunca estarás solo en el proceso.",
+    "desarrollo": "Promesa de marca en dos líneas, tipografía grande.\nFondo de marca con el patrón dorado sutil; logo discreto.",
+    "copy": "Esta es mi promesa, no un eslogan. Compres o no compres conmigo, mi trabajo es que salgas de cada conversación más informado y más tranquilo que como llegaste.",
+    "cta": "Guarda este post para cuando lo necesites recordar.",
+    "hashtags": "#MiCompromiso #PromesaDeMarca"
+  },
+  {
+    "num": 31,
+    "pillar": "fe",
+    "days": 24,
+    "rating": 10,
+    "status": "published",
+    "reviewed": true,
+    "title": "Frase: «Cada llave que entrego es una oración respondida»",
+    "designText": "Cada llave que entrego es una oración respondida.",
+    "desarrollo": "Frase en tipografía grande con una silueta discreta de llave sobre el patrón dorado de marca.",
+    "copy": "Detrás de cada cierre hay una historia de fe — la mía y la de la familia que confió. No tomo ese momento a la ligera.",
+    "cta": "Si esto te tocó el corazón, compártelo con alguien que lo necesite hoy.",
+    "hashtags": "#FeYPropósito #CadaLlave"
+  },
+  {
+    "num": 40,
+    "pillar": "fe",
+    "days": 20,
+    "rating": 9,
+    "status": "draft",
+    "reviewed": false,
+    "title": "Post de propósito: por qué hago lo que hago",
+    "designText": "No vendo casas. Acompaño sueños.",
+    "desarrollo": "Titular corto y contundente en tipografía grande.\nOpcional: sobre una foto cálida del momento de entrega de llaves.",
+    "copy": "Cuando empecé en este negocio pensé que se trataba de transacciones. Hoy sé que se trata de personas — de familias que merecen a alguien que les diga la verdad y camine con ellas hasta el final.",
+    "cta": "¿Cuál es tu sueño de hogar? Cuéntamelo.",
+    "hashtags": "#PorQuéLoHago #PropósitoDeMarca"
+  },
+  {
+    "num": 49,
+    "pillar": "relaciones",
+    "days": 8,
+    "rating": 8,
+    "status": "draft",
+    "reviewed": false,
+    "title": "«Gracias por confiar en mí»: mensaje a la comunidad",
+    "designText": "Gracias por confiar en mí, una familia a la vez.",
+    "desarrollo": "Mensaje de gratitud en tipografía grande sobre fondo de marca; logo discreto en la esquina.",
+    "copy": "Cada mensaje, cada pregunta, cada «sí, quiero intentarlo» — todo eso construye lo que somos hoy. Gracias por ser parte de esta comunidad.",
+    "cta": "Etiqueta a alguien que debería empezar su proceso este año.",
+    "hashtags": "#GraciasComunidad #ComunidadHispana"
+  }
+];
+
+const CONTENT_CAROUSELS = [
+  {
+    "num": 1,
+    "pillar": "educacion",
+    "days": 69,
+    "rating": 9,
+    "status": "published",
+    "reviewed": true,
+    "title": "5 pasos para comprar tu primera casa en Estados Unidos",
+    "hook": "5 pasos para comprar tu primera casa en Estados Unidos 🏡",
+    "cta": "¿Quieres saber en qué paso estás tú? Escríbeme «CASA» y lo vemos juntos.",
+    "copy": "Comprar tu primera casa no tiene que sentirse como un salto al vacío. Aquí tienes el mapa completo, paso a paso.",
+    "hashtags": "#TuPrimeraCasa #EducaciónFinanciera #PasoAPaso",
+    "slides": [
+      "Portada — 5 pasos para comprar tu primera casa en Estados Unidos 🏡",
+      "Paso 1 — Organiza tus finanzas y revisa tu crédito.",
+      "Paso 2 — Consigue tu pre-aprobación hipotecaria (no solo pre-calificación).",
+      "Paso 3 — Define tu presupuesto real, no solo el máximo que el banco aprueba.",
+      "Paso 4 — Busca un agente que te eduque, no que solo te muestre casas.",
+      "Paso 5 — Haz tu oferta con estrategia, con datos, no con miedo.",
+      "Resumen — No estás tan lejos de tu primera casa como crees.",
+      "CTA — ¿Quieres saber en qué paso estás tú? Escríbeme «CASA» y lo vemos juntos."
+    ]
+  },
+  {
+    "num": 3,
+    "pillar": "educacion",
+    "days": 65,
+    "rating": 10,
+    "status": "published",
+    "reviewed": true,
+    "title": "Mitos vs. realidades de comprar casa siendo inmigrante",
+    "hook": "Mitos vs. realidades de comprar casa siendo inmigrante",
+    "cta": "¿Tienes una duda específica sobre tu situación? Escríbeme — para temas legales o migratorios siempre te voy a recomendar al profesional correcto, y para todo lo demás, aquí estoy.",
+    "copy": "Estos mitos han detenido a demasiadas familias. Vamos a desmontarlos, uno por uno.",
+    "hashtags": "#ComunidadHispana #MitoVsRealidad #TuPrimeraCasa",
+    "slides": [
+      "Portada — Mitos vs. realidades de comprar casa siendo inmigrante",
+      "Mito: «Necesito ciudadanía para comprar.» Realidad: no es un requisito — existen opciones para distintos estatus migratorios (consulta siempre tu caso específico con un profesional autorizado).",
+      "Mito: «Necesito historial de crédito de años.» Realidad: hay maneras de construir y demostrar solvencia incluso con historial corto.",
+      "Mito: «Los bancos no confían en inmigrantes.» Realidad: existen prestamistas especializados en atender a nuestra comunidad.",
+      "Mito: «Es un proceso imposible de entender.» Realidad: es un proceso con pasos claros — cuando alguien te lo explica bien.",
+      "Resumen — Ser inmigrante no te cierra la puerta. La falta de información sí.",
+      "CTA — ¿Tienes una duda específica sobre tu situación? Escríbeme — para temas legales o migratorios siempre te voy a recomendar al profesional correcto, y para todo lo demás, aquí estoy."
+    ],
+    "note": "Temas migratorios o legales: incluir siempre la nota de remitir a un profesional certificado para el caso específico. Nunca dar asesoría migratoria."
+  },
+  {
+    "num": 5,
+    "pillar": "educacion",
+    "days": 61,
+    "rating": 9,
+    "status": "scheduled",
+    "reviewed": true,
+    "title": "Glosario inmobiliario: 10 términos que debes dominar",
+    "hook": "10 términos que debes dominar antes de comprar casa",
+    "cta": "¿Cuál de estos términos quieres que te explique más a fondo? Coméntalo.",
+    "copy": "El vocabulario no debería ser una barrera para tomar una de las decisiones más importantes de tu vida. Guarda este carrusel como referencia.",
+    "hashtags": "#GlosarioInmobiliario #EducaciónFinanciera",
+    "slides": [
+      "Portada — 10 términos que debes dominar antes de comprar casa",
+      "Pre-aprobación",
+      "Down payment",
+      "Escrow",
+      "Equity",
+      "Contingencia",
+      "Cierre (closing)",
+      "Tasación (appraisal)",
+      "Seguro hipotecario (PMI)",
+      "Resumen — Ahora hablas el idioma del proceso de compra.",
+      "CTA — ¿Cuál de estos términos quieres que te explique más a fondo? Coméntalo."
+    ]
+  },
+  {
+    "num": 10,
+    "pillar": "educacion",
+    "days": 56,
+    "rating": 8,
+    "status": "review",
+    "reviewed": false,
+    "title": "Errores comunes que retrasan un cierre (y cómo evitarlos)",
+    "hook": "5 errores que retrasan un cierre — y cómo evitarlos",
+    "cta": "¿Estás en pleno proceso? Escríbeme si tienes dudas sobre alguno de estos puntos.",
+    "copy": "Nada de esto es sobre suerte — es sobre estar bien acompañado.",
+    "hashtags": "#ProcesoDeCompra #CierreATiempo",
+    "slides": [
+      "Portada — 5 errores que retrasan un cierre — y cómo evitarlos",
+      "Error 1 — Hacer compras grandes o abrir crédito nuevo antes del cierre.",
+      "Error 2 — No responder rápido las solicitudes de documentos del prestamista.",
+      "Error 3 — Cambiar de trabajo justo antes del cierre sin avisar.",
+      "Error 4 — No hacer la inspección con tiempo suficiente.",
+      "Error 5 — No leer bien el estimado de cierre.",
+      "Resumen — Un cierre a tiempo empieza con pequeñas decisiones bien informadas.",
+      "CTA — ¿Estás en pleno proceso? Escríbeme si tienes dudas sobre alguno de estos puntos."
+    ]
+  },
+  {
+    "num": 30,
+    "pillar": "servicio",
+    "days": 32,
+    "rating": 10,
+    "status": "review",
+    "reviewed": false,
+    "title": "Testimonios: familias que confiaron y hoy tienen su hogar",
+    "hook": "Familias que confiaron y hoy tienen su hogar 🔑",
+    "cta": "¿Quieres que tu historia sea la próxima? Escríbeme.",
+    "copy": "Estas son algunas de las familias que me han permitido acompañarlas. Gracias por confiar en el proceso. (Publicar solo con autorización escrita de cada cliente.)",
+    "hashtags": "#TestimonioReal #FamiliasConHogar",
+    "slides": [
+      "Portada — Familias que confiaron y hoy tienen su hogar 🔑",
+      "Testimonio 1 — Foto/frase breve del cliente (con permiso) + una línea sobre su proceso: «Llegaron pensando que no calificaban. Hoy tienen las llaves.»",
+      "Testimonio 2 — Foto/frase breve del cliente (con permiso) + una línea sobre su proceso.",
+      "Testimonio 3 — Foto/frase breve del cliente (con permiso) + una línea sobre su proceso.",
+      "Testimonio 4 — Foto/frase breve del cliente (con permiso) + una línea sobre su proceso.",
+      "Testimonio 5 — Foto/frase breve del cliente (con permiso) + una línea sobre su proceso.",
+      "Resumen — Cada historia empezó con una duda — y terminó con un hogar.",
+      "CTA — ¿Quieres que tu historia sea la próxima? Escríbeme."
+    ],
+    "note": "Testimonios: publicar solo con autorización explícita y por escrito de cada cliente (nombre, imagen y cita)."
+  },
+  {
+    "num": 33,
+    "pillar": "fe",
+    "days": 26,
+    "rating": 10,
+    "status": "published",
+    "reviewed": true,
+    "title": "Por qué «Dios Primero» no es solo una frase para mí",
+    "hook": "Por qué «Dios Primero» no es solo una frase para mí",
+    "cta": "Si esto resuena contigo, sígueme — aquí vas a encontrar más que bienes raíces.",
+    "copy": "Esto es lo que significa realmente para mí poner a Dios primero en mi negocio. No es una frase para la bio — es una forma de trabajar.",
+    "hashtags": "#DiosPrimero #BienesRaícesConFe",
+    "slides": [
+      "Portada — Por qué «Dios Primero» no es solo una frase para mí",
+      "Significa decir la verdad aunque cueste un cliente.",
+      "Significa no presionar a quien todavía no está listo.",
+      "Significa tratar bien a la competencia y a colegas.",
+      "Significa agradecer antes de contar resultados.",
+      "Resumen — La fe se demuestra en cómo se trabaja, no solo en lo que se dice.",
+      "CTA — Si esto resuena contigo, sígueme — aquí vas a encontrar más que bienes raíces."
+    ],
+    "note": "Contenido de fe: tono testimonial. Nunca predicar ni condicionar el servicio a la fe del cliente."
+  },
+  {
+    "num": 40,
+    "pillar": "fe",
+    "days": 18,
+    "rating": 9,
+    "status": "scheduled",
+    "reviewed": true,
+    "title": "Lo que significa servir antes de vender",
+    "hook": "Lo que significa servir antes de vender",
+    "cta": "¿Tienes una pregunta, aunque no estés listo para comprar? Aquí estoy.",
+    "copy": "Este es el principio que guía cada conversación que tengo, compres hoy o compres en cinco años.",
+    "hashtags": "#ServirPrimero #RelaciónSobreTransacción",
+    "slides": [
+      "Portada — Lo que significa servir antes de vender",
+      "Responder aunque sepa que la persona no va a comprar todavía.",
+      "Decir «todavía no es tu momento» cuando es la verdad.",
+      "Dar el mismo nivel de atención a quien compra $350,000 que a quien solo tiene preguntas.",
+      "Medir el éxito en confianza, no solo en cierres.",
+      "Resumen — Servir primero siempre construye algo que dura más que una venta.",
+      "CTA — ¿Tienes una pregunta, aunque no estés listo para comprar? Aquí estoy."
+    ]
+  },
+  {
+    "num": 42,
+    "pillar": "relaciones",
+    "days": 14,
+    "rating": 8,
+    "status": "draft",
+    "reviewed": false,
+    "title": "Conoce al equipo detrás de cada cierre exitoso",
+    "hook": "Conoce al equipo detrás de cada cierre exitoso",
+    "cta": "¿Quieres conocer al equipo en persona? Agenda tu primera cita.",
+    "copy": "Detrás de cada llave entregada hay un equipo trabajando con el mismo compromiso. Les presento a las personas que hacen esto posible.",
+    "hashtags": "#NuestroEquipo #DetrásDeCámaras",
+    "slides": [
+      "Portada — Conoce al equipo detrás de cada cierre exitoso",
+      "Integrante 1 — Foto + nombre + rol + una línea personal: «Le encanta explicar el proceso hipotecario en palabras simples».",
+      "Integrante 2 — Foto + nombre + rol + una línea personal.",
+      "Integrante 3 — Foto + nombre + rol + una línea personal.",
+      "Integrante 4 — Foto + nombre + rol + una línea personal.",
+      "Integrante 5 — Foto + nombre + rol + una línea personal.",
+      "Resumen — Ningún cierre exitoso es el trabajo de una sola persona.",
+      "CTA — ¿Quieres conocer al equipo en persona? Agenda tu primera cita."
+    ]
+  },
+  {
+    "num": 49,
+    "pillar": "relaciones",
+    "days": 10,
+    "rating": 9,
+    "status": "draft",
+    "reviewed": false,
+    "title": "Por qué las relaciones importan más que las transacciones",
+    "hook": "Por qué las relaciones importan más que las transacciones",
+    "cta": "¿Quieres empezar una relación, no solo una transacción? Escríbeme.",
+    "copy": "Esta es la diferencia más importante entre cómo trabajamos nosotros y cómo trabaja la mayoría.",
+    "hashtags": "#RelaciónSobreTransacción #HogarConPropósito",
+    "slides": [
+      "Portada — Por qué las relaciones importan más que las transacciones",
+      "Una transacción termina en el cierre. Una relación sigue después.",
+      "Ayudamos a clientes aunque no compren con nosotros.",
+      "Seguimos en contacto meses (y años) después de las llaves.",
+      "Celebramos sus logros, no solo los nuestros.",
+      "Resumen — Una casa se compra una vez. Una relación de confianza se construye para siempre.",
+      "CTA — ¿Quieres empezar una relación, no solo una transacción? Escríbeme."
+    ]
+  },
+  {
+    "num": 50,
+    "pillar": "relaciones",
+    "days": 4,
+    "rating": 10,
+    "status": "draft",
+    "reviewed": false,
+    "title": "Lo que nuestros clientes dicen de trabajar con nosotros",
+    "hook": "Lo que nuestros clientes dicen de trabajar con nosotros",
+    "cta": "¿Quieres ser la próxima reseña? Empecemos.",
+    "copy": "Nada dice más de nosotros que las palabras de quienes ya vivieron el proceso. Gracias por confiar y por compartirlo. (Publicar solo con autorización.)",
+    "hashtags": "#Reseñas #TestimonioReal",
+    "slides": [
+      "Portada — Lo que nuestros clientes dicen de trabajar con nosotros",
+      "Reseña 1 — Cita breve del cliente (con permiso).",
+      "Reseña 2 — Cita breve del cliente (con permiso).",
+      "Reseña 3 — Cita breve del cliente (con permiso).",
+      "Reseña 4 — Cita breve del cliente (con permiso).",
+      "Reseña 5 — Cita breve del cliente (con permiso).",
+      "Resumen — Esto es lo que más nos importa: que se sientan acompañados, no vendidos.",
+      "CTA — ¿Quieres ser la próxima reseña? Empecemos."
+    ],
+    "note": "Reseñas y citas de clientes: publicar solo con autorización explícita y por escrito."
+  }
+];
+
+const CONTENT_STORIES = [
+  {
+    "num": 1,
+    "pillar": "educacion",
+    "format": "Encuesta",
+    "days": 72,
+    "content": "¿Sabes qué es un escrow? Sí / No",
+    "followup": "Story siguiente: explicación en 2 líneas.",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 2,
+    "pillar": "educacion",
+    "format": "Pregunta abierta",
+    "days": 70,
+    "content": "¿Cuál es tu mayor duda sobre comprar casa? 👇",
+    "followup": "Responder las mejores en stories o convertirlas en Reel Q&A.",
+    "status": "scheduled",
+    "reviewed": true
+  },
+  {
+    "num": 4,
+    "pillar": "educacion",
+    "format": "Quiz",
+    "days": 69,
+    "content": "¿Cuánto necesitas de down payment? 3.5% / 10% / 20% / No sé",
+    "followup": "Revelar la respuesta correcta con explicación breve.",
+    "status": "draft",
+    "reviewed": false
+  },
+  {
+    "num": 5,
+    "pillar": "educacion",
+    "format": "Repost",
+    "days": 68,
+    "content": "Compartir el Reel 3 (mito del down payment) con sticker de pregunta «¿Ya lo sabías?»",
+    "followup": "",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 8,
+    "pillar": "educacion",
+    "format": "Sticker",
+    "days": 66,
+    "content": "Pregúntame lo que quieras sobre el proceso de compra 💬",
+    "followup": "Recolectar preguntas para el Reel 10 (Q&A).",
+    "status": "review",
+    "reviewed": false
+  },
+  {
+    "num": 9,
+    "pillar": "educacion",
+    "format": "Explicación",
+    "days": 64,
+    "content": "¿Qué es una «contingencia»? Te lo explico en 10 segundos 🎥",
+    "followup": "Video corto explicando el término.",
+    "status": "draft",
+    "reviewed": false
+  },
+  {
+    "num": 11,
+    "pillar": "educacion",
+    "format": "Encuesta",
+    "days": 63,
+    "content": "Mito del día: «Necesitas trabajo fijo de 2 años para calificar.» Verdadero / Falso",
+    "followup": "Revelar respuesta con el matiz correcto.",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 14,
+    "pillar": "educacion",
+    "format": "Encuesta",
+    "days": 62,
+    "content": "¿Rentas o eres dueño? 🏠",
+    "followup": "Usar el resultado para orientar el próximo contenido educativo.",
+    "status": "draft",
+    "reviewed": false
+  },
+  {
+    "num": 15,
+    "pillar": "educacion",
+    "format": "Tip",
+    "days": 60,
+    "content": "Tip rápido: paga tus tarjetas a tiempo, cada mes, sin excepción — así se mueve tu credit score",
+    "followup": "",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 16,
+    "pillar": "educacion",
+    "format": "Glosario",
+    "days": 58,
+    "content": "Palabra nueva: «Tasación (appraisal)» — así de fácil se explica 👇",
+    "followup": "",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 20,
+    "pillar": "educacion",
+    "format": "Pregunta directa",
+    "days": 57,
+    "content": "¿Qué te detiene hoy de comprar tu primera casa?",
+    "followup": "Usar respuestas para futuros temas de contenido.",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 22,
+    "pillar": "patrimonio",
+    "format": "Encuesta",
+    "days": 53,
+    "content": "¿Ya tienes una propiedad de inversión? Sí / Todavía no",
+    "followup": "",
+    "status": "scheduled",
+    "reviewed": true
+  },
+  {
+    "num": 23,
+    "pillar": "patrimonio",
+    "format": "Cita",
+    "days": 52,
+    "content": "«El patrimonio no se hereda solo en dinero — se hereda en decisiones.»",
+    "followup": "",
+    "status": "review",
+    "reviewed": false
+  },
+  {
+    "num": 24,
+    "pillar": "patrimonio",
+    "format": "Encuesta",
+    "days": 51,
+    "content": "¿Prefieres ahorrar o invertir? 💰",
+    "followup": "Conectar con contenido de equity.",
+    "status": "draft",
+    "reviewed": false
+  },
+  {
+    "num": 28,
+    "pillar": "patrimonio",
+    "format": "Pregunta abierta",
+    "days": 50,
+    "content": "¿Qué significa patrimonio para ti?",
+    "followup": "Usar las mejores respuestas en un post de comunidad.",
+    "status": "review",
+    "reviewed": false
+  },
+  {
+    "num": 29,
+    "pillar": "patrimonio",
+    "format": "Dato curioso",
+    "days": 49,
+    "content": "Dato: la riqueza generacional en la comunidad hispana crece principalmente a través de bienes raíces",
+    "followup": "Enlazar con Carrusel/Reel de patrimonio.",
+    "status": "draft",
+    "reviewed": false
+  },
+  {
+    "num": 31,
+    "pillar": "patrimonio",
+    "format": "Tip",
+    "days": 48,
+    "content": "Tip: reinvierte antes de gastar — así se construye, poco a poco",
+    "followup": "",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 33,
+    "pillar": "patrimonio",
+    "format": "Pregunta",
+    "days": 47,
+    "content": "¿Te gustaría aprender a invertir en bienes raíces? Sí / Cuéntame más",
+    "followup": "Segmentar audiencia interesada en inversión.",
+    "status": "review",
+    "reviewed": false
+  },
+  {
+    "num": 37,
+    "pillar": "patrimonio",
+    "format": "Dato",
+    "days": 46,
+    "content": "Dato del sector: [insertar estadística actual verificada de fuente confiable]",
+    "followup": "Citar siempre la fuente en el story.",
+    "status": "scheduled",
+    "reviewed": true,
+    "note": "Verificar la fuente y la fecha del dato antes de publicar. Nunca presentar cifras de ejemplo como garantías."
+  },
+  {
+    "num": 38,
+    "pillar": "patrimonio",
+    "format": "Explicación",
+    "days": 45,
+    "content": "Fix & flip vs. Buy & hold — ¿cuál es cuál? 👇",
+    "followup": "Explicación breve de ambas estrategias.",
+    "status": "review",
+    "reviewed": false
+  },
+  {
+    "num": 39,
+    "pillar": "patrimonio",
+    "format": "Pregunta",
+    "days": 44,
+    "content": "¿Cuál es tu meta patrimonial a 5 años?",
+    "followup": "Usar para segmentar leads de inversión.",
+    "status": "draft",
+    "reviewed": false
+  },
+  {
+    "num": 42,
+    "pillar": "servicio",
+    "format": "Repost",
+    "days": 39,
+    "content": "Reseña de Google o testimonio del cliente",
+    "followup": "Publicar solo con permiso.",
+    "status": "scheduled",
+    "reviewed": true,
+    "note": "Testimonio: requiere autorización explícita y por escrito del cliente."
+  },
+  {
+    "num": 46,
+    "pillar": "servicio",
+    "format": "Video corto",
+    "days": 38,
+    "content": "Cliente agradeciendo en cámara (mini clip)",
+    "followup": "Publicar solo con permiso explícito.",
+    "status": "published",
+    "reviewed": true,
+    "note": "Testimonio en video: requiere autorización explícita y por escrito del cliente."
+  },
+  {
+    "num": 49,
+    "pillar": "servicio",
+    "format": "Encuesta",
+    "days": 36,
+    "content": "¿Prefieres ver casas en persona o virtual primero? 🏡📱",
+    "followup": "",
+    "status": "draft",
+    "reviewed": false
+  },
+  {
+    "num": 50,
+    "pillar": "servicio",
+    "format": "Recordatorio",
+    "days": 35,
+    "content": "Recuerda: la primera consulta siempre es sin compromiso. Escríbeme 💬",
+    "followup": "",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 55,
+    "pillar": "servicio",
+    "format": "Sticker",
+    "days": 34,
+    "content": "Cuéntame tu experiencia comprando o vendiendo casa 👇",
+    "followup": "Usar respuestas como insumo de testimonios futuros.",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 56,
+    "pillar": "servicio",
+    "format": "Foto",
+    "days": 32,
+    "content": "Foto del equipo trabajando en la oficina, caption breve",
+    "followup": "",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 59,
+    "pillar": "servicio",
+    "format": "Pregunta",
+    "days": 31,
+    "content": "¿Ya tienes tu pre-aprobación? Sí / No / ¿Qué es eso?",
+    "followup": "Enlazar con contenido educativo sobre pre-aprobación.",
+    "status": "draft",
+    "reviewed": false
+  },
+  {
+    "num": 61,
+    "pillar": "fe",
+    "format": "Reflexión",
+    "days": 27,
+    "content": "Versículo breve + una línea de reflexión personal, sin explicar de más",
+    "followup": "Mantener tono testimonial, nunca de sermón.",
+    "status": "published",
+    "reviewed": true,
+    "note": "Contenido de fe: tono testimonial. Nunca predicar ni condicionar el servicio a la fe del cliente."
+  },
+  {
+    "num": 62,
+    "pillar": "fe",
+    "format": "Pregunta",
+    "days": 25,
+    "content": "¿Cómo integras tu fe en tus decisiones financieras?",
+    "followup": "",
+    "status": "scheduled",
+    "reviewed": true
+  },
+  {
+    "num": 63,
+    "pillar": "fe",
+    "format": "Foto personal",
+    "days": 24,
+    "content": "Foto con reflexión corta de gratitud",
+    "followup": "",
+    "status": "review",
+    "reviewed": false
+  },
+  {
+    "num": 65,
+    "pillar": "fe",
+    "format": "Cita",
+    "days": 22,
+    "content": "«La integridad no se negocia, ni siquiera cuando nadie está mirando.»",
+    "followup": "",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 66,
+    "pillar": "fe",
+    "format": "Mini historia",
+    "days": 20,
+    "content": "Momento difícil superado con fe (breve, honesto, sin dramatizar)",
+    "followup": "",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 70,
+    "pillar": "fe",
+    "format": "Encuesta",
+    "days": 19,
+    "content": "¿Oras antes de tomar decisiones importantes? Sí / A veces / No",
+    "followup": "",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 77,
+    "pillar": "fe",
+    "format": "Pregunta",
+    "days": 17,
+    "content": "¿Crees que los negocios y la fe pueden ir juntos?",
+    "followup": "Usar respuestas para calibrar contenido futuro de fe.",
+    "status": "scheduled",
+    "reviewed": true
+  },
+  {
+    "num": 81,
+    "pillar": "relaciones",
+    "format": "Pregunta",
+    "days": 13,
+    "content": "¿Qué hace que una casa se sienta como un hogar?",
+    "followup": "Usar respuestas en un post o carrusel futuro.",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 83,
+    "pillar": "relaciones",
+    "format": "Encuesta",
+    "days": 12,
+    "content": "¿Casa nueva o casa remodelada? 🏗️🎨",
+    "followup": "",
+    "status": "review",
+    "reviewed": false
+  },
+  {
+    "num": 84,
+    "pillar": "relaciones",
+    "format": "Behind the scenes",
+    "days": 10,
+    "content": "Foto/video breve de la oficina o del equipo en acción",
+    "followup": "",
+    "status": "draft",
+    "reviewed": false
+  },
+  {
+    "num": 88,
+    "pillar": "relaciones",
+    "format": "Repost",
+    "days": 9,
+    "content": "Compartir el Carrusel «Por qué digo HOGAR y no propiedad»",
+    "followup": "",
+    "status": "review",
+    "reviewed": false
+  },
+  {
+    "num": 89,
+    "pillar": "relaciones",
+    "format": "Mini historia",
+    "days": 8,
+    "content": "Cliente y su nueva comunidad (con permiso)",
+    "followup": "",
+    "status": "draft",
+    "reviewed": false,
+    "note": "Historia de cliente: requiere autorización explícita y por escrito."
+  },
+  {
+    "num": 90,
+    "pillar": "relaciones",
+    "format": "Pregunta",
+    "days": 6,
+    "content": "¿Qué recuerdo tienes de tu primera casa?",
+    "followup": "Usar para conectar emocionalmente con la audiencia.",
+    "status": "published",
+    "reviewed": true
+  },
+  {
+    "num": 93,
+    "pillar": "relaciones",
+    "format": "Pregunta",
+    "days": 5,
+    "content": "¿Qué es lo primero que harías en tu casa nueva?",
+    "followup": "",
+    "status": "review",
+    "reviewed": false
+  },
+  {
+    "num": 97,
+    "pillar": "relaciones",
+    "format": "Encuesta",
+    "days": 3,
+    "content": "¿Qué tan importante es la ubicación al elegir casa? Mucho / Lo es todo",
+    "followup": "",
+    "status": "scheduled",
+    "reviewed": true
+  },
+  {
+    "num": 99,
+    "pillar": "relaciones",
+    "format": "Repost",
+    "days": 2,
+    "content": "Logro o hito reciente de la marca (cierre, aniversario, reconocimiento)",
+    "followup": "",
+    "status": "draft",
+    "reviewed": false
+  }
+];
+
+/* Hashtags base de marca — variar 2–3 por publicación, no repetir siempre los mismos. */
+const HASHTAGS_BASE = "#HogarConPropósito #MilaMeekinsRealEstate #TuPrimeraCasa #EducaciónFinanciera #BienesRaícesConFe #ComunidadHispana #PatrimonioFamiliar";
+
 function seed(){
   const t = now();
   const DAY = 86400000;
+  const at = days => t - days * DAY;
+
   return {
-    v:2,
+    v:3,
     profile:{
       brand:"Mila Meekins", role:"Real Estate Workspace", plan:"Plan Premium",
       handle:"milameekins_realestate", displayName:"Mila Meekins | Luxury Real Estate",
       bio:"Propiedades. Propósito. Prosperidad.", link:"linktr.ee/milameekins",
-      followers:"12.5K", following:"415", avatar:"", tagline:"Plan. Create. Captivate."
+      followers:"12.5K", following:"415", avatar:"", tagline:"Plan. Create. Captivate.",
+      hashtagsBase: HASHTAGS_BASE
     },
     ui:{view:"dashboard", role:"admin", filters:{}},
-    posts:[
-    {
-      id:uid("post"), num:3, createdAt:t-60*DAY, order:0, pillar:"educacion",
-      title:"Post 3 — Mito vs. realidad: “Necesitas 20% de down payment”",
-      designText:"Mito vs. realidad: “Necesitas 20% de down payment”\nFALSO. Existen programas desde 3–3.5% de enganche — hablemos de cuál aplica para ti.",
-      desarrollo:"1. Gancho visual con el titular en tipografía grande.\n2. Paleta neutra + dorado/negro, logo discreto en la esquina.\n3. Caption que desarrolla la idea y cierra con pregunta o CTA suave.",
-      copy:"FALSO. Existen programas desde 3–3.5% de enganche — hablemos de cuál aplica para ti. ¿Qué parte de este proceso te genera más dudas? Cuéntamelo en los comentarios.",
-      links:"", image:"", ratio:"4:5", rating:9, status:"published", reviewed:true, date:"", collapsed:false
-    },
-    {
-      id:uid("post"), num:6, createdAt:t-52*DAY, order:1, pillar:"educacion",
-      title:"Post 6 — Checklist: antes de tu primera cita con tu agente",
-      designText:"Checklist: antes de tu primera cita con tu agente\nDocumentos, presupuesto y preguntas clave para llegar preparado a tu primera reunión.",
-      desarrollo:"1. Gancho visual con el titular en tipografía grande.\n2. Paleta neutra + dorado/negro, logo discreto en la esquina.\n3. Caption que desarrolla la idea y cierra con pregunta o CTA suave.",
-      copy:"Documentos, presupuesto y preguntas clave para llegar preparado a tu primera reunión. ¿Qué parte de este proceso te genera más dudas? Cuéntamelo en los comentarios.",
-      links:"", image:"", ratio:"4:5", rating:8, status:"published", reviewed:true, date:"", collapsed:false
-    },
-    {
-      id:uid("post"), num:9, createdAt:t-44*DAY, order:2, pillar:"educacion",
-      title:"Post 9 — Consejo del día",
-      designText:"Consejo del día\nUna frase corta y potente para guardar y compartir.",
-      desarrollo:"1. Gancho visual con el titular en tipografía grande.\n2. Paleta neutra + dorado/negro, logo discreto en la esquina.\n3. Caption que desarrolla la idea y cierra con pregunta o CTA suave.",
-      copy:"Una frase corta y potente para guardar y compartir. ¿Qué parte de este proceso te genera más dudas? Cuéntamelo en los comentarios.",
-      links:"", image:"", ratio:"4:5", rating:7, status:"scheduled", reviewed:true, date:"", collapsed:false
-    },
-    {
-      id:uid("post"), num:12, createdAt:t-36*DAY, order:3, pillar:"patrimonio",
-      title:"Post 12 — Crecimiento de equity a 5, 10 y 15 años",
-      designText:"Crecimiento de equity a 5, 10 y 15 años\nUn gráfico simple para visualizar cómo tu propiedad construye patrimonio con el tiempo.",
-      desarrollo:"1. Gancho visual con el titular en tipografía grande.\n2. Paleta neutra + dorado/negro, logo discreto en la esquina.\n3. Caption que desarrolla la idea y cierra con pregunta o CTA suave.",
-      copy:"Un gráfico simple para visualizar cómo tu propiedad construye patrimonio con el tiempo. ¿Qué parte de este proceso te genera más dudas? Cuéntamelo en los comentarios.",
-      links:"", image:"", ratio:"4:5", rating:9, status:"review", reviewed:false, date:"", collapsed:false
-    },
-    {
-      id:uid("post"), num:21, createdAt:t-28*DAY, order:4, pillar:"servicio",
-      title:"Post 21 — Testimonio en cita",
-      designText:"Testimonio en cita\nFoto del cliente en su nueva casa — el resultado de acompañarlo en cada paso.",
-      desarrollo:"1. Gancho visual con el titular en tipografía grande.\n2. Paleta neutra + dorado/negro, logo discreto en la esquina.\n3. Caption que desarrolla la idea y cierra con pregunta o CTA suave.",
-      copy:"Foto del cliente en su nueva casa — el resultado de acompañarlo en cada paso. ¿Qué parte de este proceso te genera más dudas? Cuéntamelo en los comentarios.",
-      links:"", image:"", ratio:"4:5", rating:8, status:"draft", reviewed:false, date:"", collapsed:false
-    },
-    {
-      id:uid("post"), num:24, createdAt:t-21*DAY, order:5, pillar:"servicio",
-      title:"Post 24 — Qué incluye trabajar conmigo",
-      designText:"Qué incluye trabajar conmigo\nLista de servicios y acompañamiento durante todo el proceso de compra o venta.",
-      desarrollo:"1. Gancho visual con el titular en tipografía grande.\n2. Paleta neutra + dorado/negro, logo discreto en la esquina.\n3. Caption que desarrolla la idea y cierra con pregunta o CTA suave.",
-      copy:"Lista de servicios y acompañamiento durante todo el proceso de compra o venta. ¿Qué parte de este proceso te genera más dudas? Cuéntamelo en los comentarios.",
-      links:"", image:"", ratio:"4:5", rating:9, status:"published", reviewed:true, date:"", collapsed:false
-    },
-    {
-      id:uid("post"), num:28, createdAt:t-16*DAY, order:6, pillar:"servicio",
-      title:"Post 28 — Mi compromiso contigo",
-      designText:"Mi compromiso contigo\nLa promesa de marca, en formato visual.",
-      desarrollo:"1. Gancho visual con el titular en tipografía grande.\n2. Paleta neutra + dorado/negro, logo discreto en la esquina.\n3. Caption que desarrolla la idea y cierra con pregunta o CTA suave.",
-      copy:"La promesa de marca, en formato visual. ¿Qué parte de este proceso te genera más dudas? Cuéntamelo en los comentarios.",
-      links:"", image:"", ratio:"4:5", rating:7, status:"published", reviewed:true, date:"", collapsed:false
-    },
-    {
-      id:uid("post"), num:31, createdAt:t-10*DAY, order:7, pillar:"fe",
-      title:"Post 31 — Cada llave que entrego es una oración respondida",
-      designText:"Cada llave que entrego es una oración respondida\nUna frase para recordar el propósito detrás de cada cierre.",
-      desarrollo:"1. Gancho visual con el titular en tipografía grande.\n2. Paleta neutra + dorado/negro, logo discreto en la esquina.\n3. Caption que desarrolla la idea y cierra con pregunta o CTA suave.",
-      copy:"Una frase para recordar el propósito detrás de cada cierre. ¿Qué parte de este proceso te genera más dudas? Cuéntamelo en los comentarios.",
-      links:"", image:"", ratio:"4:5", rating:10, status:"scheduled", reviewed:true, date:"", collapsed:false
-    },
-    {
-      id:uid("post"), num:40, createdAt:t-5*DAY, order:8, pillar:"fe",
-      title:"Post 40 — Por qué hago lo que hago",
-      designText:"Por qué hago lo que hago\nUn post de propósito sobre la razón detrás del negocio.",
-      desarrollo:"1. Gancho visual con el titular en tipografía grande.\n2. Paleta neutra + dorado/negro, logo discreto en la esquina.\n3. Caption que desarrolla la idea y cierra con pregunta o CTA suave.",
-      copy:"Un post de propósito sobre la razón detrás del negocio. ¿Qué parte de este proceso te genera más dudas? Cuéntamelo en los comentarios.",
-      links:"", image:"", ratio:"4:5", rating:9, status:"review", reviewed:false, date:"", collapsed:false
-    },
-    {
-      id:uid("post"), num:49, createdAt:t-1*DAY, order:9, pillar:"relaciones",
-      title:"Post 49 — Gracias por confiar en mí",
-      designText:"Gracias por confiar en mí\nUn mensaje de gratitud para la comunidad.",
-      desarrollo:"1. Gancho visual con el titular en tipografía grande.\n2. Paleta neutra + dorado/negro, logo discreto en la esquina.\n3. Caption que desarrolla la idea y cierra con pregunta o CTA suave.",
-      copy:"Un mensaje de gratitud para la comunidad. ¿Qué parte de este proceso te genera más dudas? Cuéntamelo en los comentarios.",
-      links:"", image:"", ratio:"4:5", rating:8, status:"draft", reviewed:false, date:"", collapsed:false
-    }
-    ],
-    reels:[
-    {
-      id:uid("reel"), num:1, createdAt:t-62*DAY, order:0, pillar:"educacion", kind:"H",
-      title:"Reel 1 — 3 errores que cometen los compradores primerizos",
-      coverText:"3 errores que cometen los compradores primerizos", cover:"",
-      hook:"3 errores que cometen los compradores primerizos.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [H] — ver Banco de Ideas #1.",
-      rating:9, status:"published", reviewed:true, collapsed:false
-    },
-    {
-      id:uid("reel"), num:2, createdAt:t-58*DAY, order:1, pillar:"educacion", kind:"C",
-      title:"Reel 2 — Comiquita: personajes confundidos explicando pre-approval vs. pre-qualification",
-      coverText:"Comiquita: personajes confundidos explicando pre-approval vs. pre-qualification", cover:"",
-      hook:"Comiquita: personajes confundidos explicando pre-approval vs. pre-qualification.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [C] — ver Banco de Ideas #2.",
-      rating:8, status:"published", reviewed:true, collapsed:false
-    },
-    {
-      id:uid("reel"), num:3, createdAt:t-54*DAY, order:2, pillar:"educacion", kind:"H",
-      title:"Reel 3 — ¿Cuánto necesitas realmente de down payment? Mito vs. realidad",
-      coverText:"¿Cuánto necesitas realmente de down payment? Mito vs. realidad", cover:"",
-      hook:"¿Cuánto necesitas realmente de down payment? Mito vs. realidad.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [H] — ver Banco de Ideas #3.",
-      rating:7, status:"scheduled", reviewed:true, collapsed:false
-    },
-    {
-      id:uid("reel"), num:10, createdAt:t-50*DAY, order:3, pillar:"educacion", kind:"H",
-      title:"Reel 10 — Pregúntame lo que quieras sobre comprar tu primera casa",
-      coverText:"Pregúntame lo que quieras sobre comprar tu primera casa", cover:"",
-      hook:"Pregúntame lo que quieras sobre comprar tu primera casa.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [H] — ver Banco de Ideas #10.",
-      rating:9, status:"review", reviewed:false, collapsed:false
-    },
-    {
-      id:uid("reel"), num:12, createdAt:t-46*DAY, order:4, pillar:"patrimonio", kind:"C",
-      title:"Reel 12 — Árbol genealógico creciendo con cada propiedad comprada = legado familiar",
-      coverText:"Árbol genealógico creciendo con cada propiedad comprada = legado familiar", cover:"",
-      hook:"Árbol genealógico creciendo con cada propiedad comprada = legado familiar.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [C] — ver Banco de Ideas #12.",
-      rating:8, status:"draft", reviewed:false, collapsed:false
-    },
-    {
-      id:uid("reel"), num:15, createdAt:t-42*DAY, order:5, pillar:"patrimonio", kind:"C",
-      title:"Reel 15 — El “efecto bola de nieve” del patrimonio inmobiliario, animado",
-      coverText:"El “efecto bola de nieve” del patrimonio inmobiliario, animado", cover:"",
-      hook:"El “efecto bola de nieve” del patrimonio inmobiliario, animado.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [C] — ver Banco de Ideas #15.",
-      rating:7, status:"published", reviewed:true, collapsed:false
-    },
-    {
-      id:uid("reel"), num:17, createdAt:t-38*DAY, order:6, pillar:"patrimonio", kind:"H",
-      title:"Reel 17 — Qué es el equity y cómo trabaja a tu favor con el tiempo",
-      coverText:"Qué es el equity y cómo trabaja a tu favor con el tiempo", cover:"",
-      hook:"Qué es el equity y cómo trabaja a tu favor con el tiempo.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [H] — ver Banco de Ideas #17.",
-      rating:9, status:"published", reviewed:true, collapsed:false
-    },
-    {
-      id:uid("reel"), num:28, createdAt:t-33*DAY, order:7, pillar:"servicio", kind:"H",
-      title:"Reel 28 — Las preguntas más curiosas que me han hecho mis clientes",
-      coverText:"Las preguntas más curiosas que me han hecho mis clientes", cover:"",
-      hook:"Las preguntas más curiosas que me han hecho mis clientes.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [H] — ver Banco de Ideas #28.",
-      rating:8, status:"scheduled", reviewed:true, collapsed:false
-    },
-    {
-      id:uid("reel"), num:29, createdAt:t-29*DAY, order:8, pillar:"servicio", kind:"C",
-      title:"Reel 29 — “El cliente ansioso vs. el agente tranquilo”, con humor relatable",
-      coverText:"“El cliente ansioso vs. el agente tranquilo”, con humor relatable", cover:"",
-      hook:"“El cliente ansioso vs. el agente tranquilo”, con humor relatable.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [C] — ver Banco de Ideas #29.",
-      rating:7, status:"review", reviewed:false, collapsed:false
-    },
-    {
-      id:uid("reel"), num:31, createdAt:t-24*DAY, order:9, pillar:"fe", kind:"H",
-      title:"Reel 31 — Mi historia: de inmigrante venezolana a real estate educator",
-      coverText:"Mi historia: de inmigrante venezolana a real estate educator", cover:"",
-      hook:"Mi historia: de inmigrante venezolana a real estate educator.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [H] — ver Banco de Ideas #31.",
-      rating:10, status:"draft", reviewed:false, collapsed:false
-    },
-    {
-      id:uid("reel"), num:34, createdAt:t-19*DAY, order:10, pillar:"fe", kind:"H",
-      title:"Reel 34 — Por qué Dios va primero en mis negocios",
-      coverText:"Por qué Dios va primero en mis negocios", cover:"",
-      hook:"Por qué Dios va primero en mis negocios.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [H] — ver Banco de Ideas #34.",
-      rating:9, status:"published", reviewed:true, collapsed:false
-    },
-    {
-      id:uid("reel"), num:35, createdAt:t-15*DAY, order:11, pillar:"fe", kind:"H",
-      title:"Reel 35 — Gratitud de cierre de trimestre: a Dios y a mis clientes",
-      coverText:"Gratitud de cierre de trimestre: a Dios y a mis clientes", cover:"",
-      hook:"Gratitud de cierre de trimestre: a Dios y a mis clientes.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [H] — ver Banco de Ideas #35.",
-      rating:10, status:"published", reviewed:true, collapsed:false
-    },
-    {
-      id:uid("reel"), num:37, createdAt:t-11*DAY, order:12, pillar:"fe", kind:"H",
-      title:"Reel 37 — Lo que aprendí sirviendo antes de vender",
-      coverText:"Lo que aprendí sirviendo antes de vender", cover:"",
-      hook:"Lo que aprendí sirviendo antes de vender.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [H] — ver Banco de Ideas #37.",
-      rating:8, status:"scheduled", reviewed:true, collapsed:false
-    },
-    {
-      id:uid("reel"), num:41, createdAt:t-6*DAY, order:13, pillar:"relaciones", kind:"H",
-      title:"Reel 41 — Por qué digo HOGAR y no propiedad",
-      coverText:"Por qué digo HOGAR y no propiedad", cover:"",
-      hook:"Por qué digo HOGAR y no propiedad.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [H] — ver Banco de Ideas #41.",
-      rating:9, status:"review", reviewed:false, collapsed:false
-    },
-    {
-      id:uid("reel"), num:45, createdAt:t-2*DAY, order:14, pillar:"relaciones", kind:"C",
-      title:"Reel 45 — Una familia se muda y “la casa cobra vida” con cada mueble",
-      coverText:"Una familia se muda y “la casa cobra vida” con cada mueble", cover:"",
-      hook:"Una familia se muda y “la casa cobra vida” con cada mueble.",
-      desarrollo:"Desarrollo (3–25s): construye la idea con ejemplos concretos y tu voz cercana.\nCierre + CTA (25–30s): invita a comentar, guardar o escribir por DM.",
-      cta:"¡Cuéntame en los comentarios!", copy:"", notes:"Formato sugerido: [C] — ver Banco de Ideas #45.",
-      rating:7, status:"draft", reviewed:false, collapsed:false
-    }
-    ],
-    carousels:[
-    {
-      id:uid("car"), num:1, createdAt:t-57*DAY, order:0, pillar:"educacion",
-      title:"Carousel 1 — 5 pasos para comprar tu primera casa en Estados Unidos",
-      hook:"5 pasos para comprar tu primera casa en Estados Unidos", cta:"Guarda este carrusel y compártelo con alguien que lo necesite.",
-      rating:9, status:"published", reviewed:true, collapsed:false,
-      slides:[{id:uid("sl"), image:"", caption:"Slide 1 — Portada: Pre-aprobación: conoce tu presupuesto real"}, {id:uid("sl"), image:"", caption:"Slide 2 — Encuentra tu agente de confianza"}, {id:uid("sl"), image:"", caption:"Slide 3 — Busca y visita propiedades"}, {id:uid("sl"), image:"", caption:"Slide 4 — Resumen: Haz tu oferta y negocia"}, {id:uid("sl"), image:"", caption:"Slide 5 — CTA + marca: Cierre: firma y recibe tus llaves"}]
-    },
-    {
-      id:uid("car"), num:3, createdAt:t-47*DAY, order:1, pillar:"educacion",
-      title:"Carousel 3 — Mitos vs. realidades de comprar casa siendo inmigrante",
-      hook:"Mitos vs. realidades de comprar casa siendo inmigrante", cta:"Guarda este carrusel y compártelo con alguien que lo necesite.",
-      rating:8, status:"published", reviewed:true, collapsed:false,
-      slides:[{id:uid("sl"), image:"", caption:"Slide 1 — Portada: Mito: necesitas ciudadanía para comprar"}, {id:uid("sl"), image:"", caption:"Slide 2 — Mito: se requiere 20% de enganche"}, {id:uid("sl"), image:"", caption:"Slide 3 — Mito: sin historial en EE. UU. no calificas"}, {id:uid("sl"), image:"", caption:"Slide 4 — Resumen: Realidad: existen programas para ITIN"}, {id:uid("sl"), image:"", caption:"Slide 5 — CTA + marca: Realidad: el acompañamiento correcto marca la diferencia"}]
-    },
-    {
-      id:uid("car"), num:5, createdAt:t-40*DAY, order:2, pillar:"educacion",
-      title:"Carousel 5 — Glosario inmobiliario: 10 términos que debes dominar",
-      hook:"Glosario inmobiliario: 10 términos que debes dominar", cta:"Guarda este carrusel y compártelo con alguien que lo necesite.",
-      rating:9, status:"scheduled", reviewed:true, collapsed:false,
-      slides:[{id:uid("sl"), image:"", caption:"Slide 1 — Portada: Escrow"}, {id:uid("sl"), image:"", caption:"Slide 2 — Down payment"}, {id:uid("sl"), image:"", caption:"Slide 3 — Pre-approval vs. pre-qualification"}, {id:uid("sl"), image:"", caption:"Slide 4 — Contingencia"}, {id:uid("sl"), image:"", caption:"Slide 5 — Equity"}, {id:uid("sl"), image:"", caption:"Slide 6 — Closing costs"}, {id:uid("sl"), image:"", caption:"Slide 7 — Appraisal"}, {id:uid("sl"), image:"", caption:"Slide 8 — Título de propiedad"}, {id:uid("sl"), image:"", caption:"Slide 9 — Resumen: HOA"}, {id:uid("sl"), image:"", caption:"Slide 10 — CTA + marca: Underwriting"}]
-    },
-    {
-      id:uid("car"), num:10, createdAt:t-33*DAY, order:3, pillar:"educacion",
-      title:"Carousel 10 — Errores comunes que retrasan un cierre (y cómo evitarlos)",
-      hook:"Errores comunes que retrasan un cierre (y cómo evitarlos)", cta:"Guarda este carrusel y compártelo con alguien que lo necesite.",
-      rating:7, status:"review", reviewed:false, collapsed:false,
-      slides:[{id:uid("sl"), image:"", caption:"Slide 1 — Portada: No tener la documentación lista"}, {id:uid("sl"), image:"", caption:"Slide 2 — Cambiar de empleo a mitad del proceso"}, {id:uid("sl"), image:"", caption:"Slide 3 — Abrir nuevas líneas de crédito"}, {id:uid("sl"), image:"", caption:"Slide 4 — Resumen: No presupuestar los closing costs"}, {id:uid("sl"), image:"", caption:"Slide 5 — CTA + marca: Saltarte la inspección"}]
-    },
-    {
-      id:uid("car"), num:30, createdAt:t-26*DAY, order:4, pillar:"servicio",
-      title:"Carousel 30 — Testimonios: familias que confiaron y hoy tienen su hogar",
-      hook:"Testimonios: familias que confiaron y hoy tienen su hogar", cta:"Guarda este carrusel y compártelo con alguien que lo necesite.",
-      rating:10, status:"draft", reviewed:false, collapsed:false,
-      slides:[{id:uid("sl"), image:"", caption:"Slide 1 — Portada: La familia González, primer hogar propio"}, {id:uid("sl"), image:"", caption:"Slide 2 — Resumen: Los Ramírez, de renta a inversión"}, {id:uid("sl"), image:"", caption:"Slide 3 — CTA + marca: Una mudanza, una nueva comunidad"}]
-    },
-    {
-      id:uid("car"), num:33, createdAt:t-20*DAY, order:5, pillar:"fe",
-      title:"Carousel 33 — Por qué “Dios Primero” no es solo una frase para mí",
-      hook:"Por qué “Dios Primero” no es solo una frase para mí", cta:"Guarda este carrusel y compártelo con alguien que lo necesite.",
-      rating:9, status:"published", reviewed:true, collapsed:false,
-      slides:[{id:uid("sl"), image:"", caption:"Slide 1 — Portada: El negocio como vocación de servicio"}, {id:uid("sl"), image:"", caption:"Slide 2 — Resumen: Decisiones guiadas por fe e integridad"}, {id:uid("sl"), image:"", caption:"Slide 3 — CTA + marca: Cada cierre, una historia de gratitud"}]
-    },
-    {
-      id:uid("car"), num:40, createdAt:t-14*DAY, order:6, pillar:"fe",
-      title:"Carousel 40 — Lo que significa servir antes de vender",
-      hook:"Lo que significa servir antes de vender", cta:"Guarda este carrusel y compártelo con alguien que lo necesite.",
-      rating:8, status:"published", reviewed:true, collapsed:false,
-      slides:[{id:uid("sl"), image:"", caption:"Slide 1 — Portada: Escuchar antes de ofrecer"}, {id:uid("sl"), image:"", caption:"Slide 2 — Resumen: Acompañar aunque no haya venta inmediata"}, {id:uid("sl"), image:"", caption:"Slide 3 — CTA + marca: El servicio como estrategia de largo plazo"}]
-    },
-    {
-      id:uid("car"), num:42, createdAt:t-9*DAY, order:7, pillar:"relaciones",
-      title:"Carousel 42 — Conoce al equipo detrás de cada cierre exitoso",
-      hook:"Conoce al equipo detrás de cada cierre exitoso", cta:"Guarda este carrusel y compártelo con alguien que lo necesite.",
-      rating:7, status:"scheduled", reviewed:true, collapsed:false,
-      slides:[{id:uid("sl"), image:"", caption:"Slide 1 — Portada: Quiénes hacen posible cada transacción"}, {id:uid("sl"), image:"", caption:"Slide 2 — Resumen: El rol de cada persona en el proceso"}, {id:uid("sl"), image:"", caption:"Slide 3 — CTA + marca: Por qué trabajamos en equipo por ti"}]
-    },
-    {
-      id:uid("car"), num:49, createdAt:t-4*DAY, order:8, pillar:"relaciones",
-      title:"Carousel 49 — Por qué las relaciones importan más que las transacciones",
-      hook:"Por qué las relaciones importan más que las transacciones", cta:"Guarda este carrusel y compártelo con alguien que lo necesite.",
-      rating:9, status:"review", reviewed:false, collapsed:false,
-      slides:[{id:uid("sl"), image:"", caption:"Slide 1 — Portada: Una relación dura más que un cierre"}, {id:uid("sl"), image:"", caption:"Slide 2 — Resumen: El seguimiento después de la llave en mano"}, {id:uid("sl"), image:"", caption:"Slide 3 — CTA + marca: Clientes que se vuelven familia"}]
-    },
-    {
-      id:uid("car"), num:50, createdAt:t-1*DAY, order:9, pillar:"relaciones",
-      title:"Carousel 50 — Lo que nuestros clientes dicen de trabajar con nosotros",
-      hook:"Lo que nuestros clientes dicen de trabajar con nosotros", cta:"Guarda este carrusel y compártelo con alguien que lo necesite.",
-      rating:10, status:"draft", reviewed:false, collapsed:false,
-      slides:[{id:uid("sl"), image:"", caption:"Slide 1 — Portada: Reseña 1: acompañamiento genuino"}, {id:uid("sl"), image:"", caption:"Slide 2 — Resumen: Reseña 2: claridad en cada paso"}, {id:uid("sl"), image:"", caption:"Slide 3 — CTA + marca: Reseña 3: resultados con propósito"}]
-    }
-    ],
-    stories:[
-    {id:uid("story"), num:1, createdAt:t-65*DAY, order:0, pillar:"educacion", content:"Encuesta: ¿sabes qué es un escrow? Sí / No.", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:2, createdAt:t-64*DAY, order:1, pillar:"educacion", content:"Pregunta abierta: ¿cuál es tu mayor duda sobre comprar casa?", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:4, createdAt:t-62*DAY, order:2, pillar:"educacion", content:"Quiz: ¿cuánto necesitas de down payment? Adivina.", media:"", status:"scheduled", reviewed:true, rating:0},
-    {id:uid("story"), num:5, createdAt:t-61*DAY, order:3, pillar:"educacion", content:"Repost de un reel educativo con sticker de pregunta.", media:"", status:"review", reviewed:false, rating:0},
-    {id:uid("story"), num:8, createdAt:t-59*DAY, order:4, pillar:"educacion", content:"Sticker “pregúntame lo que quieras” sobre el proceso de compra.", media:"", status:"draft", reviewed:false, rating:0},
-    {id:uid("story"), num:9, createdAt:t-58*DAY, order:5, pillar:"educacion", content:"Explicación breve de un término confuso (ej. “contingencia”).", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:11, createdAt:t-56*DAY, order:6, pillar:"educacion", content:"Mito del día con encuesta Verdadero / Falso.", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:14, createdAt:t-55*DAY, order:7, pillar:"educacion", content:"Encuesta: ¿rentas o eres dueño?", media:"", status:"scheduled", reviewed:true, rating:0},
-    {id:uid("story"), num:15, createdAt:t-53*DAY, order:8, pillar:"educacion", content:"Tip rápido sobre cómo mejorar tu credit score.", media:"", status:"review", reviewed:false, rating:0},
-    {id:uid("story"), num:16, createdAt:t-52*DAY, order:9, pillar:"educacion", content:"Palabra nueva del glosario inmobiliario explicada.", media:"", status:"draft", reviewed:false, rating:0},
-    {id:uid("story"), num:20, createdAt:t-50*DAY, order:10, pillar:"educacion", content:"Pregunta directa: ¿qué te detiene de comprar tu primera casa?", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:22, createdAt:t-49*DAY, order:11, pillar:"patrimonio", content:"Encuesta: ¿ya tienes una propiedad de inversión?", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:23, createdAt:t-47*DAY, order:12, pillar:"patrimonio", content:"Cita motivacional sobre construir patrimonio.", media:"", status:"scheduled", reviewed:true, rating:0},
-    {id:uid("story"), num:24, createdAt:t-46*DAY, order:13, pillar:"patrimonio", content:"Encuesta: ¿prefieres ahorrar o invertir?", media:"", status:"review", reviewed:false, rating:0},
-    {id:uid("story"), num:28, createdAt:t-44*DAY, order:14, pillar:"patrimonio", content:"Pregunta abierta: ¿qué significa patrimonio para ti?", media:"", status:"draft", reviewed:false, rating:0},
-    {id:uid("story"), num:29, createdAt:t-43*DAY, order:15, pillar:"patrimonio", content:"Dato curioso sobre riqueza generacional en la comunidad hispana.", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:31, createdAt:t-41*DAY, order:16, pillar:"patrimonio", content:"Tip rápido: reinvierte antes de gastar.", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:33, createdAt:t-40*DAY, order:17, pillar:"patrimonio", content:"Pregunta: ¿te gustaría aprender a invertir en bienes raíces?", media:"", status:"scheduled", reviewed:true, rating:0},
-    {id:uid("story"), num:37, createdAt:t-38*DAY, order:18, pillar:"patrimonio", content:"Dato: comparación de rentabilidad promedio del sector.", media:"", status:"review", reviewed:false, rating:0},
-    {id:uid("story"), num:38, createdAt:t-37*DAY, order:19, pillar:"patrimonio", content:"Explicación breve de un tipo de inversión (fix & flip, buy & hold).", media:"", status:"draft", reviewed:false, rating:0},
-    {id:uid("story"), num:39, createdAt:t-35*DAY, order:20, pillar:"patrimonio", content:"Pregunta: ¿cuál es tu meta patrimonial a 5 años?", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:42, createdAt:t-34*DAY, order:21, pillar:"servicio", content:"Repost de una reseña de Google o testimonio.", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:46, createdAt:t-32*DAY, order:22, pillar:"servicio", content:"Mini clip de un cliente agradeciendo (con permiso).", media:"", status:"scheduled", reviewed:true, rating:0},
-    {id:uid("story"), num:49, createdAt:t-31*DAY, order:23, pillar:"servicio", content:"Encuesta: ¿ver casas en persona o virtual primero?", media:"", status:"review", reviewed:false, rating:0},
-    {id:uid("story"), num:50, createdAt:t-29*DAY, order:24, pillar:"servicio", content:"Recordatorio de disponibilidad para consultas gratuitas.", media:"", status:"draft", reviewed:false, rating:0},
-    {id:uid("story"), num:55, createdAt:t-28*DAY, order:25, pillar:"servicio", content:"Sticker: cuéntame tu experiencia comprando o vendiendo casa.", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:56, createdAt:t-26*DAY, order:26, pillar:"servicio", content:"Foto de equipo trabajando en oficina.", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:59, createdAt:t-25*DAY, order:27, pillar:"servicio", content:"Pregunta: ¿ya tienes tu pre-aprobación?", media:"", status:"scheduled", reviewed:true, rating:0},
-    {id:uid("story"), num:61, createdAt:t-23*DAY, order:28, pillar:"fe", content:"Versículo del día con reflexión corta.", media:"", status:"review", reviewed:false, rating:0},
-    {id:uid("story"), num:62, createdAt:t-22*DAY, order:29, pillar:"fe", content:"Pregunta: ¿cómo integras tu fe en tus decisiones financieras?", media:"", status:"draft", reviewed:false, rating:0},
-    {id:uid("story"), num:63, createdAt:t-20*DAY, order:30, pillar:"fe", content:"Foto personal con reflexión de gratitud.", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:65, createdAt:t-19*DAY, order:31, pillar:"fe", content:"Cita inspiradora sobre integridad en los negocios.", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:66, createdAt:t-17*DAY, order:32, pillar:"fe", content:"Mini historia personal de un momento difícil superado con fe.", media:"", status:"scheduled", reviewed:true, rating:0},
-    {id:uid("story"), num:70, createdAt:t-16*DAY, order:33, pillar:"fe", content:"Encuesta: ¿oras antes de tomar decisiones importantes?", media:"", status:"review", reviewed:false, rating:0},
-    {id:uid("story"), num:77, createdAt:t-14*DAY, order:34, pillar:"fe", content:"Pregunta: ¿crees que negocios y fe pueden ir juntos?", media:"", status:"draft", reviewed:false, rating:0},
-    {id:uid("story"), num:81, createdAt:t-13*DAY, order:35, pillar:"relaciones", content:"Pregunta: ¿qué hace que una casa se sienta como un hogar?", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:83, createdAt:t-11*DAY, order:36, pillar:"relaciones", content:"Encuesta: ¿casa nueva o remodelada?", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:84, createdAt:t-10*DAY, order:37, pillar:"relaciones", content:"Behind the scenes de la oficina o equipo.", media:"", status:"scheduled", reviewed:true, rating:0},
-    {id:uid("story"), num:88, createdAt:t-8*DAY, order:38, pillar:"relaciones", content:"Repost de un carrusel sobre la palabra HOGAR.", media:"", status:"review", reviewed:false, rating:0},
-    {id:uid("story"), num:89, createdAt:t-7*DAY, order:39, pillar:"relaciones", content:"Mini historia de un cliente y su nueva comunidad.", media:"", status:"draft", reviewed:false, rating:0},
-    {id:uid("story"), num:90, createdAt:t-5*DAY, order:40, pillar:"relaciones", content:"Pregunta: ¿qué recuerdo tienes de tu primera casa?", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:93, createdAt:t-4*DAY, order:41, pillar:"relaciones", content:"Pregunta: ¿qué es lo primero que harías en tu casa nueva?", media:"", status:"published", reviewed:true, rating:0},
-    {id:uid("story"), num:97, createdAt:t-2*DAY, order:42, pillar:"relaciones", content:"Pregunta: ¿qué tan importante es la ubicación al elegir casa?", media:"", status:"scheduled", reviewed:true, rating:0},
-    {id:uid("story"), num:99, createdAt:t-1*DAY, order:43, pillar:"relaciones", content:"Repost de un logro o hito reciente de la marca.", media:"", status:"review", reviewed:false, rating:0}
-    ],
+
+    posts: CONTENT_POSTS.map((p, i) => Object.assign({
+      id:uid("post"), order:i, image:"", ratio:"4:5", date:"", links:"", collapsed:false,
+      cta:"", hashtags:"", note:"", reviewed:false
+    }, p, {createdAt: at(p.days)})),
+
+    reels: CONTENT_REELS.map((r, i) => Object.assign({
+      id:uid("reel"), order:i, cover:"", collapsed:false,
+      notes:"", hashtags:"", note:"", reviewed:false
+    }, r, {createdAt: at(r.days)})),
+
+    carousels: CONTENT_CAROUSELS.map((c, i) => Object.assign({
+      id:uid("car"), order:i, collapsed:false, copy:"", hashtags:"", note:"", reviewed:false
+    }, c, {
+      createdAt: at(c.days),
+      slides: c.slides.map(caption => ({id:uid("sl"), image:"", caption}))
+    })),
+
+    stories: CONTENT_STORIES.map((s, i) => Object.assign({
+      id:uid("story"), order:i, media:"", rating:0, followup:"", note:"", reviewed:false
+    }, s, {createdAt: at(s.days)})),
+
     projects:[{
-      id:uid("prj"), name:"Sunset Villa", desc:"Campaña de lanzamiento — carrusel, reels y posts del listing.",
-      cover:"", status:"review", rating:9, createdAt:t-18*DAY, order:0
+      id:uid("prj"), name:"Tanda 1 — Educación Inmobiliaria", desc:"Grabación agrupada de los reels y posts del pilar educativo (mismo fondo y vestuario por sesión).",
+      cover:"", status:"published", rating:9, createdAt: at(70), order:0
     },{
-      id:uid("prj"), name:"124 Ocean Drive", desc:"Listing premium frente al mar — contenido de cierre y testimonios.",
-      cover:"", status:"published", rating:10, createdAt:t-9*DAY, order:1
+      id:uid("prj"), name:"Tanda 2 — Patrimonio y Servicio", desc:"Segunda sesión de batch content: piezas de equity, inversión y testimonios.",
+      cover:"", status:"scheduled", rating:9, createdAt: at(48), order:1
+    },{
+      id:uid("prj"), name:"Tanda 3 — Fe y Comunidad", desc:"Tercera sesión: piezas de propósito, gratitud y relaciones. Tono testimonial.",
+      cover:"", status:"review", rating:10, createdAt: at(26), order:2
     }],
+
     activity:[
-      {id:uid("a"), type:"ok",    text:"<b>Banco de Ideas cargado:</b> 15 reels, 10 posts, 10 carruseles y 44 historias listos para producir.", at:t-2e6},
-      {id:uid("a"), type:"ok",    text:"<b>Listing Aprobado:</b> 124 Ocean Drive fue publicado en el sitio principal.", at:t-72e5},
-      {id:uid("a"), type:"cal",   text:"<b>Reel Programado:</b> 'Top 5 Luxury Features' para mañana, 10:00 AM.", at:t-144e5},
-      {id:uid("a"), type:"alert", text:"<b>Acción Requerida:</b> Faltan fotos en alta resolución del carrusel 'Sunset Villa'.", at:t-864e5}
+      {id:uid("a"), type:"ok",    text:"<b>Contenido desarrollado cargado:</b> 15 reels con guion, 10 posts, 10 carruseles slide-by-slide y 44 historias con texto exacto.", at:t-18e5},
+      {id:uid("a"), type:"alert", text:"<b>Requieren autorización escrita:</b> Post 21, Carruseles 30 y 50, e Historias 42, 46 y 89.", at:t-36e5},
+      {id:uid("a"), type:"cal",   text:"<b>Batch content:</b> grabar los 15 reels en 2–3 sesiones agrupadas por pilar.", at:t-72e5},
+      {id:uid("a"), type:"ok",    text:"<b>Story 8 → Reel 10:</b> recolectar preguntas con el sticker antes de grabar el Q&A.", at:t-864e5}
     ],
     savedAt:0
   };
@@ -1210,8 +2017,9 @@ function mediaBox({coll, id, field, src, ratio="ratio-45", title="Subir imagen",
     </div>`}
   </div>`;
 }
-function field(labelText, icon, inner){
-  return `<div class="field"><div class="label"><svg><use href="#i-${icon}"/></svg>${esc(labelText)}</div>${inner}</div>`;
+function field(labelText, icon, inner, timing=""){
+  return `<div class="field"><div class="label"><svg><use href="#i-${icon}"/></svg>${esc(labelText)}${
+    timing ? `<span class="timing">${esc(timing)}</span>` : ""}</div>${inner}</div>`;
 }
 function input(coll, id, f, val, ph, cls=""){
   return `<input class="input ${cls}" data-field data-coll="${coll}" data-id="${id}" data-key="${f}"
@@ -1228,6 +2036,21 @@ function itemTools(coll, id, extra=""){
       <svg class="chev"><use href="#i-chev"/></svg></button>
     <button class="icon-btn lock-viewer lock-editor" data-del data-coll="${coll}" data-id="${id}" title="Eliminar" style="color:var(--danger)">
       <svg><use href="#i-trash"/></svg></button>
+  </div>`;
+}
+
+/* Banda de aviso: permisos por escrito, datos verificables, tono testimonial */
+function noteBandHTML(note){
+  if(!note) return "";
+  return `<div class="note-band"><svg><use href="#i-alert"/></svg><span><b>Antes de publicar:</b> ${esc(note)}</span></div>`;
+}
+
+/* Campo de hashtags con recordatorio de la base de marca */
+function hashtagsField(coll, id, value){
+  return `<div class="field tags-field">
+    <div class="label"><svg><use href="#i-flag"/></svg>Hashtags</div>
+    ${input(coll, id, "hashtags", value, "#Hashtag #DeEstaPieza")}
+    <span class="hint-line">Base de marca (variar 2–3, no repetir siempre los mismos): ${esc(S.profile.hashtagsBase || "")}</span>
   </div>`;
 }
 
@@ -1435,6 +2258,7 @@ function postCard(p, i){
       ${metaRowHTML("posts", p)}
     </div>
     <div class="item-body">
+      ${noteBandHTML(p.note)}
       <div class="post-layout" style="display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:26px">
         <div>
           <div class="label" style="justify-content:space-between">
@@ -1455,9 +2279,11 @@ function postCard(p, i){
           </div>
         </div>
         <div>
-          ${field("Texto del diseño (in-graphic)","text", textarea("posts", p.id, "designText", p.designText, "Titular y bajada que van dentro de la imagen...", "", 3))}
-          ${field("Desarrollo","list", textarea("posts", p.id, "desarrollo", p.desarrollo, "1. Punto uno\n2. Punto dos\n3. Punto tres", "", 4))}
-          ${field("Copy (texto final)","pen", textarea("posts", p.id, "copy", p.copy, "Redacta aquí el caption completo que acompañará la publicación en la red social...", "soft", 4))}
+          ${field("Titular en imagen (in-graphic)","text", textarea("posts", p.id, "designText", p.designText, "Titular y bajada que van dentro de la imagen...", "", 3))}
+          ${field("Desarrollo / notas de diseño","list", textarea("posts", p.id, "desarrollo", p.desarrollo, "Cómo se compone la pieza: lista, gráfico, jerarquía tipográfica...", "", 4))}
+          ${field("Caption (texto final)","pen", textarea("posts", p.id, "copy", p.copy, "Redacta aquí el caption completo que acompañará la publicación en la red social...", "soft", 4))}
+          ${field("CTA","right", input("posts", p.id, "cta", p.cta, "Invitación final: «Escríbeme…», «Cuéntame…»"))}
+          ${hashtagsField("posts", p.id, p.hashtags)}
           ${field("Enlaces / referencias","link", `<div style="position:relative">
               ${input("posts", p.id, "links", p.links, "Añade enlaces a Drive, referencias visuales o archivos")}
               <svg style="position:absolute;right:14px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--muted)"><use href="#i-clip"/></svg>
@@ -1493,6 +2319,7 @@ function viewReels(q=""){
           ${metaRowHTML("reels", r)}
         </div>
         <div class="item-body">
+          ${noteBandHTML(r.note)}
           <div class="reel-layout">
             <div class="reel-cover-col">
               <div class="label"><svg><use href="#i-img"/></svg> Portada (9:16)</div>
@@ -1504,12 +2331,13 @@ function viewReels(q=""){
               </div>
             </div>
             <div>
-              ${field("Texto de portada","text", input("reels", r.id, "coverText", r.coverText, "Ej. 5 tips para mejorar tu flujo"))}
-              ${field("Hook (0–3s)","mega", input("reels", r.id, "hook", r.hook, "Escribe el gancho aquí..."))}
-              ${field("Desarrollo (3–25s)","list", textarea("reels", r.id, "desarrollo", r.desarrollo, "Escribe el desarrollo del contenido...", "", 3))}
-              ${field("Cierre + CTA (25–30s)","right", input("reels", r.id, "cta", r.cta, "Ej. ¡Comenta abajo!"))}
-              ${field("Copy","pen", textarea("reels", r.id, "copy", r.copy, "Escribe el copy aquí...", "", 2))}
-              ${field("Notas extras","clip", textarea("reels", r.id, "notes", r.notes, "Instrucciones adicionales...", "", 2))}
+              ${field("Texto en pantalla (portada)","text", input("reels", r.id, "coverText", r.coverText, "El texto grande que se sobreimprime en el video"))}
+              ${field("Hook","mega", textarea("reels", r.id, "hook", r.hook, "Primera frase que detiene el scroll...", "", 2), "0–3s")}
+              ${field("Desarrollo","list", textarea("reels", r.id, "desarrollo", r.desarrollo, "El cuerpo del guion, punto por punto...", "", 4), "3–25s")}
+              ${field("Cierre + CTA","right", textarea("reels", r.id, "cta", r.cta, "Cierre e invitación final...", "", 2), "25–30s")}
+              ${field("Caption","pen", textarea("reels", r.id, "copy", r.copy, "El caption que acompaña la publicación...", "soft", 3))}
+              ${hashtagsField("reels", r.id, r.hashtags)}
+              ${field("Notas de producción","clip", textarea("reels", r.id, "notes", r.notes, "Instrucciones adicionales de grabación o edición...", "", 2))}
               ${starsHTML("reels", r.id, r.rating)}
             </div>
           </div>
@@ -1545,6 +2373,7 @@ function viewCarousels(q=""){
         ${metaRowHTML("carousels", c)}
       </div>
       <div class="item-body">
+        ${noteBandHTML(c.note)}
         <div class="slides" data-slides="${c.id}">
           ${c.slides.map((s, si) => `
             <div class="slide" draggable="true" data-slide="${s.id}" data-car="${c.id}">
@@ -1556,7 +2385,7 @@ function viewCarousels(q=""){
                 </span>
               </div>
               ${mediaBox({coll:"carousels", id:c.id+"::"+s.id, field:"slide", src:s.image, ratio:"ratio-45", title:"Upload image", hint:"1080 x 1350px"})}
-              <input class="input" style="margin-top:10px;font-size:13px" data-slide-caption data-car="${c.id}" data-id="${s.id}" value="${esc(s.caption)}" placeholder="Texto de la slide...">
+              <textarea class="textarea" rows="3" style="margin-top:10px;font-size:13px;min-height:0" data-slide-caption data-car="${c.id}" data-id="${s.id}" placeholder="Texto de la slide...">${esc(s.caption)}</textarea>
               <div class="grip" title="Arrastra para reordenar"><svg><use href="#i-grip"/></svg></div>
             </div>`).join("")}
         </div>
@@ -1564,6 +2393,8 @@ function viewCarousels(q=""){
           ${field("Global Hook","mega", input("carousels", c.id, "hook", c.hook, "Hook general o entrada del caption..."))}
           ${field("Call To Action (CTA)","link", input("carousels", c.id, "cta", c.cta, "Link in bio, deja un comentario, etc."))}
         </div>
+        ${field("Caption (texto final)","pen", textarea("carousels", c.id, "copy", c.copy, "El caption que acompaña al carrusel...", "soft", 3))}
+        ${hashtagsField("carousels", c.id, c.hashtags)}
         ${starsHTML("carousels", c.id, c.rating)}
       </div>
     </div>`).join("") : emptyState("Sin carruseles", "Crea tu primer carrusel.", "carousels")}`;
@@ -1626,10 +2457,13 @@ function storyCard(s, i){
   <div class="story-card" data-item="${s.id}">
     <div class="story-top">
       <span class="num">#${s.num ?? (i+1)}</span>
+      ${s.format ? `<span class="fmt-chip">${esc(s.format)}</span>` : ""}
+      <button class="icon-btn lock-viewer lock-editor" style="margin-left:auto;width:30px;height:30px;color:var(--danger)" data-del data-coll="stories" data-id="${s.id}" title="Eliminar">
+        <svg width="15" height="15"><use href="#i-trash"/></svg></button>
+    </div>
+    <div class="story-top" style="padding-top:6px">
       ${s.pillar ? pillarChip(s.pillar) : ""}
       <span class="meta-chip" style="margin-left:auto;border:0;padding:2px 0;background:transparent"><svg><use href="#i-cal"/></svg>${fmtDate(s.createdAt)}</span>
-      <button class="icon-btn lock-viewer lock-editor" style="width:30px;height:30px;color:var(--danger)" data-del data-coll="stories" data-id="${s.id}" title="Eliminar">
-        <svg width="15" height="15"><use href="#i-trash"/></svg></button>
     </div>
     <div class="story-media">
       ${mediaBox({coll:"stories", id:s.id, field:"media", src:s.media, ratio:"ratio-916", title:"Subir media", hint:"Foto o clip 9:16"})}
@@ -1639,7 +2473,9 @@ function storyCard(s, i){
       </div>
     </div>
     <div class="story-body">
-      ${field("Contenido","text", textarea("stories", s.id, "content", s.content, "Escribe la idea, pregunta o encuesta de esta historia...", "", 3))}
+      ${noteBandHTML(s.note)}
+      ${field("Contenido / texto del sticker","text", textarea("stories", s.id, "content", s.content, "El texto exacto que va en la historia...", "", 3))}
+      ${field("Seguimiento sugerido","right", textarea("stories", s.id, "followup", s.followup, "Qué hacer después: responder, convertir en reel, segmentar...", "", 2))}
       <div class="story-foot">
         ${statusSelect("stories", s.id, s.status)}
         ${reviewCheckHTML("stories", s.id, !!s.reviewed)}
@@ -1788,6 +2624,8 @@ function viewSettings(){
         </div>
         ${field("Plan","star", `<input class="input" data-profile data-key="plan" value="${esc(p.plan)}">`)}
         ${field("Tagline","mega", `<input class="input" data-profile data-key="tagline" value="${esc(p.tagline)}">`)}
+        ${field("Hashtags base de marca","flag", `<textarea class="textarea" rows="2" data-profile data-key="hashtagsBase" placeholder="#Hashtag #DeMarca">${esc(p.hashtagsBase || "")}</textarea>
+          <span class="hint-line">Se muestran como recordatorio bajo el campo de hashtags de cada formato. Varía 2–3 por publicación, no repitas siempre los mismos.</span>`)}
       </div>
     </div>
 
@@ -1905,18 +2743,18 @@ function createItem(coll){
   const base = {id:uid(coll), createdAt:t, order:-1, rating:0, status:"draft", reviewed:false, collapsed:false};
   let item, label;
   if(coll === "posts"){
-    item = Object.assign(base, {title:`Post ${S.posts.length+1}`, pillar:"educacion", designText:"", desarrollo:"", copy:"", links:"", image:"", ratio:"4:5", date:""});
+    item = Object.assign(base, {title:`Post ${S.posts.length+1}`, pillar:"educacion", designText:"", desarrollo:"", copy:"", cta:"", hashtags:"", note:"", links:"", image:"", ratio:"4:5", date:""});
     label = "Post";
   }else if(coll === "reels"){
-    item = Object.assign(base, {title:`Reel #${S.reels.length+1}`, pillar:"educacion", kind:"H", coverText:"", cover:"", hook:"", desarrollo:"", cta:"", copy:"", notes:""});
+    item = Object.assign(base, {title:`Reel #${S.reels.length+1}`, pillar:"educacion", kind:"H", coverText:"", cover:"", hook:"", desarrollo:"", cta:"", copy:"", hashtags:"", note:"", notes:""});
     label = "Reel";
   }else if(coll === "carousels"){
-    item = Object.assign(base, {title:`Carousel #${S.carousels.length+1}`, pillar:"educacion", hook:"", cta:"", slides:[
-      {id:uid("sl"), image:"", caption:"Slide 1"}, {id:uid("sl"), image:"", caption:"Slide 2"}
+    item = Object.assign(base, {title:`Carousel #${S.carousels.length+1}`, pillar:"educacion", hook:"", cta:"", copy:"", hashtags:"", note:"", slides:[
+      {id:uid("sl"), image:"", caption:"Slide 1 — Portada"}, {id:uid("sl"), image:"", caption:"Slide 2 — Desarrollo"}
     ]});
     label = "Carrusel";
   }else if(coll === "stories"){
-    item = Object.assign(base, {pillar:"educacion", content:"", media:""});
+    item = Object.assign(base, {pillar:"educacion", format:"Pregunta", content:"", followup:"", note:"", media:""});
     label = "Historia";
   }else{
     item = Object.assign(base, {name:`Proyecto ${S.projects.length+1}`, desc:"", cover:""});
@@ -2138,6 +2976,7 @@ document.addEventListener("input", e => {
     const c = find("carousels", cap.dataset.car);
     const s = c && c.slides.find(x => x.id === cap.dataset.id);
     if(s){ s.caption = el.value; touch(); }
+    if(el.classList.contains("textarea")) autosize(el);
     return;
   }
   const pr = el.closest("[data-profile]");
@@ -2146,6 +2985,7 @@ document.addEventListener("input", e => {
     $("#planPill").textContent = S.profile.plan;
     $("#wsName").textContent = S.profile.brand;
     $("#wsRole").textContent = S.profile.role;
+    if(el.classList.contains("textarea")) autosize(el);
     touch();
     return;
   }

@@ -4,10 +4,12 @@ Página HTML **única e interactiva** (`index.html`) para planificar el contenid
 Dashboard, Projects, Reels, Carruseles, Posts, Historias y **Feed Preview en tiempo real**.
 No requiere servidor, build ni dependencias: se abre con doble clic en cualquier navegador.
 
-Viene precargada con el **Banco de Ideas de Contenido** real de la marca (15 reels, 10 posts,
-10 carruseles y 44 historias, organizados por los 5 pilares: Educación, Patrimonio, Servicio,
-Fe y Relaciones/Hogar) y con el **logo real** del Brand Board (monograma "M" dorado/navy).
-Solo falta que el equipo cargue las fotos y videos de cada pieza.
+Viene precargada con el **contenido ya desarrollado** de la marca — no solo las ideas, sino
+las piezas listas para producir: 15 reels con guion cronometrado, 10 posts con titular y
+caption terminados, 10 carruseles slide-by-slide y 44 historias con el texto exacto del
+sticker. Todo conserva su número original del Banco de Ideas y su pilar de marca
+(Educación, Patrimonio, Servicio, Fe y Relaciones/Hogar), y usa el **logo real** del Brand
+Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y videos.
 
 ## Cómo usarla
 
@@ -67,10 +69,28 @@ Solo falta que el equipo cargue las fotos y videos de cada pieza.
 - Las celdas se llenan **de abajo hacia arriba y de derecha a izquierda**; arrastra para
   reordenar manualmente o usa "Reordenar por fecha" para volver al orden cronológico.
 
-### Historias (nueva sección)
-- Formato ligero pensado para presencia diaria: **contenido + una media** por historia.
-- Grilla compacta con las 44 ideas de historias del Banco de Ideas, cada una con su pilar,
-  fecha, estado y check de revisión.
+### Contenido desarrollado, campo por campo
+- **Reels:** el guion viene separado por tiempos — Hook `0–3s`, Desarrollo `3–25s` y
+  Cierre + CTA `25–30s` — más el texto en pantalla de la portada, el caption final,
+  los hashtags de la pieza y las notas de producción.
+- **Posts:** titular in-graphic, notas de diseño (listas, gráficos, jerarquía tipográfica),
+  caption terminado, CTA e hashtags.
+- **Carruseles:** cada slide trae su texto desarrollado (portada → desarrollo → resumen → CTA),
+  además de hook global, CTA, caption e hashtags.
+- **Historias:** formato del sticker (Encuesta, Quiz, Repost, Tip…), el texto exacto que va
+  en pantalla, el seguimiento sugerido y una media 9:16 por cargar.
+
+### Avisos de cumplimiento
+- Las piezas que lo requieren muestran una banda de aviso antes de publicar, tomada de las
+  notas de producción del documento: testimonios que necesitan **autorización escrita**
+  (Post 21, Carruseles 30 y 50, Historias 42, 46 y 89), datos que exigen **verificar fuente
+  y fecha** (Post 12, Historia 37), el recordatorio de **remitir a un profesional certificado**
+  en temas migratorios o legales (Carrusel 3) y el **tono testimonial** en contenido de fe.
+
+### Hashtags
+- Cada formato tiene su campo de hashtags propio, y debajo aparece siempre la **base de
+  marca** como recordatorio (editable desde *Settings*), con la indicación de variar 2–3 por
+  publicación en lugar de repetir siempre los mismos.
 
 ### Medidor de receptividad (1–10 con estrellas)
 - Post, Reel, Carrusel y Project tienen un medidor de **Receptividad del público** de 1 a
@@ -81,6 +101,8 @@ Solo falta que el equipo cargue las fotos y videos de cada pieza.
 ### Extras
 - Búsqueda global sobre posts, reels, carruseles, historias y proyectos.
 - Registro de actividad reciente y acciones rápidas en el Dashboard (incluye "Nueva Historia").
+- Los proyectos vienen organizados como las **tandas de grabación** sugeridas (batch content):
+  Educación, Patrimonio + Servicio, y Fe + Comunidad.
 - Exportar / importar el workspace completo en `.json` y restablecer al contenido de ejemplo.
 - Diseño responsive (escritorio, tablet y móvil).
 
