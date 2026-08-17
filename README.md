@@ -73,8 +73,11 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
 - **Reels:** el guion viene separado por tiempos — Hook `0–3s`, Desarrollo `3–25s` y
   Cierre + CTA `25–30s` — más el texto en pantalla de la portada, el caption final,
   los hashtags de la pieza y las notas de producción.
-- **Posts:** titular in-graphic, notas de diseño (listas, gráficos, jerarquía tipográfica),
-  caption terminado, CTA e hashtags.
+- **Posts:** el texto completo del arte con su jerarquía (antetítulo, titular, sellos,
+  letra pequeña), el concepto visual y la composición, el caption largo desarrollado, un CTA
+  con palabra clave («Comenta DOWN», «CITA», «EQUITY», «MI HOGAR», «MILA» / «EMPEZAR»),
+  hashtags y **Notas de publicación**: el empuje en Stories, la serie a la que pertenece la
+  pieza y su posición en el orden sugerido del feed.
 - **Carruseles:** cada slide trae su texto desarrollado (portada → desarrollo → resumen → CTA),
   además de hook global, CTA, caption e hashtags.
 - **Historias:** formato del sticker (Encuesta, Quiz, Repost, Tip…), el texto exacto que va
