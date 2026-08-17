@@ -59,16 +59,31 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
 - Cada imagen se reescala y comprime antes de guardarse, para no reventar el
   almacenamiento del navegador.
 
-### Feed Preview conectado en tiempo real
-- Reúne Posts + Reels + Carruseles (las Historias, como en Instagram, tienen su propia
-  sección y no forman parte de la grilla del feed).
+### Feed Preview: espacios vacíos, elegidos a mano
+- El feed **arranca completamente vacío** — sin posts, reels ni carruseles precargados.
+  Cada espacio es un slot en blanco que dice "Elegir publicación · Formato → título".
+- Clic en un espacio abre una **lista plegable**: primero se elige el formato (Posts,
+  Reels o Carruseles, cada uno con su conteo de títulos), y al abrirlo aparecen todos
+  los títulos de esa colección con su miniatura — o un aviso "Sin media" si la pieza
+  todavía no tiene imagen. Al elegir un título, su media se coloca sola en el espacio.
+- Una pieza no puede ocupar dos espacios a la vez; si ya está en el feed, el picker lo
+  indica ("Ya en el feed · #N") en vez de dejar duplicarla.
 - Cada tarjeta de un formato muestra un chip clicable **"En Feed · #N"** con su posición
   exacta dentro del feed; al hacer clic, salta directo a esa celda y la resalta.
-- Al revés, hacer clic en una celda del feed abre exactamente ese formato para editarlo.
+- Al revés, hacer clic en una celda ocupada abre exactamente ese formato para editarlo;
+  el botón de papelera en la esquina de la celda solo vacía el espacio, sin borrar la pieza.
 - Subir o reemplazar la imagen de cualquier formato la refleja **al instante** en su celda
   del feed — sin recargar ni guardar primero.
-- Las celdas se llenan **de abajo hacia arriba y de derecha a izquierda**; arrastra para
-  reordenar manualmente o usa "Reordenar por fecha" para volver al orden cronológico.
+- Los espacios se numeran **de abajo hacia arriba y de derecha a izquierda**; arrastra una
+  celda ocupada sobre otra (vacía o llena) para intercambiar su posición, o usa
+  "Vaciar feed" para dejar todos los espacios en blanco de nuevo.
+
+### Check de "Publicado"
+- Además del check de revisión, todos los formatos (Posts, Reels, Carruseles e Historias)
+  tienen un segundo check dedicado: **Publicado**, también exclusivo del rol Admin.
+- Al marcarlo, toda la tarjeta se tiñe de verde (cabecera, miniatura, número) y, si esa
+  pieza está colocada en el Feed Preview, su celda recibe un marco verde y el distintivo
+  "✓ Publicado" — de un vistazo se distingue lo publicado de lo que todavía no.
 
 ### Guía de distribución de Posts
 - Un panel plegable al inicio de la sección de Posts recoge todo lo que no pertenece a

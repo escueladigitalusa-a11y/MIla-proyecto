@@ -289,6 +289,26 @@ body::before{
   padding:4px 10px;font-size:11px;letter-spacing:.05em;text-transform:uppercase
 }
 
+/* Check de "Publicado" — mismo comportamiento que el de revisado, en verde pleno */
+.publish-check{
+  display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:20px;
+  padding:6px 12px 6px 8px;font-size:12px;color:#6C7E93;background:#fff;cursor:pointer;user-select:none;transition:.15s
+}
+.publish-check .box{width:17px;height:17px;border-radius:6px;border:1.5px solid #C7BB9E;display:grid;place-items:center;flex:none;transition:.15s}
+.publish-check .box svg{width:11px;height:11px;color:#fff;opacity:0;transition:.15s}
+.publish-check.on{border-color:var(--ok);background:var(--ok);color:#fff;font-weight:600}
+.publish-check.on .box{background:#fff;border-color:#fff}
+.publish-check.on .box svg{opacity:1;color:var(--ok)}
+.publish-check[data-locked]{cursor:not-allowed;opacity:.7}
+
+/* Una pieza publicada tiñe de verde toda su tarjeta */
+.published-item{border-color:#BCDDCA!important;background:linear-gradient(180deg,#F3FAF6,#FFFFFF)!important}
+.published-item .item-head{background:#EAF6EF;border-bottom-color:#CFE8DA}
+.published-item .item-thumb{border-color:#8FC7A8;box-shadow:0 0 0 2px rgba(47,125,91,.20)}
+.published-item .item-thumb svg{color:var(--ok)}
+.published-item .num{background:#DDF0E5;border-color:#BCDDCA;color:#245F45}
+.story-card.published-item .story-top .num{background:#DDF0E5;border-color:#BCDDCA;color:#245F45}
+
 /* Barra de filtros */
 .filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px}
 .filter-bar .fsel{
@@ -446,6 +466,62 @@ body::before{
 .cell .ready{position:absolute;top:8px;left:8px;width:22px;height:22px;border-radius:50%;background:var(--ok);
   display:grid;place-items:center;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .cell .ready svg{width:12px;height:12px}
+
+/* Celda publicada: marco verde y distintivo */
+.cell.is-published{border-color:var(--ok);box-shadow:0 0 0 2px rgba(47,125,91,.35)}
+.cell .pub-flag{position:absolute;top:8px;left:8px;background:var(--ok);color:#fff;border-radius:20px;
+  padding:3px 9px;display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;letter-spacing:.04em}
+.cell .pub-flag svg{width:11px;height:11px}
+.cell.is-published .ready{display:none}
+
+/* Botón para quitar la publicación asignada a un espacio */
+.cell .slot-clear{position:absolute;bottom:8px;right:8px;width:24px;height:24px;border-radius:50%;
+  background:rgba(14,20,34,.68);color:#fff;display:grid;place-items:center;opacity:0;transition:.15s;backdrop-filter:blur(3px);z-index:2}
+.cell .slot-clear svg{width:13px;height:13px}
+.cell:hover .slot-clear{opacity:1}
+.cell .slot-clear:hover{background:var(--danger)}
+
+/* Espacio vacío: invita a elegir una publicación */
+.cell.empty{cursor:pointer}
+.cell.empty:hover{border-color:var(--gold);background:#F7EDDC}
+.cell.empty .ph .pick-hint{display:block;font-size:11px;color:#B09A76;margin-top:6px;letter-spacing:0;text-transform:none}
+
+/* Selector de publicación: lista plegable formato → títulos */
+.picker{max-width:560px;width:100%;background:#fff;border-radius:20px;box-shadow:0 30px 70px rgba(26,30,57,.34);
+  overflow:hidden;display:flex;flex-direction:column;max-height:86vh}
+.picker-head{padding:20px 22px 16px;border-bottom:1px solid var(--line-2)}
+.picker-head h3{margin:0 0 4px;font-size:19px;font-weight:600;color:var(--navy)}
+.picker-head p{margin:0;font-size:13px;color:var(--muted);font-weight:300}
+.picker-body{overflow-y:auto;padding:12px 16px 16px}
+.pick-group{
+  width:100%;display:flex;align-items:center;gap:11px;padding:13px 14px;border-radius:12px;
+  border:1px solid var(--line);background:#FDFBF7;margin-top:8px;transition:.15s;text-align:left
+}
+.pick-group:hover{border-color:var(--gold-soft);background:var(--gold-pale)}
+.pick-group svg.ico{width:19px;height:19px;color:var(--gold-deep);flex:none}
+.pick-group b{flex:1;font-size:14.5px;font-weight:600;color:var(--navy)}
+.pick-group .count{font-size:11.5px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:20px;padding:2px 9px}
+.pick-group .chev{width:16px;height:16px;color:var(--muted);transition:transform .2s;flex:none}
+.pick-group.open{background:var(--gold-pale);border-color:var(--gold-soft)}
+.pick-group.open .chev{transform:rotate(180deg)}
+.pick-list{display:flex;flex-direction:column;gap:4px;padding:8px 4px 4px 8px;border-left:2px solid var(--gold-pale);margin:6px 0 6px 16px}
+.pick-item{
+  display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;text-align:left;
+  border:1px solid transparent;transition:.13s;width:100%
+}
+.pick-item:hover{background:var(--cream-2);border-color:var(--line)}
+.pick-item .thumb{width:38px;height:38px;border-radius:8px;overflow:hidden;flex:none;background:var(--cream-2);
+  border:1px solid var(--line);display:grid;place-items:center;color:#C3AE84}
+.pick-item .thumb img{width:100%;height:100%;object-fit:cover}
+.pick-item .thumb svg{width:16px;height:16px}
+.pick-item .txt{min-width:0;flex:1}
+.pick-item .txt b{display:block;font-size:12px;color:var(--gold-deep);font-weight:600}
+.pick-item .txt span{display:block;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pick-item .tag-used{font-size:10.5px;color:var(--muted);background:var(--cream-2);border:1px solid var(--line);
+  border-radius:20px;padding:2px 8px;flex:none}
+.pick-item .no-media{font-size:10.5px;color:#A05B4D;background:#FBF0ED;border:1px solid #F0DAD4;border-radius:20px;padding:2px 8px;flex:none}
+.picker-foot{padding:14px 20px;border-top:1px solid var(--line-2);display:flex;gap:10px;justify-content:space-between;align-items:center}
+.picker-empty{text-align:center;padding:26px 16px;color:var(--muted);font-size:13px}
 .cell .sched{position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
   padding:6px 9px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between}
 .live-dot{width:8px;height:8px;border-radius:50%;background:#2F7D5B;box-shadow:0 0 0 0 rgba(47,125,91,.5);animation:pulse 1.8s infinite}
@@ -1880,23 +1956,28 @@ function seed(){
     posts: CONTENT_POSTS.map((p, i) => Object.assign({
       id:uid("post"), order:i, image:"", ratio:"4:5", date:"", links:"", collapsed:false,
       cta:"", extras:"", hashtags:"", note:"", reviewed:false
-    }, p, {createdAt: at(p.days)})),
+    }, p, {createdAt: at(p.days), published: p.status === "published"})),
 
     reels: CONTENT_REELS.map((r, i) => Object.assign({
       id:uid("reel"), order:i, cover:"", collapsed:false,
       notes:"", hashtags:"", note:"", reviewed:false
-    }, r, {createdAt: at(r.days)})),
+    }, r, {createdAt: at(r.days), published: r.status === "published"})),
 
     carousels: CONTENT_CAROUSELS.map((c, i) => Object.assign({
       id:uid("car"), order:i, collapsed:false, copy:"", hashtags:"", note:"", reviewed:false
     }, c, {
       createdAt: at(c.days),
+      published: c.status === "published",
       slides: c.slides.map(caption => ({id:uid("sl"), image:"", caption}))
     })),
 
     stories: CONTENT_STORIES.map((s, i) => Object.assign({
       id:uid("story"), order:i, media:"", rating:0, idea:"", followup:"", note:"", reviewed:false
-    }, s, {createdAt: at(s.days)})),
+    }, s, {createdAt: at(s.days), published: s.status === "published"})),
+
+    /* El Feed Preview arranca completamente vacío: cada espacio se llena a mano
+       eligiendo formato y luego título desde la lista plegable. */
+    feedSlots: [],
 
     projects:[{
       id:uid("prj"), name:"Tanda 1 — Educación Inmobiliaria", desc:"Grabación agrupada de los reels y posts del pilar educativo (mismo fondo y vestuario por sesión).",
@@ -2157,8 +2238,7 @@ function itemThumbHTML(src, iconId="i-img"){
 /* Chip clicable que muestra la posición real del formato dentro del Feed Preview */
 function feedBadge(coll, id){
   if(coll === "stories") return "";
-  const items = feedItems();
-  const idx = items.findIndex(i => i.coll === coll && i.id === id);
+  const idx = feedSlotIndexOf(coll, id);
   if(idx < 0) return "";
   return `<span class="meta-chip feed-jump" data-feed-jump data-coll="${coll}" data-id="${id}" title="Ver esta posición en el Feed Preview">
     <svg><use href="#i-feed"/></svg>En Feed · #${idx+1}</span>`;
@@ -2174,7 +2254,17 @@ function reviewCheckHTML(coll, id, reviewed){
   </button>`;
 }
 
-/* Fila de metadatos: fecha de creación, posición en el feed, pilar, formato y check de revisión */
+/* Check de "Publicado" — solo el rol Admin puede marcarlo; tiñe de verde toda la tarjeta */
+function publishCheckHTML(coll, id, published){
+  const locked = canAdmin() ? "" : "data-locked";
+  const label = published ? "Publicado" : "Marcar publicado";
+  const hint = canAdmin() ? "Marcar como publicado" : "Solo el rol Admin puede marcar como publicado";
+  return `<button type="button" class="publish-check ${published ? "on" : ""}" data-publish data-coll="${coll}" data-id="${id}" ${locked} title="${hint}">
+    <span class="box"><svg><use href="#i-check-plain"/></svg></span>${label}
+  </button>`;
+}
+
+/* Fila de metadatos: fecha de creación, posición en el feed, pilar, formato, revisión y publicación */
 function metaRowHTML(coll, item, {feed=true} = {}){
   const pillar = item.pillar ? pillarChip(item.pillar) : "";
   const kind = item.kind ? `<span class="kind-chip">${item.kind === "H" ? "🎥 Cámara" : "🎨 Animado"}</span>` : "";
@@ -2183,6 +2273,7 @@ function metaRowHTML(coll, item, {feed=true} = {}){
     ${feed ? feedBadge(coll, item.id) : ""}
     ${pillar}${kind}
     ${reviewCheckHTML(coll, item.id, !!item.reviewed)}
+    ${publishCheckHTML(coll, item.id, !!item.published)}
   </div>`;
 }
 
@@ -2392,7 +2483,7 @@ function viewPosts(q=""){
 function postCard(p, i){
   const ratioCls = p.ratio === "1:1" ? "ratio-11" : p.ratio === "9:16" ? "ratio-916" : "ratio-45";
   return `
-  <div class="card ${p.collapsed ? "collapsed item" : "item"}" data-item="${p.id}">
+  <div class="card ${p.collapsed ? "collapsed item" : "item"} ${p.published ? "published-item" : ""}" data-item="${p.id}">
     <div class="item-head">
       ${itemThumbHTML(p.image, "i-post")}
       <span class="num"># Post ${p.num ?? (i+1)}</span>
@@ -2454,7 +2545,7 @@ function viewReels(q=""){
   <div class="readonly-note"><svg width="16" height="16"><use href="#i-alert"/></svg> Modo <b>Viewer</b>: la edición está bloqueada.</div>
   ${filterBarHTML("reels", all.length, list.length)}
   ${list.length ? list.map((r,i) => `
-      <div class="item ${r.collapsed?"collapsed":""}" data-item="${r.id}">
+      <div class="item ${r.collapsed?"collapsed":""} ${r.published ? "published-item" : ""}" data-item="${r.id}">
         <div class="item-head">
           ${itemThumbHTML(r.cover, "i-reel")}
           <span class="num"># Reel ${r.num ?? (i+1)}</span>
@@ -2508,7 +2599,7 @@ function viewCarousels(q=""){
   <div class="readonly-note"><svg width="16" height="16"><use href="#i-alert"/></svg> Modo <b>Viewer</b>: la edición está bloqueada.</div>
   ${filterBarHTML("carousels", all.length, list.length)}
   ${list.length ? list.map((c,i) => `
-    <div class="card ${c.collapsed?"collapsed item":"item"}" data-item="${c.id}">
+    <div class="card ${c.collapsed?"collapsed item":"item"} ${c.published ? "published-item" : ""}" data-item="${c.id}">
       <div class="item-head">
         ${itemThumbHTML((c.slides.find(s=>s.image)||{}).image, "i-book")}
         <span class="num"># Carousel ${c.num ?? (i+1)}</span>
@@ -2599,7 +2690,7 @@ function viewStories(q=""){
 
 function storyCard(s, i){
   return `
-  <div class="story-card" data-item="${s.id}">
+  <div class="story-card ${s.published ? "published-item" : ""}" data-item="${s.id}">
     <div class="story-top">
       <span class="num">#${s.num ?? (i+1)}</span>
       ${s.format ? `<span class="fmt-chip">${esc(s.format)}</span>` : ""}
@@ -2625,68 +2716,128 @@ function storyCard(s, i){
       <div class="story-foot">
         ${statusSelect("stories", s.id, s.status)}
         ${reviewCheckHTML("stories", s.id, !!s.reviewed)}
+        ${publishCheckHTML("stories", s.id, !!s.published)}
       </div>
     </div>
   </div>`;
 }
 
 /* ---------- FEED PREVIEW (tiempo real) ---------- */
+/* ---------- Espacios del Feed: asignación manual ----------
+   El feed ya no agrega todo automáticamente. Es una grilla de espacios vacíos y
+   cada uno se llena eligiendo formato → título; la media de esa pieza se coloca sola. */
+const FEED_COLS = 3;
+const FEED_FORMATS = [
+  {coll:"posts",     label:"Posts",      singular:"Post",     icon:"i-post"},
+  {coll:"reels",     label:"Reels",      singular:"Reel",     icon:"i-reel"},
+  {coll:"carousels", label:"Carruseles", singular:"Carrusel", icon:"i-book"},
+];
+
+function ensureFeedSlots(){
+  if(!Array.isArray(S.feedSlots)) S.feedSlots = [];
+  return S.feedSlots;
+}
+
+/* Cuántas celdas dibujar: siempre una fila libre de sobra, mínimo 3 filas. */
+function feedSlotCount(){
+  const slots = ensureFeedSlots();
+  let lastFilled = -1;
+  slots.forEach((sl, i) => { if(sl) lastFilled = i; });
+  return Math.max(FEED_COLS * 3, Math.ceil((lastFilled + 1 + FEED_COLS) / FEED_COLS) * FEED_COLS);
+}
+
+/* Cómo se ve una pieza dentro de la grilla, según su formato. */
+function feedDisplay(coll, it){
+  if(!it) return null;
+  if(coll === "posts") return {
+    kind:"post", coll, id:it.id, num:it.num, title:it.title, image:it.image,
+    text:(it.designText||"").split("\n")[0] || it.title,
+    rating:it.rating, status:it.status, reviewed:!!it.reviewed, published:!!it.published
+  };
+  if(coll === "reels") return {
+    kind:"reel", coll, id:it.id, num:it.num, title:it.title, image:it.cover,
+    text:it.coverText || it.hook || it.title,
+    rating:it.rating, status:it.status, reviewed:!!it.reviewed, published:!!it.published
+  };
+  if(coll === "carousels") return {
+    kind:"carousel", coll, id:it.id, num:it.num, title:it.title,
+    image:(it.slides.find(sl => sl.image) || {}).image || "",
+    text:it.hook || it.title,
+    rating:it.rating, status:it.status, reviewed:!!it.reviewed, published:!!it.published
+  };
+  return null;
+}
+
+/* Piezas realmente colocadas, en el orden de los espacios. */
 function feedItems(){
-  // Todas las publicaciones de las otras pestañas, unificadas (las Historias no forman
-  // parte de la grilla de Feed, igual que en Instagram: viven en su propia sección).
-  const items = [];
-  S.posts.forEach(p => items.push({
-    kind:"post", id:p.id, coll:"posts", title:p.title, image:p.image, num:p.num,
-    text:(p.designText||"").split("\n")[0] || p.title, rating:p.rating, status:p.status, reviewed:!!p.reviewed,
-    order:p.order ?? 0, createdAt:p.createdAt || 0, feedPos:p.feedPos
-  }));
-  S.carousels.forEach(c => items.push({
-    kind:"carousel", id:c.id, coll:"carousels", title:c.title, image:(c.slides.find(s=>s.image)||{}).image || "", num:c.num,
-    text:c.hook || c.title, rating:c.rating, status:c.status, reviewed:!!c.reviewed, order:c.order ?? 0, createdAt:c.createdAt || 0, feedPos:c.feedPos
-  }));
-  S.reels.forEach(r => items.push({
-    kind:"reel", id:r.id, coll:"reels", title:r.title, image:r.cover, num:r.num,
-    text:r.coverText || r.hook || r.title, rating:r.rating, status:r.status, reviewed:!!r.reviewed, order:r.order ?? 0, createdAt:r.createdAt || 0, feedPos:r.feedPos
-  }));
-  // Orden: el feed se llena de abajo hacia arriba y de derecha a izquierda,
-  // por lo que la pieza más reciente queda arriba a la izquierda.
-  items.sort((a,b) => (a.feedPos ?? 1e9) - (b.feedPos ?? 1e9) || (b.createdAt - a.createdAt));
-  return items;
+  return ensureFeedSlots()
+    .map(sl => sl ? feedDisplay(sl.coll, find(sl.coll, sl.id)) : null)
+    .filter(Boolean);
+}
+
+/* Índice del espacio que ocupa una pieza (o -1 si todavía no está en el feed). */
+function feedSlotIndexOf(coll, id){
+  return ensureFeedSlots().findIndex(sl => sl && sl.coll === coll && sl.id === id);
+}
+
+function assignFeedSlot(index, coll, id){
+  const slots = ensureFeedSlots();
+  while(slots.length <= index) slots.push(null);
+  // una misma pieza no puede ocupar dos espacios
+  slots.forEach((sl, i) => { if(sl && sl.coll === coll && sl.id === id && i !== index) slots[i] = null; });
+  slots[index] = {coll, id};
+  touch();
+}
+
+function clearFeedSlot(index){
+  const slots = ensureFeedSlots();
+  if(index >= 0 && index < slots.length){ slots[index] = null; touch(); }
 }
 
 function viewFeed(){
-  const items = feedItems();
-  const cols = 3;
-  const minRows = 2;
-  const rows = Math.max(minRows, Math.ceil((items.length + 2) / cols));
-  const cells = rows * cols;
-  const avg = items.length ? (items.reduce((n,i)=>n+(Number(i.rating)||0),0)/items.length) : 0;
+  const slots = ensureFeedSlots();
+  const cells = feedSlotCount();
+  const placed = feedItems();
+  const avg = placed.length ? (placed.reduce((n,i) => n + (Number(i.rating)||0), 0) / placed.length) : 0;
   const p = S.profile;
 
   let html = "";
   const MAX_STAGGER = 480; // ventana total de la animación, sin importar cuántas celdas haya
   const stepMs = cells > 1 ? MAX_STAGGER / (cells - 1) : 0;
+
   for(let i = 0; i < cells; i++){
-    const it = items[i];
-    // Animación: entra desde la última celda (abajo-derecha) hacia la primera (arriba-izquierda),
-    // repartida siempre en la misma ventana de tiempo total, sin importar el número de celdas.
+    // Animación: entra desde la última celda (abajo-derecha) hacia la primera (arriba-izquierda).
     const delay = Math.round((cells - 1 - i) * stepMs) + "ms";
+    const it = slots[i] ? feedDisplay(slots[i].coll, find(slots[i].coll, slots[i].id)) : null;
+
     if(it){
-      const kindLabel = it.kind==="post"?"Post":it.kind==="reel"?"Reel":"Carrusel";
+      const kindLabel = it.kind === "post" ? "Post" : it.kind === "reel" ? "Reel" : "Carrusel";
       const numLabel = it.num ? ` #${it.num}` : "";
-      html += `<div class="cell" style="animation-delay:${delay}" draggable="true" data-cell="${it.id}" data-coll="${it.coll}" title="${esc(kindLabel)}${numLabel} — ${esc(it.title)} · clic para editar">
+      html += `<div class="cell ${it.published ? "is-published" : ""}" style="animation-delay:${delay}" draggable="true"
+        data-slot="${i}" data-cell="${it.id}" data-coll="${it.coll}"
+        title="${esc(kindLabel)}${numLabel} — ${esc(it.title)} · clic para editar">
         ${it.image ? `<img src="${it.image}" alt="${esc(it.title)}">`
-                   : `<div class="noimg">${esc((it.text||it.title).slice(0,70))}</div>`}
-        ${it.reviewed ? `<span class="ready" title="Revisado y listo para publicar"><svg><use href="#i-check-plain"/></svg></span>` : ""}
+                   : `<div class="noimg">${esc((it.text || it.title).slice(0,70))}</div>`}
+        ${it.published
+            ? `<span class="pub-flag" title="Publicado"><svg><use href="#i-check-plain"/></svg>Publicado</span>`
+            : it.reviewed
+              ? `<span class="ready" title="Revisado y listo para publicar"><svg><use href="#i-check-plain"/></svg></span>`
+              : ""}
+        <button class="slot-clear lock-viewer" data-slot-clear="${i}" title="Quitar del feed"><svg><use href="#i-trash"/></svg></button>
         <span class="badge"><svg><use href="#i-${it.kind==="reel"?"play":it.kind==="carousel"?"copy":"img"}"/></svg>${kindLabel}${numLabel}</span>
         <span class="rt"><svg><use href="#i-star"/></svg>${Number(it.rating)||0}/10</span>
         <span class="meta">${esc(it.title)} · ${STATUS[it.status]||""}</span>
       </div>`;
     }else{
       const n = String(cells - i).padStart(2,"0");
-      html += `<div class="cell empty" style="animation-delay:${delay}" data-new-cell title="Programar publicación">
-        <div class="ph"><svg><use href="#i-img-plus"/></svg>Schedule Post</div>
-        <span class="sched"><span>Scheduled</span><span>#${n}</span></span>
+      html += `<div class="cell empty" style="animation-delay:${delay}" data-slot="${i}" data-pick-slot="${i}"
+        title="Elegir qué publicación va en este espacio">
+        <div class="ph">
+          <svg><use href="#i-img-plus"/></svg>
+          Elegir publicación
+          <span class="pick-hint">Formato → título</span>
+        </div>
+        <span class="sched"><span>Espacio</span><span>#${n}</span></span>
       </div>`;
     }
   }
@@ -2695,11 +2846,13 @@ function viewFeed(){
   <div class="page-head">
     <div>
       <h1 style="letter-spacing:.04em">FEED PREVIEW</h1>
-      <p>Planifica y visualiza tu contenido de lujo. El feed se llena <b>de abajo hacia arriba y de derecha a izquierda</b> con todas las publicaciones de Posts, Reels y Carruseles, en tiempo real. Arrastra para reordenar, clic para editar.</p>
-      <div class="mono-strip" style="margin-top:10px"><span class="live-dot"></span> Sincronizado en vivo · ${items.length} publicaciones · receptividad media ${avg.toFixed(1)}/10</div>
+      <p>Cada espacio arranca vacío. Haz clic en uno y elige primero el <b>formato</b> y luego el
+      <b>título</b>: la media de esa pieza se coloca sola. Los espacios se numeran de abajo hacia arriba
+      y de derecha a izquierda. Arrastra para reordenar, clic en una pieza colocada para editarla.</p>
+      <div class="mono-strip" style="margin-top:10px"><span class="live-dot"></span> Sincronizado en vivo · ${placed.length} de ${cells} espacios ocupados${placed.length ? ` · receptividad media ${avg.toFixed(1)}/10` : ""}</div>
     </div>
     <div class="actions">
-      <button class="btn btn-ghost" data-action="reset-feed-order"><svg><use href="#i-history"/></svg> Reordenar por fecha</button>
+      <button class="btn btn-ghost lock-viewer" data-action="clear-feed"><svg><use href="#i-history"/></svg> Vaciar feed</button>
       <button class="btn btn-ghost" data-nav="settings"><svg><use href="#i-grid"/></svg> Grid Settings</button>
     </div>
   </div>
@@ -2716,7 +2869,7 @@ function viewFeed(){
           <button class="btn btn-ghost btn-sm" data-nav="settings">Edit Profile</button>
         </div>
         <div class="ig-stats">
-          <div><b>${items.length}</b><span>Posts</span></div>
+          <div><b>${placed.length}</b><span>Posts</span></div>
           <div><b>${esc(p.followers)}</b><span>Followers</span></div>
           <div><b>${esc(p.following)}</b><span>Following</span></div>
         </div>
@@ -2730,6 +2883,93 @@ function viewFeed(){
     <div class="ig-sep"></div>
     <div class="ig-grid" id="igGrid">${html}</div>
   </div>`;
+}
+
+/* ---------- Selector de publicación para un espacio del feed ----------
+   Lista plegable: primero el formato, y al abrirlo, sus títulos. */
+let pickerSlot = -1;
+let pickerGroup = null;
+
+function openFeedPicker(slotIndex){
+  pickerSlot = slotIndex;
+  pickerGroup = null;
+  renderFeedPicker();
+}
+
+function renderFeedPicker(){
+  const host = $("#modalHost");
+  const slots = ensureFeedSlots();
+  const current = slots[pickerSlot] || null;
+  const used = new Set(slots.filter(Boolean).map(sl => sl.coll + ":" + sl.id));
+
+  const groups = FEED_FORMATS.map(f => {
+    const open = pickerGroup === f.coll;
+    const list = sorted(f.coll);
+    let inner = "";
+    if(open){
+      inner = list.length ? `<div class="pick-list">${list.map(it => {
+        const d = feedDisplay(f.coll, it);
+        const key = f.coll + ":" + it.id;
+        const isUsed = used.has(key);
+        const isCurrent = current && current.coll === f.coll && current.id === it.id;
+        return `<button type="button" class="pick-item" data-pick-item data-coll="${f.coll}" data-id="${it.id}">
+          <span class="thumb">${d.image ? `<img src="${d.image}" alt="">` : `<svg><use href="#${f.icon}"/></svg>`}</span>
+          <span class="txt">
+            <b>${f.singular}${it.num ? ` #${it.num}` : ""}</b>
+            <span>${esc(it.title)}</span>
+          </span>
+          ${isCurrent ? `<span class="tag-used">En este espacio</span>`
+            : isUsed ? `<span class="tag-used">Ya en el feed · #${feedSlotIndexOf(f.coll, it.id)+1}</span>` : ""}
+          ${!d.image ? `<span class="no-media">Sin media</span>` : ""}
+        </button>`;
+      }).join("")}</div>` : `<div class="picker-empty">Todavía no hay piezas en este formato.</div>`;
+    }
+    return `<button type="button" class="pick-group ${open ? "open" : ""}" data-pick-group="${f.coll}">
+        <svg class="ico"><use href="#${f.icon}"/></svg>
+        <b>${f.label}</b>
+        <span class="count">${list.length} ${list.length === 1 ? "título" : "títulos"}</span>
+        <svg class="chev"><use href="#i-chev"/></svg>
+      </button>${inner}`;
+  }).join("");
+
+  host.innerHTML = `
+    <div class="modal-bg" data-close>
+      <div class="picker" role="dialog" aria-modal="true">
+        <div class="picker-head">
+          <h3>Espacio #${String(feedSlotCount() - pickerSlot).padStart(2,"0")} del feed</h3>
+          <p>Elige el formato y luego el título. La media de esa pieza se coloca automáticamente.</p>
+        </div>
+        <div class="picker-body">${groups}</div>
+        <div class="picker-foot">
+          ${current ? `<button class="btn btn-danger btn-sm" data-pick-empty><svg><use href="#i-trash"/></svg> Vaciar espacio</button>` : `<span></span>`}
+          <button class="btn btn-ghost btn-sm" data-close>Cancelar</button>
+        </div>
+      </div>
+    </div>`;
+
+  host.onclick = e => {
+    if(e.target.hasAttribute("data-close")){ host.innerHTML = ""; return; }
+
+    const g = e.target.closest("[data-pick-group]");
+    if(g){ pickerGroup = pickerGroup === g.dataset.pickGroup ? null : g.dataset.pickGroup; renderFeedPicker(); return; }
+
+    const item = e.target.closest("[data-pick-item]");
+    if(item){
+      assignFeedSlot(pickerSlot, item.dataset.coll, item.dataset.id);
+      host.innerHTML = "";
+      render();
+      toast("Publicación colocada en el feed", "check");
+      return;
+    }
+
+    if(e.target.closest("[data-pick-empty]")){
+      clearFeedSlot(pickerSlot);
+      host.innerHTML = "";
+      render();
+      toast("Espacio vaciado", "trash");
+      return;
+    }
+  };
 }
 
 function viewSettings(){
@@ -2886,7 +3126,7 @@ function go(view){ S.ui.view = view; touch(); render(); }
 function createItem(coll){
   if(!guard()) return;
   const t = now();
-  const base = {id:uid(coll), createdAt:t, order:-1, rating:0, status:"draft", reviewed:false, collapsed:false};
+  const base = {id:uid(coll), createdAt:t, order:-1, rating:0, status:"draft", reviewed:false, published:false, collapsed:false};
   let item, label;
   if(coll === "posts"){
     item = Object.assign(base, {title:`Post ${S.posts.length+1}`, pillar:"educacion", designText:"", desarrollo:"", copy:"", cta:"", extras:"", hashtags:"", note:"", links:"", image:"", ratio:"4:5", date:""});
@@ -2917,9 +3157,11 @@ function createItem(coll){
 
 function deleteItem(coll, id){
   const it = find(coll, id); if(!it) return;
-  confirmDialog("¿Eliminar esta pieza?", `"${it.title || it.name}" se quitará del plan y del Feed Preview.`, () => {
+  confirmDialog("¿Eliminar esta pieza?", `"${it.title || it.name}" se quitará del plan y de cualquier espacio del Feed Preview.`, () => {
     S[coll] = S[coll].filter(x => x.id !== id);
     reindex(coll);
+    // libera el espacio del feed que esta pieza pudiera estar ocupando
+    ensureFeedSlots().forEach((sl, i) => { if(sl && sl.coll === coll && sl.id === id) S.feedSlots[i] = null; });
     logActivity("alert", `<b>Elemento eliminado:</b> ${esc(it.title || it.name)}.`);
     touch(); render(); toast("Elemento eliminado", "trash");
   });
@@ -2929,8 +3171,8 @@ function duplicateItem(coll, id){
   if(!guard()) return;
   const it = find(coll, id); if(!it) return;
   const copy = JSON.parse(JSON.stringify(it));
-  copy.id = uid(coll); copy.createdAt = now(); copy.order = -1; copy.feedPos = undefined;
-  copy.reviewed = false; copy.num = undefined; copy.status = "draft";
+  copy.id = uid(coll); copy.createdAt = now(); copy.order = -1;
+  copy.reviewed = false; copy.published = false; copy.num = undefined; copy.status = "draft";
   copy.title = (it.title || it.name || "") + " (copia)";
   if(copy.slides) copy.slides.forEach(s => s.id = uid("sl"));
   S[coll].unshift(copy); reindex(coll); touch(); render(); toast("Duplicado", "copy");
@@ -2993,9 +3235,12 @@ document.addEventListener("click", async e => {
       }, "Restablecer");
       return;
     }
-    if(a === "reset-feed-order"){
-      COLL.forEach(c => S[c].forEach(x => x.feedPos = undefined));
-      touch(); render(); toast("Feed reordenado por fecha", "history"); return;
+    if(a === "clear-feed"){
+      if(!guard()) return;
+      confirmDialog("¿Vaciar el Feed Preview?", "Se quitarán todas las publicaciones colocadas; los formatos en sí no se borran.", () => {
+        S.feedSlots = []; touch(); render(); toast("Feed vaciado", "history");
+      }, "Vaciar feed");
+      return;
     }
     if(a === "notifications"){ toast(dirty ? "Tienes cambios sin guardar" : "Todo está guardado", dirty ? "alert" : "check"); return; }
     if(a === "history"){ toast(S.savedAt ? "Último guardado: " + new Date(S.savedAt).toLocaleString("es") : "Aún no has guardado", "history"); return; }
@@ -3077,11 +3322,26 @@ document.addEventListener("click", async e => {
     touch(); render(); toast("Imagen adjuntada", "img"); return;
   }
 
-  // celda del feed → ir a editar ese formato exacto
+  // espacio del feed: quitar la publicación asignada (antes de leer el resto de la celda)
+  const slotClear = t.closest("[data-slot-clear]");
+  if(slotClear){
+    if(!guard()) return;
+    clearFeedSlot(Number(slotClear.dataset.slotClear));
+    render(); toast("Espacio vaciado", "trash");
+    return;
+  }
+
+  // espacio vacío del feed → abrir selector de formato/título
+  const pickSlot = t.closest("[data-pick-slot]");
+  if(pickSlot){
+    if(!guard()) return;
+    openFeedPicker(Number(pickSlot.dataset.pickSlot));
+    return;
+  }
+
+  // celda del feed ya ocupada → ir a editar ese formato exacto
   const cell = t.closest("[data-cell]");
   if(cell){ pendingFocus = cell.dataset.id; S.ui.view = cell.dataset.coll; render(); return; }
-  const newCell = t.closest("[data-new-cell]");
-  if(newCell){ createItem("posts"); return; }
 
   // saltar del formato a su posición exacta en el Feed Preview
   const jump = t.closest("[data-feed-jump]");
@@ -3097,6 +3357,19 @@ document.addEventListener("click", async e => {
     logActivity(it.reviewed ? "ok" : "cal", `<b>${it.reviewed ? "Marcado como listo" : "Revisión retirada"}:</b> ${esc(it.title || it.content || "Historia")}.`);
     touch(); render();
     toast(it.reviewed ? "Listo para publicar ✓" : "Revisión retirada", it.reviewed ? "check" : "history");
+    return;
+  }
+
+  // check de "Publicado" — solo Admin, tiñe la tarjeta y la celda del feed de verde
+  const pub = t.closest("[data-publish]");
+  if(pub){
+    if(!canAdmin()){ toast("Solo el rol Admin puede marcar un formato como publicado.", "alert", true); return; }
+    const it = find(pub.dataset.coll, pub.dataset.id); if(!it) return;
+    it.published = !it.published;
+    if(it.published) it.status = "published";
+    logActivity(it.published ? "ok" : "cal", `<b>${it.published ? "Publicado" : "Publicación retirada"}:</b> ${esc(it.title || it.content || "Historia")}.`);
+    touch(); render();
+    toast(it.published ? "Marcado como publicado ✓" : "Publicación retirada", it.published ? "check" : "history");
     return;
   }
 
@@ -3218,29 +3491,30 @@ document.addEventListener("dragend", () => {
   dragSrc = null;
 });
 document.addEventListener("dragover", e => {
-  const target = e.target.closest("[data-cell],[data-slide]");
+  // en el feed cualquier espacio (ocupado o vacío) es un destino válido —
+  // por eso se ubica por [data-slot] y no solo por [data-cell].
+  const target = dragSrc && dragSrc.dataset.slot != null
+    ? e.target.closest("[data-slot]")
+    : e.target.closest("[data-slide]");
   if(!target || !dragSrc || target === dragSrc) return;
-  const sameKind = (!!target.dataset.cell) === (!!dragSrc.dataset.cell);
-  if(!sameKind) return;
   e.preventDefault();
   e.dataTransfer.dropEffect = "move";
   $$(".drag-over").forEach(x => x.classList.remove("drag-over"));
   target.classList.add("drag-over");
 });
 document.addEventListener("drop", e => {
-  const target = e.target.closest("[data-cell],[data-slide]");
+  const target = dragSrc && dragSrc.dataset.slot != null
+    ? e.target.closest("[data-slot]")
+    : e.target.closest("[data-slide]");
   if(!target || !dragSrc || target === dragSrc) return;
   e.preventDefault();
 
-  if(target.dataset.cell && dragSrc.dataset.cell){
-    // reordenar feed: se persiste una posición explícita por pieza
-    const list = feedItems();
-    const from = list.findIndex(i => i.id === dragSrc.dataset.cell);
-    const to   = list.findIndex(i => i.id === target.dataset.cell);
-    if(from < 0 || to < 0) return;
-    const [moved] = list.splice(from, 1);
-    list.splice(to, 0, moved);
-    list.forEach((i, idx) => { const it = find(i.coll, i.id); if(it) it.feedPos = idx; });
+  if(target.dataset.slot != null && dragSrc.dataset.slot != null){
+    // intercambia el contenido de dos espacios del feed por su índice
+    const slots = ensureFeedSlots();
+    const from = Number(dragSrc.dataset.slot), to = Number(target.dataset.slot);
+    while(slots.length <= Math.max(from, to)) slots.push(null);
+    [slots[from], slots[to]] = [slots[to] || null, slots[from] || null];
     touch(); render(); toast("Feed reordenado", "grid");
   }else if(target.dataset.slide && dragSrc.dataset.slide && target.dataset.car === dragSrc.dataset.car){
     const c = find("carousels", target.dataset.car);
