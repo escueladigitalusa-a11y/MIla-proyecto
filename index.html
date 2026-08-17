@@ -498,12 +498,22 @@ body.role-viewer .readonly-note{display:flex}
   .ig-sep{margin:0 16px}
   .cell .sched{font-size:9px;letter-spacing:.06em;gap:6px}
   .cell .rt,.cell .badge{font-size:10px}
-  .sidebar{position:relative;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 18px}
-  .sidebar .brand,.sidebar .workspace{display:none}
-  .btn-create{width:auto;padding:11px 16px}
-  .nav{flex-direction:row;flex-wrap:wrap;margin-top:0}
+  .sidebar{position:relative;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 18px}
+  /* Marca compacta: se conserva el monograma, se oculta el wordmark */
+  .sidebar .brand{flex-direction:row;padding:0;gap:0}
+  .sidebar .brand > div,.sidebar .brand .rule,.sidebar .workspace{display:none}
+  .brand .mark{width:38px}
+  .btn-create{width:auto;padding:10px 14px;font-size:11px}
+  .nav{flex-direction:row;flex-wrap:wrap;margin-top:0;gap:2px}
+  /* width:auto — si no, cada ítem hereda el 100% del escritorio y el menú
+     se apila ocupando casi toda la pantalla del teléfono. */
+  .nav button{width:auto;padding:9px 11px;font-size:13px;gap:8px}
   .nav .count{display:none}
-  .side-foot{display:none}
+  /* El pie deja de ocultarse: si no, Settings / Help / Privacy / Sign Out
+     quedan inalcanzables en móvil. Pasa a ser una fila compacta. */
+  .side-foot{flex-direction:row;flex-wrap:wrap;width:100%;margin-top:0;padding-top:10px;gap:2px}
+  .side-foot button{padding:7px 10px;font-size:12.5px;gap:8px}
+  .side-foot svg{width:16px;height:16px}
   .content,.topbar,.footer{padding-left:18px;padding-right:18px}
   .grid-2{grid-template-columns:1fr}
   .post-layout{grid-template-columns:1fr!important}
