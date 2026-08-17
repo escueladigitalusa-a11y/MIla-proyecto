@@ -23,8 +23,9 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
 - Logo real de Mila Meekins Real Estate (monograma "M" con ventana, tomado del Brand Board)
   en la barra lateral, el pie de página y como avatar por defecto.
 - Paleta exacta del board: navy `#1A1E39` y dorado `#DBB879`.
-- Tipografía de marca **Cinzel** para el wordmark (sustituto abierto de Trajan Pro) y
-  **Montserrat** para el texto general, tal como especifica el Brand Board.
+- Tipografía: **Montserrat** en toda la interfaz — wordmark, titulares, cuerpo de texto —
+  una sola familia por pedido explícito, sin mezclar con la pareja serif que traía el
+  Brand Board.
 
 ### Edición total con rol de usuario
 - Selector de rol en la barra superior y en *Settings*:
