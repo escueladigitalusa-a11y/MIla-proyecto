@@ -122,6 +122,11 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
   nota estratégica/de marca** con la precisión que exige cada afirmación (p. ej. "la
   apreciación no es una garantía", "el 20% no es un requisito universal", "evitar CTA
   comercial en esta pieza") para validar antes de publicar.
+- Los reels **#3** (*El mito del 20%*) y **#10** (*Q&A compradores*) tenían guion en
+  ambos archivos subidos, con enfoques distintos del mismo tema — para no perder
+  ninguno, el campo lleva **los dos guiones completos**: primero el de la Serie 1 y,
+  después de un separador, el "GUION ALTERNATIVO — SERIE 2" con su propio aviso de
+  cumplimiento.
 
 ### Contenido desarrollado, campo por campo
 - **Posts:** el texto completo del arte con su jerarquía (antetítulo, titular, sellos,
