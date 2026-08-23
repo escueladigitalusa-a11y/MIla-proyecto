@@ -328,6 +328,7 @@ body::before{
 .reel-mini.published-item .reel-mini-head{background:#EAF6EF;border-bottom-color:#CFE8DA}
 .reel-mini-body{padding:22px}
 .textarea.big{min-height:260px}
+.reel-checklist{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
 
 /* Historias */
 .story-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
@@ -1967,7 +1968,7 @@ function seed(){
 
     reels: CONTENT_REELS.map((r, i) => Object.assign({
       id:uid("reel"), order:i, cover:"", collapsed:false,
-      notes:"", hashtags:"", note:"", reviewed:false, bodyText:""
+      notes:"", hashtags:"", note:"", reviewed:false
     }, r, {createdAt: at(r.days), published: r.status === "published"})),
 
     carousels: CONTENT_CAROUSELS.map((c, i) => Object.assign({
@@ -2251,20 +2252,23 @@ function feedBadge(coll, id){
     <svg><use href="#i-feed"/></svg>En Feed · #${idx+1}</span>`;
 }
 
-/* Check de "revisado y listo para publicar" — solo el rol Admin puede marcarlo */
-function reviewCheckHTML(coll, id, reviewed){
+/* Check de "revisado y listo para publicar" — solo el rol Admin puede marcarlo.
+   fixedLabel: si se pasa, el texto queda igual esté marcado o no (estilo checklist);
+   si no, el texto cambia entre estados (comportamiento original). */
+function reviewCheckHTML(coll, id, reviewed, fixedLabel){
   const locked = canAdmin() ? "" : "data-locked";
-  const label = reviewed ? "Revisado · listo" : "Marcar revisado";
+  const label = fixedLabel || (reviewed ? "Revisado · listo" : "Marcar revisado");
   const hint = canAdmin() ? "Marcar como revisado y listo para publicar" : "Solo el rol Admin puede marcar como revisado";
   return `<button type="button" class="review-check ${reviewed ? "on" : ""}" data-review data-coll="${coll}" data-id="${id}" ${locked} title="${hint}">
     <span class="box"><svg><use href="#i-check-plain"/></svg></span>${label}
   </button>`;
 }
 
-/* Check de "Publicado" — solo el rol Admin puede marcarlo; tiñe de verde toda la tarjeta */
-function publishCheckHTML(coll, id, published){
+/* Check de "Publicado" — solo el rol Admin puede marcarlo; tiñe de verde toda la tarjeta.
+   fixedLabel: mismo criterio que reviewCheckHTML. */
+function publishCheckHTML(coll, id, published, fixedLabel){
   const locked = canAdmin() ? "" : "data-locked";
-  const label = published ? "Publicado" : "Marcar publicado";
+  const label = fixedLabel || (published ? "Publicado" : "Marcar publicado");
   const hint = canAdmin() ? "Marcar como publicado" : "Solo el rol Admin puede marcar como publicado";
   return `<button type="button" class="publish-check ${published ? "on" : ""}" data-publish data-coll="${coll}" data-id="${id}" ${locked} title="${hint}">
     <span class="box"><svg><use href="#i-check-plain"/></svg></span>${label}
@@ -2560,9 +2564,13 @@ function viewReels(q=""){
             <svg><use href="#i-trash"/></svg></button>
         </div>
         <div class="reel-mini-body">
-          ${field("Tomas — Desarrollo y acción","list", textarea("reels", r.id, "desarrollo", r.desarrollo, "Describe las tomas, el desarrollo y la acción de este reel...", "", 5))}
-          ${field("Cuerpo de texto","text", textarea("reels", r.id, "bodyText", r.bodyText, "Pega o escribe aquí el texto grande / guion de este reel...", "big", 8))}
+          ${field("Tomas — Desarrollo y acción","list", textarea("reels", r.id, "desarrollo", r.desarrollo, "Describe las tomas, el desarrollo y la acción de este reel: el guion completo va aquí...", "big", 8))}
           ${field("Copy","pen", textarea("reels", r.id, "copy", r.copy, "El copy que acompaña la publicación...", "soft", 4))}
+          <div class="reel-checklist">
+            ${reviewCheckHTML("reels", r.id, !!r.reviewed, "Aprobado para publicar")}
+            ${publishCheckHTML("reels", r.id, !!r.published, "Publicado")}
+          </div>
+          ${starsHTML("reels", r.id, r.rating, "Valoración (1 a 10)")}
         </div>
       </div>`).join("") : emptyState("Sin reels para esta tanda", "Ajusta el filtro o planifica un nuevo reel.", "reels")}`;
 }
@@ -3119,7 +3127,7 @@ function createItem(coll){
     item = Object.assign(base, {title:`Post ${S.posts.length+1}`, pillar:"educacion", designText:"", desarrollo:"", copy:"", cta:"", extras:"", hashtags:"", note:"", links:"", image:"", ratio:"4:5", date:""});
     label = "Post";
   }else if(coll === "reels"){
-    item = Object.assign(base, {title:`Reel #${S.reels.length+1}`, pillar:"educacion", kind:"H", coverText:"", cover:"", hook:"", desarrollo:"", bodyText:"", cta:"", copy:"", hashtags:"", note:"", notes:""});
+    item = Object.assign(base, {title:`Reel #${S.reels.length+1}`, pillar:"educacion", kind:"H", coverText:"", cover:"", hook:"", desarrollo:"", cta:"", copy:"", hashtags:"", note:"", notes:""});
     label = "Reel";
   }else if(coll === "carousels"){
     item = Object.assign(base, {title:`Carousel #${S.carousels.length+1}`, pillar:"educacion", hook:"", cta:"", copy:"", hashtags:"", note:"", slides:[

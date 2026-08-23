@@ -94,11 +94,15 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
   Compromiso — como una secuencia de chips clicables que saltan directo al post real.
   Cierra con las cuatro impresiones que se busca dejar en quien descubre el perfil.
 
-### Reels: tarjeta mínima
-- Cada uno de los 15 reels se edita con solo 4 campos: **Título**, **Tomas — Desarrollo
-  y acción**, un **Cuerpo de texto** grande (vacío, listo para pegar el guion completo)
-  y **Copy**. Sin miniatura, sin fecha, sin pilar, sin checks de revisión/publicado, sin
-  portada — el desglose detallado que tenía antes se retiró a pedido explícito.
+### Reels: tarjeta mínima + checklist
+- Cada uno de los 15 reels se edita con solo 3 campos de texto: **Título**, **Tomas —
+  Desarrollo y acción** (un espacio grande único para el guion completo) y **Copy**.
+  Sin miniatura, sin fecha, sin pilar, sin portada — el desglose detallado que tenía
+  antes se retiró a pedido explícito.
+- Debajo lleva un **checklist** de 3 puntos, exclusivo del rol Admin: **Aprobado para
+  publicar** y **Publicado** (checkboxes de etiqueta fija — a diferencia del resto de
+  la app, el texto no cambia según el estado, solo el color) y **Valoración (1 a 10)**
+  con el mismo medidor de estrellas que usan Posts, Carruseles y Projects.
 
 ### Contenido desarrollado, campo por campo
 - **Posts:** el texto completo del arte con su jerarquía (antetítulo, titular, sellos,
