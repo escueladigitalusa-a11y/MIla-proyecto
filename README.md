@@ -104,6 +104,22 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
   la app, el texto no cambia según el estado, solo el color) y **Valoración (1 a 10)**
   con el mismo medidor de estrellas que usan Posts, Carruseles y Projects.
 
+### 7 reels con guion de producción con avatar
+- 7 de los 15 reels (los que compartían tema con el guion de video con avatar) llevan
+  ahora el **guion completo de producción**: los 5 bloques de 13 segundos de cada video
+  (65s total), con lo que dice el avatar, la acción/escena y el texto/infografía en
+  pantalla de cada bloque, dentro del campo "Tomas — Desarrollo y acción". Son: *El mito
+  del 20%* (reel #3), *Q&A compradores* (#10), *El árbol familiar* (#12), *La bola de
+  nieve* (#15), *Cómo funciona el equity* (#17), *Las preguntas más curiosas* (#28) y
+  *De ansiedad a tranquilidad* (#29).
+- Los 5 videos con notas financieras (equity, patrimonio, hogar como herramienta, pago
+  inicial y el mito del 20%) incluyen al final del guion un **aviso de cumplimiento**
+  con la precisión que exige cada afirmación (p. ej. "la apreciación no es una
+  garantía", "el 20% no es un requisito universal") para validar antes de publicar.
+- Quedan **8 reels** (#1, #2, #31, #34, #35, #37, #41, #45) sin guion de avatar
+  desarrollado todavía — mantienen su contenido original del Banco de Ideas a la
+  espera de que se produzcan sus videos.
+
 ### Contenido desarrollado, campo por campo
 - **Posts:** el texto completo del arte con su jerarquía (antetítulo, titular, sellos,
   letra pequeña), el concepto visual y la composición, el caption largo desarrollado, un CTA
