@@ -94,10 +94,13 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
   Compromiso — como una secuencia de chips clicables que saltan directo al post real.
   Cierra con las cuatro impresiones que se busca dejar en quien descubre el perfil.
 
+### Reels: tarjeta mínima
+- Cada uno de los 15 reels se edita con solo 4 campos: **Título**, **Tomas — Desarrollo
+  y acción**, un **Cuerpo de texto** grande (vacío, listo para pegar el guion completo)
+  y **Copy**. Sin miniatura, sin fecha, sin pilar, sin checks de revisión/publicado, sin
+  portada — el desglose detallado que tenía antes se retiró a pedido explícito.
+
 ### Contenido desarrollado, campo por campo
-- **Reels:** el guion viene separado por tiempos — Hook `0–3s`, Desarrollo `3–25s` y
-  Cierre + CTA `25–30s` — más el texto en pantalla de la portada, el caption final,
-  los hashtags de la pieza y las notas de producción.
 - **Posts:** el texto completo del arte con su jerarquía (antetítulo, titular, sellos,
   letra pequeña), el concepto visual y la composición, el caption largo desarrollado, un CTA
   con palabra clave («Comenta DOWN», «CITA», «EQUITY», «MI HOGAR», «MILA» / «EMPEZAR»),

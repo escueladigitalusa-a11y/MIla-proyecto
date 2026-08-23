@@ -318,9 +318,16 @@ body::before{
 .filter-bar .fcount{font-size:12px;color:var(--muted);margin-left:2px}
 .filter-bar .fclear{font-size:12px;color:var(--gold-deep);text-decoration:underline;cursor:pointer}
 
-/* Layout interno de Reels: portada acotada + campos a la derecha (ya no se desborda) */
-.reel-layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px}
-.reel-cover-col .ratio-916{max-width:200px}
+/* Reels: tarjeta mínima — título, tomas, cuerpo de texto grande, copy */
+.reel-mini{background:#fff;border:1px solid var(--line-2);border-radius:16px;box-shadow:var(--shadow-sm);overflow:hidden}
+.reel-mini + .reel-mini{margin-top:18px}
+.reel-mini-head{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line-2);background:#FDFBF7}
+.reel-mini-head .num{font-family:var(--serif);font-size:13px;color:var(--navy);background:var(--cream-2);
+  border:1px solid var(--line);border-radius:9px;padding:5px 11px;flex:none}
+.reel-mini-head .title-input{flex:1;min-width:120px}
+.reel-mini.published-item .reel-mini-head{background:#EAF6EF;border-bottom-color:#CFE8DA}
+.reel-mini-body{padding:22px}
+.textarea.big{min-height:260px}
 
 /* Historias */
 .story-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
@@ -1960,7 +1967,7 @@ function seed(){
 
     reels: CONTENT_REELS.map((r, i) => Object.assign({
       id:uid("reel"), order:i, cover:"", collapsed:false,
-      notes:"", hashtags:"", note:"", reviewed:false
+      notes:"", hashtags:"", note:"", reviewed:false, bodyText:""
     }, r, {createdAt: at(r.days), published: r.status === "published"})),
 
     carousels: CONTENT_CAROUSELS.map((c, i) => Object.assign({
@@ -2545,38 +2552,17 @@ function viewReels(q=""){
   <div class="readonly-note"><svg width="16" height="16"><use href="#i-alert"/></svg> Modo <b>Viewer</b>: la edición está bloqueada.</div>
   ${filterBarHTML("reels", all.length, list.length)}
   ${list.length ? list.map((r,i) => `
-      <div class="item ${r.collapsed?"collapsed":""} ${r.published ? "published-item" : ""}" data-item="${r.id}">
-        <div class="item-head">
-          ${itemThumbHTML(r.cover, "i-reel")}
-          <span class="num"># Reel ${r.num ?? (i+1)}</span>
-          <input class="title-input" data-field data-coll="reels" data-id="${r.id}" data-key="title" value="${esc(r.title)}" placeholder="Reel #${i+1}">
-          ${statusSelect("reels", r.id, r.status)}
-          ${itemTools("reels", r.id)}
-          ${metaRowHTML("reels", r)}
+      <div class="reel-mini ${r.published ? "published-item" : ""}" data-item="${r.id}">
+        <div class="reel-mini-head">
+          <span class="num">Reel ${i+1}</span>
+          <input class="title-input" data-field data-coll="reels" data-id="${r.id}" data-key="title" value="${esc(r.title)}" placeholder="Título">
+          <button class="icon-btn lock-viewer lock-editor" data-del data-coll="reels" data-id="${r.id}" title="Eliminar" style="color:var(--danger)">
+            <svg><use href="#i-trash"/></svg></button>
         </div>
-        <div class="item-body">
-          ${noteBandHTML(r.note)}
-          <div class="reel-layout">
-            <div class="reel-cover-col">
-              <div class="label"><svg><use href="#i-img"/></svg> Portada (9:16)</div>
-              ${mediaBox({coll:"reels", id:r.id, field:"cover", src:r.cover, ratio:"ratio-916", title:"Subir portada"})}
-              <div class="media-tools lock-viewer">
-                <button class="btn btn-ghost btn-sm icon-only" data-upload data-coll="reels" data-id="${r.id}" data-field="cover" title="${r.cover?"Reemplazar":"Subir"} portada"><svg><use href="#i-upload"/></svg></button>
-                <button class="btn btn-ghost btn-sm icon-only" data-clear data-coll="reels" data-id="${r.id}" data-field="cover" title="Quitar portada"><svg><use href="#i-trash"/></svg></button>
-                <button class="btn btn-ghost btn-sm icon-only" data-dup data-coll="reels" data-id="${r.id}" title="Duplicar"><svg><use href="#i-copy"/></svg></button>
-              </div>
-            </div>
-            <div>
-              ${field("Texto en pantalla (portada)","text", input("reels", r.id, "coverText", r.coverText, "El texto grande que se sobreimprime en el video"))}
-              ${field("Hook","mega", textarea("reels", r.id, "hook", r.hook, "Primera frase que detiene el scroll...", "", 2), "0–3s")}
-              ${field("Desarrollo","list", textarea("reels", r.id, "desarrollo", r.desarrollo, "El cuerpo del guion, punto por punto...", "", 4), "3–25s")}
-              ${field("Cierre + CTA","right", textarea("reels", r.id, "cta", r.cta, "Cierre e invitación final...", "", 2), "25–30s")}
-              ${field("Caption","pen", textarea("reels", r.id, "copy", r.copy, "El caption que acompaña la publicación...", "soft", 3))}
-              ${hashtagsField("reels", r.id, r.hashtags)}
-              ${field("Notas de producción","clip", textarea("reels", r.id, "notes", r.notes, "Instrucciones adicionales de grabación o edición...", "", 2))}
-              ${starsHTML("reels", r.id, r.rating)}
-            </div>
-          </div>
+        <div class="reel-mini-body">
+          ${field("Tomas — Desarrollo y acción","list", textarea("reels", r.id, "desarrollo", r.desarrollo, "Describe las tomas, el desarrollo y la acción de este reel...", "", 5))}
+          ${field("Cuerpo de texto","text", textarea("reels", r.id, "bodyText", r.bodyText, "Pega o escribe aquí el texto grande / guion de este reel...", "big", 8))}
+          ${field("Copy","pen", textarea("reels", r.id, "copy", r.copy, "El copy que acompaña la publicación...", "soft", 4))}
         </div>
       </div>`).join("") : emptyState("Sin reels para esta tanda", "Ajusta el filtro o planifica un nuevo reel.", "reels")}`;
 }
@@ -3114,8 +3100,9 @@ function render(){
 let pendingFocus = null;
 
 function autosize(t){
+  const floor = t.classList.contains("big") ? 260 : 60;
   t.style.height = "auto";
-  t.style.height = Math.max(t.scrollHeight, 60) + "px";
+  t.style.height = Math.max(t.scrollHeight, floor) + "px";
 }
 
 function go(view){ S.ui.view = view; touch(); render(); }
@@ -3132,7 +3119,7 @@ function createItem(coll){
     item = Object.assign(base, {title:`Post ${S.posts.length+1}`, pillar:"educacion", designText:"", desarrollo:"", copy:"", cta:"", extras:"", hashtags:"", note:"", links:"", image:"", ratio:"4:5", date:""});
     label = "Post";
   }else if(coll === "reels"){
-    item = Object.assign(base, {title:`Reel #${S.reels.length+1}`, pillar:"educacion", kind:"H", coverText:"", cover:"", hook:"", desarrollo:"", cta:"", copy:"", hashtags:"", note:"", notes:""});
+    item = Object.assign(base, {title:`Reel #${S.reels.length+1}`, pillar:"educacion", kind:"H", coverText:"", cover:"", hook:"", desarrollo:"", bodyText:"", cta:"", copy:"", hashtags:"", note:"", notes:""});
     label = "Reel";
   }else if(coll === "carousels"){
     item = Object.assign(base, {title:`Carousel #${S.carousels.length+1}`, pillar:"educacion", hook:"", cta:"", copy:"", hashtags:"", note:"", slides:[
