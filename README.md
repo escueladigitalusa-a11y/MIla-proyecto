@@ -85,6 +85,16 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
   pieza está colocada en el Feed Preview, su celda recibe un marco verde y el distintivo
   "✓ Publicado" — de un vistazo se distingue lo publicado de lo que todavía no.
 
+### Checks de "Diseño aprobado" / "Diseño desaprobado"
+- Debajo del check de "Publicado", Posts, Carruseles e Historias tienen un segundo
+  par de checks para registrar el feedback de la clienta sobre el diseño visual:
+  **Diseño aprobado** y **Diseño desaprobado** — se excluyen entre sí, marcar uno
+  desmarca el otro.
+- A diferencia de "Revisado" y "Publicado" (exclusivos del rol Admin), estos los puede
+  marcar cualquier rol con permiso de edición (Editor o Admin).
+- Debajo aparece siempre un campo de nota — **"¿Qué no le gustó del diseño?"** — para
+  anotar el detalle del feedback cuando el diseño queda desaprobado.
+
 ### Guía de distribución de Posts
 - Un panel plegable al inicio de la sección de Posts recoge todo lo que no pertenece a
   una sola pieza sino a la colección completa: el enfoque de diseño (poco texto en el

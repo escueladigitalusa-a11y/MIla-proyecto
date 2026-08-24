@@ -301,6 +301,24 @@ body::before{
 .publish-check.on .box svg{opacity:1;color:var(--ok)}
 .publish-check[data-locked]{cursor:not-allowed;opacity:.7}
 
+/* Checks de "Diseño aprobado" / "Diseño desaprobado" — feedback de la clienta sobre
+   el diseño visual, independiente del check de revisión/publicación editorial */
+.design-approval{display:flex;flex-wrap:wrap;gap:8px;width:100%;margin-top:6px}
+.design-check{
+  display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:20px;
+  padding:6px 12px 6px 8px;font-size:12px;color:#6C7E93;background:#fff;cursor:pointer;user-select:none;transition:.15s
+}
+.design-check .box{width:17px;height:17px;border-radius:6px;border:1.5px solid #C7BB9E;display:grid;place-items:center;flex:none;transition:.15s}
+.design-check .box svg{width:11px;height:11px;color:#fff;opacity:0;transition:.15s}
+.design-check.approve.on{border-color:#BFDECB;background:#EDF6F1;color:var(--ok);font-weight:600}
+.design-check.approve.on .box{background:var(--ok);border-color:var(--ok)}
+.design-check.approve.on .box svg{opacity:1}
+.design-check.reject.on{border-color:#EFC3BA;background:#FBEEEB;color:var(--danger);font-weight:600}
+.design-check.reject.on .box{background:var(--danger);border-color:var(--danger)}
+.design-check.reject.on .box svg{opacity:1}
+.design-check[data-locked]{cursor:not-allowed;opacity:.7}
+.design-note-field{margin-top:8px}
+
 /* Una pieza publicada tiñe de verde toda su tarjeta */
 .published-item{border-color:#BCDDCA!important;background:linear-gradient(180deg,#F3FAF6,#FFFFFF)!important}
 .published-item .item-head{background:#EAF6EF;border-bottom-color:#CFE8DA}
@@ -1980,7 +1998,7 @@ function seed(){
 
     posts: CONTENT_POSTS.map((p, i) => Object.assign({
       id:uid("post"), order:i, image:"", ratio:"4:5", date:"", links:"", collapsed:false,
-      cta:"", extras:"", hashtags:"", note:"", reviewed:false
+      cta:"", extras:"", hashtags:"", note:"", reviewed:false, designApproved:null, designNote:""
     }, p, {createdAt: at(p.days), published: p.status === "published"})),
 
     reels: CONTENT_REELS.map((r, i) => Object.assign({
@@ -1989,7 +2007,8 @@ function seed(){
     }, r, {createdAt: at(r.days), published: r.status === "published"})),
 
     carousels: CONTENT_CAROUSELS.map((c, i) => Object.assign({
-      id:uid("car"), order:i, collapsed:false, copy:"", hashtags:"", note:"", reviewed:false
+      id:uid("car"), order:i, collapsed:false, copy:"", hashtags:"", note:"", reviewed:false,
+      designApproved:null, designNote:""
     }, c, {
       createdAt: at(c.days),
       published: c.status === "published",
@@ -1997,7 +2016,8 @@ function seed(){
     })),
 
     stories: CONTENT_STORIES.map((s, i) => Object.assign({
-      id:uid("story"), order:i, media:"", rating:0, idea:"", followup:"", note:"", reviewed:false
+      id:uid("story"), order:i, media:"", rating:0, idea:"", followup:"", note:"", reviewed:false,
+      designApproved:null, designNote:""
     }, s, {createdAt: at(s.days), published: s.status === "published"})),
 
     /* El Feed Preview arranca completamente vacío: cada espacio se llena a mano
@@ -2292,6 +2312,23 @@ function publishCheckHTML(coll, id, published, fixedLabel){
   </button>`;
 }
 
+/* Checks de "Diseño aprobado" / "Diseño desaprobado" — feedback de la clienta sobre el
+   arte visual. Se excluyen entre sí (marcar uno desmarca el otro). Cualquier rol con
+   permiso de edición (Editor o Admin) puede marcarlos, a diferencia de los checks de
+   revisión/publicación que son exclusivos de Admin. */
+function designApprovalHTML(coll, id, approved, note){
+  const locked = canEdit() ? "" : "data-locked";
+  return `<div class="design-approval">
+    <button type="button" class="design-check approve ${approved === true ? "on" : ""}" data-design-approve data-coll="${coll}" data-id="${id}" ${locked} title="Marcar diseño aprobado">
+      <span class="box"><svg><use href="#i-check-plain"/></svg></span>Diseño aprobado
+    </button>
+    <button type="button" class="design-check reject ${approved === false ? "on" : ""}" data-design-reject data-coll="${coll}" data-id="${id}" ${locked} title="Marcar diseño desaprobado">
+      <span class="box"><svg><use href="#i-check-plain"/></svg></span>Diseño desaprobado
+    </button>
+  </div>
+  <div class="design-note-field">${field("Nota de la clienta sobre el diseño","pen", textarea(coll, id, "designNote", note, "¿Qué no le gustó del diseño? Escribe aquí el detalle...", "", 2))}</div>`;
+}
+
 /* Fila de metadatos: fecha de creación, posición en el feed, pilar, formato, revisión y publicación */
 function metaRowHTML(coll, item, {feed=true} = {}){
   const pillar = item.pillar ? pillarChip(item.pillar) : "";
@@ -2302,6 +2339,7 @@ function metaRowHTML(coll, item, {feed=true} = {}){
     ${pillar}${kind}
     ${reviewCheckHTML(coll, item.id, !!item.reviewed)}
     ${publishCheckHTML(coll, item.id, !!item.published)}
+    ${designApprovalHTML(coll, item.id, item.designApproved, item.designNote)}
   </div>`;
 }
 
@@ -2728,6 +2766,7 @@ function storyCard(s, i){
         ${statusSelect("stories", s.id, s.status)}
         ${reviewCheckHTML("stories", s.id, !!s.reviewed)}
         ${publishCheckHTML("stories", s.id, !!s.published)}
+        ${designApprovalHTML("stories", s.id, s.designApproved, s.designNote)}
       </div>
     </div>
   </div>`;
@@ -3138,7 +3177,7 @@ function go(view){ S.ui.view = view; touch(); render(); }
 function createItem(coll){
   if(!guard()) return;
   const t = now();
-  const base = {id:uid(coll), createdAt:t, order:-1, rating:0, status:"draft", reviewed:false, published:false, collapsed:false};
+  const base = {id:uid(coll), createdAt:t, order:-1, rating:0, status:"draft", reviewed:false, published:false, collapsed:false, designApproved:null, designNote:""};
   let item, label;
   if(coll === "posts"){
     item = Object.assign(base, {title:`Post ${S.posts.length+1}`, pillar:"educacion", designText:"", desarrollo:"", copy:"", cta:"", extras:"", hashtags:"", note:"", links:"", image:"", ratio:"4:5", date:""});
@@ -3185,6 +3224,7 @@ function duplicateItem(coll, id){
   const copy = JSON.parse(JSON.stringify(it));
   copy.id = uid(coll); copy.createdAt = now(); copy.order = -1;
   copy.reviewed = false; copy.published = false; copy.num = undefined; copy.status = "draft";
+  copy.designApproved = null; copy.designNote = "";
   copy.title = (it.title || it.name || "") + " (copia)";
   if(copy.slides) copy.slides.forEach(s => s.id = uid("sl"));
   S[coll].unshift(copy); reindex(coll); touch(); render(); toast("Duplicado", "copy");
@@ -3382,6 +3422,30 @@ document.addEventListener("click", async e => {
     logActivity(it.published ? "ok" : "cal", `<b>${it.published ? "Publicado" : "Publicación retirada"}:</b> ${esc(it.title || it.content || "Historia")}.`);
     touch(); render();
     toast(it.published ? "Marcado como publicado ✓" : "Publicación retirada", it.published ? "check" : "history");
+    return;
+  }
+
+  // check de "Diseño aprobado" — se excluye con "Diseño desaprobado"
+  const desApprove = t.closest("[data-design-approve]");
+  if(desApprove){
+    if(!canEdit()){ toast("Necesitas permiso de edición para calificar el diseño.", "alert", true); return; }
+    const it = find(desApprove.dataset.coll, desApprove.dataset.id); if(!it) return;
+    it.designApproved = it.designApproved === true ? null : true;
+    logActivity(it.designApproved === true ? "ok" : "cal", `<b>${it.designApproved === true ? "Diseño aprobado" : "Aprobación de diseño retirada"}:</b> ${esc(it.title || it.content || "Historia")}.`);
+    touch(); render();
+    toast(it.designApproved === true ? "Diseño marcado como aprobado ✓" : "Marca retirada", it.designApproved === true ? "check" : "history");
+    return;
+  }
+
+  // check de "Diseño desaprobado" — se excluye con "Diseño aprobado"
+  const desReject = t.closest("[data-design-reject]");
+  if(desReject){
+    if(!canEdit()){ toast("Necesitas permiso de edición para calificar el diseño.", "alert", true); return; }
+    const it = find(desReject.dataset.coll, desReject.dataset.id); if(!it) return;
+    it.designApproved = it.designApproved === false ? null : false;
+    logActivity(it.designApproved === false ? "alert" : "cal", `<b>${it.designApproved === false ? "Diseño desaprobado" : "Desaprobación de diseño retirada"}:</b> ${esc(it.title || it.content || "Historia")}.`);
+    touch(); render();
+    toast(it.designApproved === false ? "Diseño marcado como desaprobado" : "Marca retirada", it.designApproved === false ? "alert" : "history");
     return;
   }
 
