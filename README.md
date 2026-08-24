@@ -104,33 +104,17 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
   la app, el texto no cambia según el estado, solo el color) y **Valoración (1 a 10)**
   con el mismo medidor de estrellas que usan Posts, Carruseles y Projects.
 
-### Los 15 reels con guion de producción con avatar
-- Los **15 reels** llevan ahora su guion completo de producción con avatar dentro del
-  campo "Tomas — Desarrollo y acción": lo que dice el avatar, la acción/escena y el
-  texto/infografía en pantalla de cada bloque.
-- **7 reels** (Serie 1) usan el formato cronometrado de 5 bloques de 13 segundos (65s
-  por video): *El mito del 20%* (#3), *Q&A compradores* (#10), *El árbol familiar*
-  (#12), *La bola de nieve* (#15), *Cómo funciona el equity* (#17), *Las preguntas más
-  curiosas* (#28) y *De ansiedad a tranquilidad* (#29).
-- **8 reels** (Serie 2) usan el formato Hook / Desarrollo / Cierre / CTA: *3 errores
-  que cometen los compradores primerizos* (#1), *Comiquita: pre-approval vs.
-  pre-qualification* (#2), *Mi historia: de inmigrante venezolana* (#31), *Por qué Dios
-  va primero en mis negocios* (#34), *Gratitud de cierre de trimestre* (#35), *Lo que
-  aprendí sirviendo antes de vender* (#37), *Por qué digo HOGAR y no propiedad* (#41) y
-  *Una familia se muda y "la casa cobra vida"* (#45).
-- Los videos que lo requieren incluyen al final del guion un **aviso de cumplimiento o
-  nota estratégica/de marca** con la precisión que exige cada afirmación (p. ej. "la
-  apreciación no es una garantía", "el 20% no es un requisito universal", "evitar CTA
-  comercial en esta pieza") para validar antes de publicar.
-- Los reels **#3** (*El mito del 20%*) y **#10** (*Q&A compradores*) tenían guion en
-  ambos archivos subidos, con enfoques distintos del mismo tema — para no perder
-  ninguno, el campo lleva **los dos guiones completos**: primero el de la Serie 1 y,
-  después de un separador, el "GUION ALTERNATIVO — SERIE 2" con su propio aviso de
-  cumplimiento.
-- El texto de los 7 guiones de la Serie 1 (guion hablado, acción/escena, texto en
-  pantalla) y el de sus avisos de cumplimiento en "Notas financieras" están copiados
-  **palabra por palabra** del archivo original — verificado celda por celda contra el
-  Excel, sin parafrasear ni resumir ninguna línea.
+### Guion de producción con avatar (Serie 1)
+- **7 de los 15 reels** llevan en el campo "Tomas — Desarrollo y acción" el guion
+  completo de producción con avatar de la Serie 1, palabra por palabra del Excel
+  original (verificado celda por celda: guion hablado, acción/escena y texto en
+  pantalla de los 5 bloques de 13 segundos de cada video, más su aviso de
+  cumplimiento donde aplica): *El mito del 20%* (#3), *Q&A compradores* (#10), *El
+  árbol familiar* (#12), *La bola de nieve* (#15), *Cómo funciona el equity* (#17),
+  *Las preguntas más curiosas* (#28) y *De ansiedad a tranquilidad* (#29).
+- **Los otros 8 reels** (#1, #2, #31, #34, #35, #37, #41, #45) no tienen guion en este
+  archivo, así que su campo "Tomas — Desarrollo y acción" quedó **en blanco**, a la
+  espera de que se produzca su guion.
 
 ### Contenido desarrollado, campo por campo
 - **Posts:** el texto completo del arte con su jerarquía (antetítulo, titular, sellos,
