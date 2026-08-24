@@ -2,7 +2,9 @@
 
 Página HTML **única e interactiva** (`index.html`) para planificar el contenido de la marca:
 Dashboard, Projects, Reels, Carruseles, Posts, Historias y **Feed Preview en tiempo real**.
-No requiere servidor, build ni dependencias: se abre con doble clic en cualquier navegador.
+No requiere build ni framework — un solo archivo — pero sí requiere iniciar sesión: el
+workspace vive en **Supabase** (base de datos + autenticación) y se comparte en tiempo real
+entre todo el equipo y la clienta.
 
 Viene precargada con el **contenido ya desarrollado** de la marca — no solo las ideas, sino
 las piezas listas para producir: 17 reels con guion de producción por tomas, 10 posts con titular y
@@ -14,8 +16,29 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
 ## Cómo usarla
 
 1. Abre `index.html` en el navegador (o publica la carpeta en GitHub Pages / Netlify).
-2. Edita cualquier campo: todo se guarda solo en el navegador (localStorage) y con
-   **Guardar Cambios** / `Ctrl+S` (`⌘S`) se confirma el guardado.
+2. Inicia sesión con el correo y contraseña que te haya dado tu administrador (ver
+   "Configurar Supabase" abajo si eres tú quien administra el workspace).
+3. Edita cualquier campo: se guarda solo (localStorage como caché) y se sincroniza con
+   Supabase — **Guardar Cambios** / `Ctrl+S` (`⌘S`) fuerza el guardado inmediato. Los
+   cambios de otras personas conectadas se reflejan solos, sin recargar.
+
+## Configurar Supabase (solo una vez)
+
+El workspace está conectado al proyecto de Supabase `Mila Meekins Real Estate`. Para
+administrar quién tiene acceso:
+
+1. **Crear cuentas de acceso** — en el [panel de Supabase](https://supabase.com/dashboard)
+   → tu proyecto → **Authentication → Users → Add user** → correo + contraseña. No hay
+   registro público: cada persona (tú, tu equipo, la clienta) necesita que se la creen ahí.
+2. **Esquema de base de datos** — si el proyecto es nuevo, corre una vez el archivo
+   [`supabase/schema.sql`](supabase/schema.sql) desde **SQL Editor → New query**. Crea la
+   tabla `workspace_state` (todo el contenido en una fila JSON), activa seguridad a nivel
+   de fila (solo usuarios con sesión iniciada leen/escriben) y habilita Realtime.
+3. Las credenciales del proyecto (Project URL + `anon public` key) ya están dentro de
+   `index.html` — son seguras de exponer en el navegador porque el acceso real lo controla
+   la seguridad a nivel de fila (RLS) de Supabase, no la clave en sí.
+4. Si Supabase no responde (sin internet, proyecto caído), la app sigue funcionando con la
+   última copia guardada en ese navegador y avisa con un mensaje — nada se pierde.
 
 ## Qué incluye
 
@@ -165,5 +188,8 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
 
 ## Datos
 
-Todo vive en el navegador bajo la clave `mila.studio.v1` de `localStorage`; no se envía
-nada a ningún servidor. Usa *Settings → Exportar* para respaldar o mover el workspace.
+El workspace vive en Supabase (tabla `workspace_state`, protegida con seguridad a nivel de
+fila) y se sincroniza en tiempo real entre todas las personas con sesión iniciada. Cada
+navegador guarda además una copia local bajo la clave `mila.studio.v1` de `localStorage`,
+usada como caché y como respaldo si no hay conexión con Supabase. Usa *Settings → Exportar*
+para descargar un `.json` de todo el workspace en cualquier momento.
