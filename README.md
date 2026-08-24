@@ -104,17 +104,11 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
   la app, el texto no cambia según el estado, solo el color) y **Valoración (1 a 10)**
   con el mismo medidor de estrellas que usan Posts, Carruseles y Projects.
 
-### Guion de producción con avatar (Serie 1)
-- **7 de los 15 reels** llevan en el campo "Tomas — Desarrollo y acción" el guion
-  completo de producción con avatar de la Serie 1, palabra por palabra del Excel
-  original (verificado celda por celda: guion hablado, acción/escena y texto en
-  pantalla de los 5 bloques de 13 segundos de cada video, más su aviso de
-  cumplimiento donde aplica): *El mito del 20%* (#3), *Q&A compradores* (#10), *El
-  árbol familiar* (#12), *La bola de nieve* (#15), *Cómo funciona el equity* (#17),
-  *Las preguntas más curiosas* (#28) y *De ansiedad a tranquilidad* (#29).
-- **Los otros 8 reels** (#1, #2, #31, #34, #35, #37, #41, #45) no tienen guion en este
-  archivo, así que su campo "Tomas — Desarrollo y acción" quedó **en blanco**, a la
-  espera de que se produzca su guion.
+### Los 15 reels, en blanco
+- Por pedido explícito, los **15 reels** quedaron completamente vacíos: título, "Tomas
+  — Desarrollo y acción", copy, los dos checks ("Aprobado para publicar" y
+  "Publicado") sin marcar, y la valoración en 0/10 ("Sin evaluar"). Listos para
+  cargarse desde cero con el guion que se defina para cada uno.
 
 ### Contenido desarrollado, campo por campo
 - **Posts:** el texto completo del arte con su jerarquía (antetítulo, titular, sellos,
