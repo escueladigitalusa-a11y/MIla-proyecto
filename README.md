@@ -5,7 +5,7 @@ Dashboard, Projects, Reels, Carruseles, Posts, Historias y **Feed Preview en tie
 No requiere servidor, build ni dependencias: se abre con doble clic en cualquier navegador.
 
 Viene precargada con el **contenido ya desarrollado** de la marca — no solo las ideas, sino
-las piezas listas para producir: 15 reels con guion cronometrado, 10 posts con titular y
+las piezas listas para producir: 17 reels con guion de producción por tomas, 10 posts con titular y
 caption terminados, 10 carruseles slide-by-slide y 44 historias con el texto exacto del
 sticker. Todo conserva su número original del Banco de Ideas y su pilar de marca
 (Educación, Patrimonio, Servicio, Fe y Relaciones/Hogar), y usa el **logo real** del Brand
@@ -95,7 +95,7 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
   Cierra con las cuatro impresiones que se busca dejar en quien descubre el perfil.
 
 ### Reels: tarjeta mínima + checklist
-- Cada uno de los 15 reels se edita con solo 3 campos de texto: **Título**, **Tomas —
+- Cada uno de los 17 reels se edita con solo 3 campos de texto: **Título**, **Tomas —
   Desarrollo y acción** (un espacio grande único para el guion completo) y **Copy**.
   Sin miniatura, sin fecha, sin pilar, sin portada — el desglose detallado que tenía
   antes se retiró a pedido explícito.
@@ -104,11 +104,17 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
   la app, el texto no cambia según el estado, solo el color) y **Valoración (1 a 10)**
   con el mismo medidor de estrellas que usan Posts, Carruseles y Projects.
 
-### Los 15 reels, en blanco
-- Por pedido explícito, los **15 reels** quedaron completamente vacíos: título, "Tomas
-  — Desarrollo y acción", copy, los dos checks ("Aprobado para publicar" y
-  "Publicado") sin marcar, y la valoración en 0/10 ("Sin evaluar"). Listos para
-  cargarse desde cero con el guion que se defina para cada uno.
+### 17 reels con guion de producción con avatar
+- La sección Reels pasó de 15 a **17 espacios**, para reflejar exactamente el
+  documento final de guiones ("Guiones Reels - Avatar Mila"), que organiza 17 piezas
+  numeradas — incluye los 7 guiones originales, 8 guiones nuevos y 2 versiones
+  alternativas de temas que ya existían (down payment y preguntas frecuentes).
+- Cada reel trae en "Tomas — Desarrollo y acción" sus tomas completas (3 a 5 según la
+  pieza), cada una con **La modelo dice**, **La acción que hace** y **El texto en
+  pantalla será** — copiado palabra por palabra del documento entregado, verificado
+  automáticamente contra el original sin ninguna discrepancia.
+- Título, copy, checks y valoración de cada reel se cargaron en blanco (no venían en
+  este documento), en el mismo orden en que aparecen en el archivo.
 
 ### Contenido desarrollado, campo por campo
 - **Posts:** el texto completo del arte con su jerarquía (antetítulo, titular, sellos,
