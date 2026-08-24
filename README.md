@@ -40,6 +40,23 @@ administrar quién tiene acceso:
 4. Si Supabase no responde (sin internet, proyecto caído), la app sigue funcionando con la
    última copia guardada en ese navegador y avisa con un mensaje — nada se pierde.
 
+### Activar "Continuar con Google" (opcional)
+
+El botón ya está en la pantalla de login, pero necesita que actives el proveedor en
+Supabase primero — si no, muestra un error al usarlo:
+
+1. En [Google Cloud Console](https://console.cloud.google.com/) → crea (o usa) un proyecto
+   → **APIs & Services → Credentials → Create Credentials → OAuth client ID** → tipo
+   **Web application**.
+2. Supabase → tu proyecto → **Authentication → Providers → Google**, actívalo — ahí te
+   muestra la **Callback URL** exacta que debes pegar en Google Cloud, en **Authorized
+   redirect URIs**.
+3. Copia el **Client ID** y **Client Secret** que te dio Google y pégalos en esa misma
+   pantalla de Supabase → **Save**.
+4. Cualquier cuenta de Google puede entrar así — si quieres limitarlo a correos
+   específicos, revísalo en la configuración del proveedor o restringe el dominio en la
+   pantalla de consentimiento de Google Cloud.
+
 ## Qué incluye
 
 ### Marca real
