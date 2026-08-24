@@ -836,6 +836,7 @@ body.needs-auth .app{display:none}
 <input type="file" id="filePicker" accept="image/*" class="hidden">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
 /* ============================================================
    MILA MEEKINS — CONTENT STUDIO
@@ -863,6 +864,64 @@ let currentUser = null;
 let cloudSyncOK = true;
 let realtimeChannel = null;
 let cloudSaveInFlight = false;
+
+/* ---------- Google Drive: almacenamiento de imágenes ---------- */
+// Pendientes de configurar (ver README → "Activar Google Drive para imágenes").
+// Mientras estén vacíos, las imágenes se guardan como antes (comprimidas, dentro del dato).
+const GOOGLE_CLIENT_ID = "";
+const GOOGLE_DRIVE_FOLDER_ID = "";
+const GOOGLE_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+const driveEnabled = () => !!(GOOGLE_CLIENT_ID && GOOGLE_DRIVE_FOLDER_ID);
+
+let gDriveTokenClient = null;
+let gDriveAccessToken = null;
+let gDriveTokenExpiry = 0;
+
+function initGoogleDrive(){
+  if(!driveEnabled() || !window.google?.accounts?.oauth2) return;
+  gDriveTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: GOOGLE_DRIVE_SCOPE,
+    callback: () => {} // se reemplaza en cada llamada por getDriveAccessToken()
+  });
+}
+
+function getDriveAccessToken(){
+  return new Promise((resolve, reject) => {
+    if(!gDriveTokenClient) initGoogleDrive(); // por si Google Identity Services cargó después del arranque
+    if(!gDriveTokenClient){ reject(new Error("Google Drive no está disponible todavía.")); return; }
+    if(gDriveAccessToken && Date.now() < gDriveTokenExpiry - 60000){ resolve(gDriveAccessToken); return; }
+    gDriveTokenClient.callback = resp => {
+      if(resp.error){ reject(resp); return; }
+      gDriveAccessToken = resp.access_token;
+      gDriveTokenExpiry = Date.now() + (resp.expires_in * 1000);
+      resolve(gDriveAccessToken);
+    };
+    gDriveTokenClient.requestAccessToken({ prompt: "" });
+  });
+}
+
+async function uploadToDriveWithToken(token, dataUrl, filename){
+  const blob = await (await fetch(dataUrl)).blob();
+  const metadata = { name: filename, parents: [GOOGLE_DRIVE_FOLDER_ID] };
+  const form = new FormData();
+  form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+  form.append("file", blob);
+  const res = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: form
+  });
+  if(!res.ok) throw new Error("Drive upload failed: " + res.status);
+  const { id } = await res.json();
+  // hace el archivo visible con el link, para que se pueda usar como src de <img> sin sesión de Drive
+  await fetch(`https://www.googleapis.com/drive/v3/files/${id}/permissions`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ role: "reader", type: "anyone" })
+  });
+  return `https://drive.google.com/uc?export=view&id=${id}`;
+}
 
 const $  = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
@@ -2248,6 +2307,7 @@ async function onAuthed(session){
 }
 
 async function boot(){
+  initGoogleDrive();
   if(!sbClient){
     // sin librería de Supabase disponible (p.ej. sin conexión): sigue funcionando solo local
     S = load(); cloudSyncOK = false; render();
@@ -2317,7 +2377,7 @@ function logActivity(type, text){
   S.activity = S.activity.slice(0, 12);
 }
 
-/* ---------- Imágenes: comprimir a dataURL ---------- */
+/* ---------- Imágenes: comprimir y, si está configurado, subir a Google Drive ---------- */
 function pickImage(){
   return new Promise(resolve => {
     const inp = $("#filePicker");
@@ -2326,8 +2386,26 @@ function pickImage(){
       const f = inp.files && inp.files[0];
       if(!f) return resolve(null);
       if(!/^image\//.test(f.type)){ toast("El archivo no es una imagen.", "alert", true); return resolve(null); }
+      // Pide el token de Drive lo antes posible (mismo gesto del usuario: seleccionar el
+      // archivo), para que el navegador no bloquee el popup de autorización de Google.
+      const tokenPromise = driveEnabled()
+        ? getDriveAccessToken().catch(e => { console.warn("No se pudo autorizar Google Drive", e); return null; })
+        : Promise.resolve(null);
       const fr = new FileReader();
-      fr.onload = () => compress(fr.result).then(resolve);
+      fr.onload = async () => {
+        const compressed = await compress(fr.result);
+        const token = await tokenPromise;
+        if(!token){ resolve(compressed); return; }
+        try{
+          toast("Subiendo imagen a Google Drive…", "upload");
+          const url = await uploadToDriveWithToken(token, compressed, f.name || `imagen-${Date.now()}.jpg`);
+          resolve(url);
+        }catch(e){
+          console.warn("No se pudo subir a Google Drive, se guarda localmente", e);
+          toast("No se pudo subir a Google Drive: se guardó en este dispositivo en su lugar.", "alert", true);
+          resolve(compressed);
+        }
+      };
       fr.onerror = () => { toast("No se pudo leer la imagen.", "alert", true); resolve(null); };
       fr.readAsDataURL(f);
     };
@@ -3259,6 +3337,9 @@ function viewSettings(){
           <div class="kv"><div><b>Sesión iniciada</b><small>${esc(currentUser?.email || "—")}</small></div>
             <button class="btn btn-ghost btn-sm" data-action="signout"><svg><use href="#i-out"/></svg> Cerrar sesión</button></div>
           <div class="kv"><div><b>Workspace compartido</b><small>Los cambios se sincronizan en la nube con todo tu equipo y tu clienta.</small></div></div>
+          <div class="kv"><div><b>Imágenes en Google Drive</b><small>${driveEnabled()
+            ? "Activo — las imágenes que subas se guardan en tu carpeta de Drive."
+            : "No configurado todavía — las imágenes se guardan comprimidas dentro del dato (ver README)."}</small></div></div>
         </div>
       </div>
 

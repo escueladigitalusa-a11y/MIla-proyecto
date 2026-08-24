@@ -57,6 +57,37 @@ Supabase primero — si no, muestra un error al usarlo:
    específicos, revísalo en la configuración del proveedor o restringe el dominio en la
    pantalla de consentimiento de Google Cloud.
 
+### Activar Google Drive para imágenes (opcional)
+
+Por decisión explícita: las **imágenes** (no el resto del contenido, que sigue en
+Supabase) se guardan subiéndolas a una carpeta de Google Drive en vez de dentro del dato
+— así no se llena el almacenamiento. Mientras no lo actives, sigue funcionando como
+antes (imagen comprimida guardada junto con el resto del contenido).
+
+⚠️ A diferencia de Supabase, Drive no tiene una "clave pública protegida por reglas": cada
+persona que suba una imagen debe autorizar el acceso a Drive una vez (aparte del login de
+la app), y ese permiso se vence cada ~1 hora — puede que a veces vuelva a pedir
+autorización.
+
+1. **Crear el proyecto y las credenciales** — en
+   [Google Cloud Console](https://console.cloud.google.com/):
+   - **APIs & Services → Library** → busca **Google Drive API** → **Enable**.
+   - **APIs & Services → OAuth consent screen** → tipo **External** → completa nombre de
+     la app y tu correo. En **Publishing status** déjalo en **Testing** y agrega en
+     **Test users** el correo de Google de cada persona que vaya a subir imágenes (tú, tu
+     equipo, tu clienta) — así no hace falta pasar por la verificación de Google.
+   - **APIs & Services → Credentials → Create Credentials → OAuth client ID** → tipo
+     **Web application** → en **Authorized JavaScript origins** agrega
+     `https://escueladigitalusa-a11y.github.io` → **Create**. Copia el **Client ID** que
+     te da (termina en `.apps.googleusercontent.com`).
+2. **Crear la carpeta compartida** — en [Google Drive](https://drive.google.com), crea una
+   carpeta (p. ej. "Mila Content Studio — Imágenes"), compártela con **Editor** a cada
+   correo que vaya a subir imágenes, ábrela y copia el **ID de la carpeta**: es la parte
+   final de la URL, después de `folders/` (ej. `https://drive.google.com/drive/folders/`**`1AbCdEfGhIjKlMnOpQrStUvWxYz`**).
+3. Pásame el **Client ID** y el **ID de la carpeta** y los conecto en `index.html`
+   (constantes `GOOGLE_CLIENT_ID` y `GOOGLE_DRIVE_FOLDER_ID`, cerca del inicio del
+   `<script>`).
+
 ## Qué incluye
 
 ### Marca real
