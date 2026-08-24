@@ -127,6 +127,10 @@ Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y v
   ninguno, el campo lleva **los dos guiones completos**: primero el de la Serie 1 y,
   después de un separador, el "GUION ALTERNATIVO — SERIE 2" con su propio aviso de
   cumplimiento.
+- El texto de los 7 guiones de la Serie 1 (guion hablado, acción/escena, texto en
+  pantalla) y el de sus avisos de cumplimiento en "Notas financieras" están copiados
+  **palabra por palabra** del archivo original — verificado celda por celda contra el
+  Excel, sin parafrasear ni resumir ninguna línea.
 
 ### Contenido desarrollado, campo por campo
 - **Posts:** el texto completo del arte con su jerarquía (antetítulo, titular, sellos,
