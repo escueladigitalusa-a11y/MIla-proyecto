@@ -2128,18 +2128,21 @@ function load(){
 }
 
 function persist(silent=false){
+  S.savedAt = now();
+  let localOK = true;
   try{
-    S.savedAt = now();
     localStorage.setItem(KEY, JSON.stringify(S));
-    dirty = false;
-    updateSaveState();
-    syncToCloud();
-    if(!silent) toast("Cambios guardados", "check");
-    return true;
   }catch(e){
-    toast("No se pudo guardar: almacenamiento lleno. Exporta y elimina imágenes pesadas.", "alert", true);
-    return false;
+    localOK = false; // la copia local de este navegador está llena — no debe frenar el guardado real en Supabase
   }
+  dirty = false;
+  updateSaveState();
+  syncToCloud();
+  if(!silent){
+    if(localOK) toast("Cambios guardados", "check");
+    else toast("Guardado en la nube ✓ — la copia local de este navegador está llena y no se actualizó (no afecta a los demás).", "alert", true);
+  }
+  return true;
 }
 function touch(){
   dirty = true; updateSaveState();
