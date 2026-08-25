@@ -2517,7 +2517,23 @@ function logActivity(type, text){
 }
 
 /* ---------- Imágenes: comprimir y, si está configurado, subir a Google Drive ---------- */
-function pickImage(){
+/* El token de Drive se pide ANTES de abrir el selector nativo de archivos, en el mismo
+   instante del clic en "Subir" — comprobado con navigator.userActivation que, para
+   cuando el diálogo nativo del sistema operativo se cierra y dispara el evento "change"
+   del <input>, Chrome ya no considera eso una interacción reciente del usuario, y por
+   eso bloqueaba el popup de Google pidiéndolo ahí (mensaje "Failed to open popup
+   window" con gesto:no). Pedirlo aquí, primero, usa el gesto real y fresco del clic. */
+async function pickImage(){
+  let driveToken = null, driveAuthFailed = false, driveAuthReason = "";
+  if(driveEnabled()){
+    try{
+      driveToken = await getDriveAccessToken();
+    }catch(e){
+      console.warn("No se pudo autorizar Google Drive", e);
+      driveAuthFailed = true;
+      driveAuthReason = (e && e.message) || (e && e.type) || "";
+    }
+  }
   return new Promise(resolve => {
     const inp = $("#filePicker");
     inp.value = "";
@@ -2525,30 +2541,17 @@ function pickImage(){
       const f = inp.files && inp.files[0];
       if(!f) return resolve(null);
       if(!/^image\//.test(f.type)){ toast("El archivo no es una imagen.", "alert", true); return resolve(null); }
-      // Pide el token de Drive lo antes posible (mismo gesto del usuario: seleccionar el
-      // archivo), para que el navegador no bloquee el popup de autorización de Google.
-      let driveAuthFailed = false;
-      let driveAuthReason = "";
-      const tokenPromise = driveEnabled()
-        ? getDriveAccessToken().catch(e => {
-            console.warn("No se pudo autorizar Google Drive", e);
-            driveAuthFailed = true;
-            driveAuthReason = (e && e.message) || (e && e.type) || "";
-            return null;
-          })
-        : Promise.resolve(null);
       const fr = new FileReader();
       fr.onload = async () => {
         const compressed = await compress(fr.result);
-        const token = await tokenPromise;
-        if(!token){
+        if(!driveToken){
           if(driveAuthFailed) toast(`No se pudo autorizar Google Drive${driveAuthReason ? " (" + driveAuthReason + ")" : ""}: se guardó en este dispositivo en su lugar.`, "alert", true);
           resolve(compressed);
           return;
         }
         try{
           toast("Subiendo imagen a Google Drive…", "upload");
-          const url = await uploadToDriveWithToken(token, compressed, f.name || `imagen-${Date.now()}.jpg`);
+          const url = await uploadToDriveWithToken(driveToken, compressed, f.name || `imagen-${Date.now()}.jpg`);
           resolve(url);
         }catch(e){
           console.warn("No se pudo subir a Google Drive, se guarda localmente", e);
