@@ -950,19 +950,28 @@ function getDriveAccessToken(){
     }
     if(gDriveAccessToken && Date.now() < gDriveTokenExpiry - 60000){ resolve(gDriveAccessToken); return; }
 
+    // Diagnóstico: si esto dice "gesto:no" justo antes de pedir el popup, significa que
+    // Chrome ya no considera este momento como parte de una interacción reciente del
+    // usuario (aunque haya sido un clic real hace un instante) — y por eso bloquea la
+    // ventana sin importar el permiso de "Ventanas emergentes" del sitio.
+    const activation = navigator.userActivation
+      ? `gesto:${navigator.userActivation.isActive ? "sí" : "no"}`
+      : "gesto:sin-info";
+    console.warn("Pidiendo token de Google Drive —", activation);
+
     let settled = false;
     // red de seguridad: si el popup se bloquea o se queda colgado sin llamar a ningún
     // callback, esto evita que la subida se quede esperando en silencio para siempre.
     const timeout = setTimeout(() => {
       if(settled) return;
       settled = true;
-      reject(new Error("Se agotó el tiempo de espera para autorizar Google Drive (¿se bloqueó la ventana emergente?)."));
+      reject(new Error(`Se agotó el tiempo de espera para autorizar Google Drive (¿se bloqueó la ventana emergente?) · ${activation}`));
     }, 25000);
 
     gDriveTokenClient.callback = resp => {
       if(settled) return;
       settled = true; clearTimeout(timeout);
-      if(resp.error){ reject(resp); return; }
+      if(resp.error){ reject(new Error(`${resp.error} · ${activation}`)); return; }
       gDriveAccessToken = resp.access_token;
       gDriveTokenExpiry = Date.now() + (resp.expires_in * 1000);
       resolve(gDriveAccessToken);
@@ -972,7 +981,7 @@ function getDriveAccessToken(){
     gDriveTokenClient.error_callback = err => {
       if(settled) return;
       settled = true; clearTimeout(timeout);
-      reject(err);
+      reject(new Error(`${(err && err.type) || (err && err.message) || "error desconocido"} · ${activation}`));
     };
     try{
       gDriveTokenClient.requestAccessToken({ prompt: "" });
