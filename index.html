@@ -940,7 +940,14 @@ function initGoogleDrive(){
 function getDriveAccessToken(){
   return new Promise((resolve, reject) => {
     if(!gDriveTokenClient) initGoogleDrive(); // por si Google Identity Services cargó después del arranque
-    if(!gDriveTokenClient){ reject(new Error("Google Drive no está disponible todavía.")); return; }
+    if(!gDriveTokenClient){
+      // Esto pasa cuando la librería de Google (accounts.google.com/gsi/client) nunca
+      // terminó de cargar — casi siempre por un bloqueador de anuncios/privacidad que la
+      // trata como "tracker", o por una red que bloquea ese dominio. Sin la librería no
+      // hay ningún popup que abrir: el fallo es instantáneo y silencioso.
+      reject(new Error(window.google ? "El cliente de Google Drive no se pudo inicializar." : "La librería de Google (accounts.google.com/gsi/client) no cargó — revisa bloqueadores de anuncios/privacidad para este sitio, o tu conexión."));
+      return;
+    }
     if(gDriveAccessToken && Date.now() < gDriveTokenExpiry - 60000){ resolve(gDriveAccessToken); return; }
 
     let settled = false;
@@ -2512,10 +2519,12 @@ function pickImage(){
       // Pide el token de Drive lo antes posible (mismo gesto del usuario: seleccionar el
       // archivo), para que el navegador no bloquee el popup de autorización de Google.
       let driveAuthFailed = false;
+      let driveAuthReason = "";
       const tokenPromise = driveEnabled()
         ? getDriveAccessToken().catch(e => {
             console.warn("No se pudo autorizar Google Drive", e);
             driveAuthFailed = true;
+            driveAuthReason = (e && e.message) || (e && e.type) || "";
             return null;
           })
         : Promise.resolve(null);
@@ -2524,7 +2533,7 @@ function pickImage(){
         const compressed = await compress(fr.result);
         const token = await tokenPromise;
         if(!token){
-          if(driveAuthFailed) toast("No se pudo autorizar Google Drive: se guardó en este dispositivo en su lugar.", "alert", true);
+          if(driveAuthFailed) toast(`No se pudo autorizar Google Drive${driveAuthReason ? " (" + driveAuthReason + ")" : ""}: se guardó en este dispositivo en su lugar.`, "alert", true);
           resolve(compressed);
           return;
         }
