@@ -1010,7 +1010,11 @@ async function uploadToDriveWithToken(token, dataUrl, filename){
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ role: "reader", type: "anyone" })
   });
-  return `https://drive.google.com/uc?export=view&id=${id}`;
+  // uc?export=view muestra cada vez más seguido una página de aviso en vez de la imagen
+  // (Google lo restringió) y sale como ícono roto en un <img>. El endpoint /thumbnail sí
+  // está pensado para incrustarse directo — se pide un ancho grande porque acá las fotos
+  // ya vienen comprimidas a 1280px como máximo, así que nunca se pixela por el tope.
+  return `https://drive.google.com/thumbnail?id=${id}&sz=w2000`;
 }
 
 const $  = (s, r=document) => r.querySelector(s);
@@ -2288,7 +2292,28 @@ function mergeIntoSeed(data){
   });
   migrateFeedMonths(merged);
   migrateStoryMonths(merged);
+  migrateDriveUrls(merged);
   return merged;
+}
+
+/* Repara en el sitio cualquier imagen que se haya guardado con el formato de link de
+   Drive viejo (uc?export=view), que Google terminó mostrando como página de aviso en
+   vez de la imagen — sale como ícono roto en un <img>. El endpoint /thumbnail sí está
+   pensado para incrustarse directo. Esto arregla las imágenes ya subidas sin que haya
+   que volver a subirlas. */
+function migrateDriveUrls(state){
+  const fix = url => {
+    if(typeof url !== "string") return url;
+    const m = url.match(/^https:\/\/drive\.google\.com\/uc\?export=view&id=([^&]+)$/);
+    return m ? `https://drive.google.com/thumbnail?id=${m[1]}&sz=w2000` : url;
+  };
+  if(state.profile) state.profile.avatar = fix(state.profile.avatar);
+  (state.posts||[]).forEach(p => { p.image = fix(p.image); });
+  (state.reels||[]).forEach(r => { r.cover = fix(r.cover); });
+  (state.stories||[]).forEach(s => { s.media = fix(s.media); });
+  (state.projects||[]).forEach(p => { p.cover = fix(p.cover); });
+  (state.carousels||[]).forEach(c => (c.slides||[]).forEach(sl => { sl.image = fix(sl.image); }));
+  return state;
 }
 
 /* Migra el Feed Preview de la forma antigua (un solo arreglo plano S.feedSlots)
