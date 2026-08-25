@@ -1,7 +1,8 @@
 # Mila Meekins Real Estate — Content Studio
 
 Página HTML **única e interactiva** (`index.html`) para planificar el contenido de la marca:
-Dashboard, Projects, Reels, Carruseles, Posts, Historias y **Feed Preview en tiempo real**.
+Dashboard, Projects, Reels, Carruseles, Posts, Historias, **Feed Preview** y **Stories
+Preview** en tiempo real.
 No requiere build ni framework — un solo archivo — pero sí requiere iniciar sesión: el
 workspace vive en **Supabase** (base de datos + autenticación) y se comparte en tiempo real
 entre todo el equipo y la clienta.
@@ -130,24 +131,35 @@ autorización.
 - Cada imagen se reescala y comprime antes de guardarse, para no reventar el
   almacenamiento del navegador.
 
-### Feed Preview: espacios vacíos, elegidos a mano
-- El feed **arranca completamente vacío** — sin posts, reels ni carruseles precargados.
-  Cada espacio es un slot en blanco que dice "Elegir publicación · Formato → título".
-- Clic en un espacio abre una **lista plegable**: primero se elige el formato (Posts,
+### Feed Preview: meses en pestañas, 28 espacios fijos por mes
+- El Feed Preview se organiza en **meses**, mostrados como pestañas abribles arriba de la
+  cuadrícula (una sola visible a la vez). Cada mes trae siempre **exactamente 28 espacios**
+  fijos — ni crecen ni se achican — y arranca vacío, con cada espacio en blanco diciendo
+  "Elegir publicación · Formato → título".
+- El botón **"Nuevo mes"** crea una pestaña más (numerada automáticamente, renombrable
+  escribiendo directo sobre su etiqueta) y cambia a ella. Cada pestaña muestra cuántos de
+  sus 28 espacios están ocupados (`N/28`) y, si hay más de un mes, un botón de papelera
+  para eliminarla — con aviso si todavía tiene espacios ocupados (la pieza en sí no se
+  borra, solo deja de estar programada ese mes); no se puede eliminar el último mes que
+  quede.
+- Clic en un espacio vacío abre una **lista plegable**: primero se elige el formato (Posts,
   Reels o Carruseles, cada uno con su conteo de títulos), y al abrirlo aparecen todos
   los títulos de esa colección con su miniatura — o un aviso "Sin media" si la pieza
   todavía no tiene imagen. Al elegir un título, su media se coloca sola en el espacio.
-- Una pieza no puede ocupar dos espacios a la vez; si ya está en el feed, el picker lo
-  indica ("Ya en el feed · #N") en vez de dejar duplicarla.
-- Cada tarjeta de un formato muestra un chip clicable **"En Feed · #N"** con su posición
-  exacta dentro del feed; al hacer clic, salta directo a esa celda y la resalta.
+- Una pieza no puede ocupar dos espacios a la vez **en ningún mes**; si ya está colocada,
+  el picker lo indica ("Ya en Mes X · #N") en vez de dejar duplicarla.
+- Una pieza ya colocada se puede **mover a otro mes** con el selector "Mover a…" que
+  aparece al pasar el cursor sobre su espacio — la coloca en el primer espacio libre del
+  mes destino, o avisa si ese mes ya está lleno (28/28).
+- Cada tarjeta de un formato muestra un chip clicable **"En Feed · Mes X #N"** con su
+  posición exacta; al hacer clic, cambia a ese mes y salta directo a esa celda, resaltándola.
 - Al revés, hacer clic en una celda ocupada abre exactamente ese formato para editarlo;
   el botón de papelera en la esquina de la celda solo vacía el espacio, sin borrar la pieza.
 - Subir o reemplazar la imagen de cualquier formato la refleja **al instante** en su celda
   del feed — sin recargar ni guardar primero.
-- Los espacios se numeran **de abajo hacia arriba y de derecha a izquierda**; arrastra una
-  celda ocupada sobre otra (vacía o llena) para intercambiar su posición, o usa
-  "Vaciar feed" para dejar todos los espacios en blanco de nuevo.
+- Arrastra una celda ocupada sobre otra (vacía o llena) **dentro del mismo mes** para
+  intercambiar su posición, o usa "Vaciar este mes" para dejar solo ese mes en blanco de
+  nuevo (los demás meses no se tocan).
 
 ### Check de "Publicado"
 - Además del check de revisión, todos los formatos (Posts, Reels, Carruseles e Historias)
@@ -175,15 +187,35 @@ autorización.
   Compromiso — como una secuencia de chips clicables que saltan directo al post real.
   Cierra con las cuatro impresiones que se busca dejar en quien descubre el perfil.
 
-### Reels: tarjeta mínima + checklist
+### Reels: tarjeta mínima + checklist + portada
 - Cada uno de los 17 reels se edita con solo 3 campos de texto: **Título**, **Tomas —
   Desarrollo y acción** (un espacio grande único para el guion completo) y **Copy**.
-  Sin miniatura, sin fecha, sin pilar, sin portada — el desglose detallado que tenía
-  antes se retiró a pedido explícito.
+  Sin miniatura de detalle, sin fecha, sin pilar — el desglose que tenía antes se retiró
+  a pedido explícito.
+- Sí trae una **Portada** (imagen 9:16, subir/reemplazar/quitar): es la única media del
+  reel y es la que se ve en su celda del Feed Preview — así se puede visualizar
+  realmente cómo queda el reel en el feed, en vez de solo el texto de su título.
 - Debajo lleva un **checklist** de 3 puntos, exclusivo del rol Admin: **Aprobado para
   publicar** y **Publicado** (checkboxes de etiqueta fija — a diferencia del resto de
   la app, el texto no cambia según el estado, solo el color) y **Valoración (1 a 10)**
   con el mismo medidor de estrellas que usan Posts, Carruseles y Projects.
+
+### Stories Preview: la misma idea del Feed Preview, pero para historias
+- Vive en su propia sección (pestaña **Stories Preview** en el menú, o el botón
+  **Preview** desde Historias) y sigue el mismo patrón que el Feed Preview: **meses en
+  pestañas**, uno visible a la vez, cada uno con **30 espacios fijos** (uno por
+  día aproximado del mes) que arrancan vacíos.
+- Clic en un espacio vacío abre directo la lista de historias (sin paso de "elegir
+  formato", porque aquí solo hay un formato) con su miniatura de media y su texto; al
+  elegir una, su media se coloca sola. Una historia no puede ocupar dos espacios a la
+  vez, ni en el mismo mes ni en otro — el picker avisa dónde ya está colocada.
+- **"Nuevo mes"** crea otra pestaña; cada pestaña es renombrable y, si hay más de una,
+  eliminable (con aviso si tiene espacios ocupados — no se puede eliminar la última).
+- Una historia colocada se puede **mover a otro mes** con "Mover a…", arrastrar para
+  reordenar dentro del mismo mes, o "Vaciar este mes" para dejarlo en blanco de nuevo.
+- Cada tarjeta de Historias muestra el mismo chip clicable **"En Stories Preview · Mes X
+  #N"** que salta directo a esa posición, igual que en Posts/Reels/Carruseles con el
+  Feed Preview.
 
 ### 17 reels con guion de producción con avatar
 - La sección Reels pasó de 15 a **17 espacios**, para reflejar exactamente el
