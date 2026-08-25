@@ -882,7 +882,8 @@ function initGoogleDrive(){
   gDriveTokenClient = google.accounts.oauth2.initTokenClient({
     client_id: GOOGLE_CLIENT_ID,
     scope: GOOGLE_DRIVE_SCOPE,
-    callback: () => {} // se reemplaza en cada llamada por getDriveAccessToken()
+    callback: () => {}, // se reemplazan en cada llamada por getDriveAccessToken()
+    error_callback: () => {}
   });
 }
 
@@ -891,13 +892,36 @@ function getDriveAccessToken(){
     if(!gDriveTokenClient) initGoogleDrive(); // por si Google Identity Services cargó después del arranque
     if(!gDriveTokenClient){ reject(new Error("Google Drive no está disponible todavía.")); return; }
     if(gDriveAccessToken && Date.now() < gDriveTokenExpiry - 60000){ resolve(gDriveAccessToken); return; }
+
+    let settled = false;
+    // red de seguridad: si el popup se bloquea o se queda colgado sin llamar a ningún
+    // callback, esto evita que la subida se quede esperando en silencio para siempre.
+    const timeout = setTimeout(() => {
+      if(settled) return;
+      settled = true;
+      reject(new Error("Se agotó el tiempo de espera para autorizar Google Drive (¿se bloqueó la ventana emergente?)."));
+    }, 25000);
+
     gDriveTokenClient.callback = resp => {
+      if(settled) return;
+      settled = true; clearTimeout(timeout);
       if(resp.error){ reject(resp); return; }
       gDriveAccessToken = resp.access_token;
       gDriveTokenExpiry = Date.now() + (resp.expires_in * 1000);
       resolve(gDriveAccessToken);
     };
-    gDriveTokenClient.requestAccessToken({ prompt: "" });
+    // se dispara cuando el popup se bloquea, se cierra sin completar, o falla al abrir —
+    // sin esto, esos casos no llamaban a ningún callback y la promesa quedaba colgada.
+    gDriveTokenClient.error_callback = err => {
+      if(settled) return;
+      settled = true; clearTimeout(timeout);
+      reject(err);
+    };
+    try{
+      gDriveTokenClient.requestAccessToken({ prompt: "" });
+    }catch(e){
+      if(!settled){ settled = true; clearTimeout(timeout); reject(e); }
+    }
   });
 }
 
@@ -2388,14 +2412,23 @@ function pickImage(){
       if(!/^image\//.test(f.type)){ toast("El archivo no es una imagen.", "alert", true); return resolve(null); }
       // Pide el token de Drive lo antes posible (mismo gesto del usuario: seleccionar el
       // archivo), para que el navegador no bloquee el popup de autorización de Google.
+      let driveAuthFailed = false;
       const tokenPromise = driveEnabled()
-        ? getDriveAccessToken().catch(e => { console.warn("No se pudo autorizar Google Drive", e); return null; })
+        ? getDriveAccessToken().catch(e => {
+            console.warn("No se pudo autorizar Google Drive", e);
+            driveAuthFailed = true;
+            return null;
+          })
         : Promise.resolve(null);
       const fr = new FileReader();
       fr.onload = async () => {
         const compressed = await compress(fr.result);
         const token = await tokenPromise;
-        if(!token){ resolve(compressed); return; }
+        if(!token){
+          if(driveAuthFailed) toast("No se pudo autorizar Google Drive: se guardó en este dispositivo en su lugar.", "alert", true);
+          resolve(compressed);
+          return;
+        }
         try{
           toast("Subiendo imagen a Google Drive…", "upload");
           const url = await uploadToDriveWithToken(token, compressed, f.name || `imagen-${Date.now()}.jpg`);
