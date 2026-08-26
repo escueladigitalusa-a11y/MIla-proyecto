@@ -58,6 +58,23 @@ Supabase primero — si no, muestra un error al usarlo:
    específicos, revísalo en la configuración del proveedor o restringe el dominio en la
    pantalla de consentimiento de Google Cloud.
 
+### Activar "Entrar como Clienta" (acceso de un clic, opcional)
+
+El botón ya está en la pantalla de login, debajo de "Continuar con Google". Deja entrar
+directo, sin correo ni contraseña — pensado para que la clienta nunca se quede afuera —
+y la deja en rol **Editor** automáticamente (puede aprobar/desaprobar diseños y dejar
+notas, no puede eliminar nada ni marcar algo como revisado/publicado). Necesita que
+actives el inicio de sesión anónimo en Supabase, si no, muestra un error al usarlo:
+
+1. Supabase → tu proyecto → **Authentication → Providers** (o **Sign In / Providers**,
+   según la versión) → busca **Anonymous Sign-Ins** → actívalo → **Save**.
+2. Ya está — no hace falta ningún dato adicional, a diferencia de Google.
+3. Cada clic en "Entrar como Clienta" crea una identidad anónima distinta en Supabase
+   (verás varias filas nuevas en Authentication → Users con "Providers: Anonymous"), pero
+   todas ven y editan el mismo workspace compartido — no hay pérdida de datos ni
+   confusión entre ellas, es solo la forma en que Supabase identifica sesiones sin
+   contraseña.
+
 ### Activar Google Drive para imágenes (opcional)
 
 Por decisión explícita: las **imágenes** (no el resto del contenido, que sigue en
@@ -103,8 +120,12 @@ autorización.
 - Selector de rol en la barra superior y en *Settings*:
   - **Admin** — edita todo, elimina piezas, administra el perfil y es el único que puede
     marcar un formato como **revisado y listo para publicar**.
-  - **Editor** — edita y puntúa, pero no elimina ni marca como revisado.
+  - **Editor** — edita y puntúa, aprueba/desaprueba diseños y deja notas, pero no elimina
+    ni marca como revisado.
   - **Viewer** — solo lectura (todos los controles de edición se ocultan).
+- El Rol es una preferencia **de este navegador**, no del workspace compartido: cada
+  persona ve y usa su propio Rol sin afectar a las demás, aunque el resto del contenido
+  sí se sincronice para todos en tiempo real.
 - Cada texto es editable in-place en Posts, Reels, Carruseles, Historias y Projects.
 - Estados por pieza: Borrador · En revisión · Programado · Publicado.
 - Crear, duplicar, plegar, eliminar y reordenar piezas.
