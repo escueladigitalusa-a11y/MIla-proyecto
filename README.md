@@ -141,10 +141,26 @@ autorización.
   chip del **pilar de marca** (Educación, Patrimonio, Servicio, Fe, Relaciones).
 - Los reels además muestran si son formato "🎥 Cámara" o "🎨 Animado".
 
+### Meses de contenido: Posts, Reels, Carruseles e Historias comparten un calendario
+- Las cuatro secciones traen, arriba del todo, pestañas de **Mes 1 / Mes 2 / Mes 3…** —
+  el mismo calendario editorial compartido entre las cuatro (cambiar de mes en Posts
+  también lo cambia en Reels, Carruseles e Historias). Cada pestaña muestra un contador
+  con el **cupo mensual real** de la marca: **8/8 posts**, **12/12 reels**, **4/4
+  carruseles**, **30/30 historias**.
+- El cupo es solo informativo — pasarse no bloquea nada, se puede seguir creando o
+  moviendo piezas. Cada tarjeta trae un selector chiquito para reasignar su mes sin
+  salir de la tarjeta ni tener que recordar el orden.
+- El contenido cargado del Banco de Ideas ya viene repartido en 3 meses según ese cupo
+  (los carruseles son los que más meses necesitan: 4+4+2). "Nuevo mes" agrega otro;
+  renombrar es directo sobre la etiqueta; eliminar un mes no borra ninguna pieza — las
+  que tenía pasan al primer mes que quede (avisa cuántas antes de confirmar), y no se
+  puede eliminar si es el único mes.
+
 ### Filtros por tandas
-- Cada sección (Posts, Reels, Carruseles, Historias, Projects) tiene su propia barra de
-  filtros: **ordenar** por más recientes o más antiguos, y filtrar por **tanda de mes**
-  (calculada automáticamente a partir de las fechas de creación reales).
+- Posts/Reels/Carruseles/Historias ya se organizan por el mes de contenido de arriba;
+  la barra de filtros de esas secciones solo trae **ordenar** (más recientes/antiguos).
+  Projects, que no tiene meses de contenido, conserva el filtro por **tanda de mes**
+  calculada automáticamente a partir de las fechas de creación reales.
 
 ### Imágenes y media adjuntas
 - Clic en cualquier zona visual (post 4:5, portada de reel 9:16, slides 1080×1350, media
@@ -152,14 +168,15 @@ autorización.
 - Cada imagen se reescala y comprime antes de guardarse, para no reventar el
   almacenamiento del navegador.
 
-### Feed Preview: meses en pestañas, 28 espacios fijos por mes
+### Feed Preview: meses en pestañas, 24 espacios fijos por mes
 - El Feed Preview se organiza en **meses**, mostrados como pestañas abribles arriba de la
-  cuadrícula (una sola visible a la vez). Cada mes trae siempre **exactamente 28 espacios**
-  fijos — ni crecen ni se achican — y arranca vacío, con cada espacio en blanco diciendo
+  cuadrícula (una sola visible a la vez). Cada mes trae siempre **exactamente 24 espacios**
+  fijos — el cupo real de un mes (8 posts + 12 reels + 4 carruseles) — ni crecen ni se
+  achican, y arranca vacío, con cada espacio en blanco diciendo
   "Elegir publicación · Formato → título".
 - El botón **"Nuevo mes"** crea una pestaña más (numerada automáticamente, renombrable
   escribiendo directo sobre su etiqueta) y cambia a ella. Cada pestaña muestra cuántos de
-  sus 28 espacios están ocupados (`N/28`) y, si hay más de un mes, un botón de papelera
+  sus 24 espacios están ocupados (`N/24`) y, si hay más de un mes, un botón de papelera
   para eliminarla — con aviso si todavía tiene espacios ocupados (la pieza en sí no se
   borra, solo deja de estar programada ese mes); no se puede eliminar el último mes que
   quede.
@@ -171,7 +188,7 @@ autorización.
   el picker lo indica ("Ya en Mes X · #N") en vez de dejar duplicarla.
 - Una pieza ya colocada se puede **mover a otro mes** con el selector "Mover a…" que
   aparece al pasar el cursor sobre su espacio — la coloca en el primer espacio libre del
-  mes destino, o avisa si ese mes ya está lleno (28/28).
+  mes destino, o avisa si ese mes ya está lleno (24/24).
 - Cada tarjeta de un formato muestra un chip clicable **"En Feed · Mes X #N"** con su
   posición exacta; al hacer clic, cambia a ese mes y salta directo a esa celda, resaltándola.
 - Al revés, hacer clic en una celda ocupada abre exactamente ese formato para editarlo;
@@ -187,7 +204,7 @@ autorización.
   no es su número original del Banco de Ideas: es la posición **real** que ocupa en el
   Feed Preview, contada igual que los espacios de la grilla — empezando en el espacio de
   más abajo a la derecha (**#1**) y subiendo hacia arriba y hacia la izquierda hasta el
-  primer espacio (**#28**). Es un solo número compartido entre los tres formatos: si el
+  primer espacio (**#24**). Es un solo número compartido entre los tres formatos: si el
   espacio #14 de un mes es un Reel, ese Reel es el "Reel 14", y el próximo Post que caiga
   en el espacio #15 sería el "# Post 15".
 - Mientras una pieza no esté colocada en ningún espacio de ningún mes, su cabecera dice

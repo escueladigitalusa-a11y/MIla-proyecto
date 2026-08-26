@@ -427,6 +427,7 @@ body::before{
 .status-review{color:#8C6A34;background-color:#FBF3E4}
 .status-scheduled{color:#2E5E93;background-color:#EEF4FB}
 .status-published{color:#2F7D5B;background-color:#EDF6F1}
+.month-reassign{color:var(--navy);background-color:var(--gold-pale);max-width:110px}
 
 /* Dashboard */
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;margin-bottom:26px}
@@ -949,6 +950,14 @@ function loadLocalRole(){
 function saveLocalRole(role){
   try{ localStorage.setItem(ROLE_KEY, role); }catch(e){}
 }
+
+/* Cupo mensual de producción — 8 posts, 12 reels, 4 carruseles, 30 historias por mes.
+   Se declara aquí arriba (no más abajo, junto al resto de las funciones de meses de
+   contenido) porque seed() lo necesita al arrancar, y seed() se llama de forma síncrona
+   apenas carga el script — una const declarada más abajo todavía no existiría en ese
+   momento. Es solo informativo (el contador de cada pestaña de mes lo muestra), no
+   bloquea crear ni mover piezas de más. */
+const CONTENT_QUOTA = { posts:8, reels:12, carousels:4, stories:30 };
 
 /* ---------- Supabase: workspace compartido ---------- */
 const SUPABASE_URL = "https://rgxxyezzxaqaawswreyl.supabase.co";
@@ -2261,6 +2270,18 @@ function seed(){
   const DAY = 86400000;
   const at = days => t - days * DAY;
 
+  /* Meses de contenido (editorial): Posts, Reels, Carruseles e Historias comparten un
+     mismo calendario de "Mes 1 / Mes 2 / Mes 3…". El contenido ya cargado del Banco de
+     Ideas se reparte automático en orden según el cupo mensual real de la marca (8
+     posts, 12 reels, 4 carruseles, 30 historias) — 3 meses alcanzan justo para las 10
+     carruseles (4+4+2), que es la que más meses necesita. */
+  const cMonths = [
+    {id:uid("cmonth"), label:"Mes 1"},
+    {id:uid("cmonth"), label:"Mes 2"},
+    {id:uid("cmonth"), label:"Mes 3"}
+  ];
+  const monthForIndex = (i, quota) => cMonths[Math.min(Math.floor(i / quota), cMonths.length - 1)].id;
+
   return {
     v:3,
     profile:{
@@ -2270,21 +2291,24 @@ function seed(){
       followers:"12.5K", following:"415", avatar:"", tagline:"Plan. Create. Captivate.",
       hashtagsBase: HASHTAGS_BASE
     },
-    ui:{view:"dashboard", role:loadLocalRole(), filters:{}, postsGuideOpen:true, feedMonth:0, storyMonth:0},
+    ui:{view:"dashboard", role:loadLocalRole(), filters:{}, postsGuideOpen:true, feedMonth:0, storyMonth:0, contentMonth:0},
 
     posts: CONTENT_POSTS.map((p, i) => Object.assign({
       id:uid("post"), order:i, image:"", ratio:"4:5", date:"", links:"", collapsed:false,
-      cta:"", extras:"", hashtags:"", note:"", reviewed:false, designApproved:null, designNote:""
+      cta:"", extras:"", hashtags:"", note:"", reviewed:false, designApproved:null, designNote:"",
+      monthId: monthForIndex(i, CONTENT_QUOTA.posts)
     }, p, {createdAt: at(p.days), published: p.status === "published"})),
 
     reels: CONTENT_REELS.map((r, i) => Object.assign({
       id:uid("reel"), order:i, cover:"", collapsed:false,
-      notes:"", hashtags:"", note:"", reviewed:false
+      notes:"", hashtags:"", note:"", reviewed:false,
+      monthId: monthForIndex(i, CONTENT_QUOTA.reels)
     }, r, {createdAt: at(r.days), published: r.status === "published"})),
 
     carousels: CONTENT_CAROUSELS.map((c, i) => Object.assign({
       id:uid("car"), order:i, collapsed:false, copy:"", hashtags:"", note:"", reviewed:false,
-      designApproved:null, designNote:""
+      designApproved:null, designNote:"",
+      monthId: monthForIndex(i, CONTENT_QUOTA.carousels)
     }, c, {
       createdAt: at(c.days),
       published: c.status === "published",
@@ -2293,16 +2317,20 @@ function seed(){
 
     stories: CONTENT_STORIES.map((s, i) => Object.assign({
       id:uid("story"), order:i, media:"", rating:0, idea:"", followup:"", note:"", reviewed:false,
-      designApproved:null, designNote:""
+      designApproved:null, designNote:"",
+      monthId: monthForIndex(i, CONTENT_QUOTA.stories)
     }, s, {createdAt: at(s.days), published: s.status === "published"})),
 
+    contentMonths: cMonths,
+
     /* El Feed Preview se organiza en meses (pestañas); cada mes arranca con
-       exactamente 28 espacios vacíos que se llenan a mano eligiendo formato y
-       luego título desde la lista plegable. */
-    feedMonths: [{id:uid("month"), label:"Mes 1", slots:Array(28).fill(null)}],
+       exactamente 24 espacios vacíos (8 posts + 12 reels + 4 carruseles, el cupo real
+       de un mes) que se llenan a mano eligiendo formato y luego título desde la lista
+       plegable. */
+    feedMonths: [{id:uid("month"), label:"Mes 1", slots:Array(24).fill(null)}],
 
     /* El Stories Preview también se organiza en meses (pestañas); cada mes
-       arranca con 30 espacios vacíos (uno por día aproximado del mes) que se
+       arranca con 30 espacios vacíos (el cupo real de historias por mes) que se
        llenan a mano eligiendo la historia desde la lista plegable. */
     storyMonths: [{id:uid("month"), label:"Mes 1", slots:Array(30).fill(null)}],
 
@@ -2340,11 +2368,37 @@ function mergeIntoSeed(data){
   });
   migrateFeedMonths(merged);
   migrateStoryMonths(merged);
+  migrateContentMonths(merged);
   migrateDriveUrls(merged);
   // el rol que haya traído el dato guardado/de la nube no manda: siempre gana el rol
   // de este navegador (ver ROLE_KEY más arriba).
   merged.ui.role = loadLocalRole();
   return merged;
+}
+
+/* Garantiza que exista el calendario de meses de contenido (Posts/Reels/Carruseles/
+   Historias comparten uno solo), y que toda pieza que no traiga monthId (porque se
+   guardó antes de que existiera esta función, o porque su mes fue borrado) quede
+   asignada — en el mismo orden en que ya estaba, repartida según el cupo mensual real —
+   sin tocar el monthId de ninguna pieza que ya tenga uno válido. */
+function migrateContentMonths(state){
+  if(!Array.isArray(state.contentMonths) || !state.contentMonths.length){
+    state.contentMonths = [{id:uid("cmonth"), label:"Mes 1"}];
+  }
+  const validIds = new Set(state.contentMonths.map(m => m.id));
+  ["posts","reels","carousels","stories"].forEach(coll => {
+    const quota = CONTENT_QUOTA[coll] || 10;
+    (state[coll] || []).forEach((it, i) => {
+      if(!it.monthId || !validIds.has(it.monthId)){
+        const idx = Math.min(Math.floor(i / quota), state.contentMonths.length - 1);
+        it.monthId = state.contentMonths[idx].id;
+      }
+    });
+  });
+  if(typeof state.ui.contentMonth !== "number" || state.ui.contentMonth < 0 || state.ui.contentMonth >= state.contentMonths.length){
+    state.ui.contentMonth = 0;
+  }
+  return state;
 }
 
 /* Repara en el sitio cualquier imagen que se haya guardado con el formato de link de
@@ -2368,19 +2422,22 @@ function migrateDriveUrls(state){
 }
 
 /* Migra el Feed Preview de la forma antigua (un solo arreglo plano S.feedSlots)
-   a meses con pestañas, y garantiza que cada mes tenga siempre exactamente 28
-   espacios y que S.ui.feedMonth apunte a un mes que sí existe. */
+   a meses con pestañas, y garantiza que cada mes tenga siempre al menos 24
+   espacios (8 posts + 12 reels + 4 carruseles, el cupo real de un mes) y que
+   S.ui.feedMonth apunte a un mes que sí existe. */
 function migrateFeedMonths(state){
   if(!Array.isArray(state.feedMonths) || !state.feedMonths.length){
     const oldSlots = Array.isArray(state.feedSlots) ? state.feedSlots : [];
-    const slots = Array(28).fill(null);
-    oldSlots.slice(0, 28).forEach((sl, i) => { slots[i] = sl || null; });
+    const slots = Array(24).fill(null);
+    oldSlots.slice(0, 24).forEach((sl, i) => { slots[i] = sl || null; });
     state.feedMonths = [{id:uid("month"), label:"Mes 1", slots}];
   }
   state.feedMonths.forEach(m => {
     if(!Array.isArray(m.slots)) m.slots = [];
-    while(m.slots.length < 28) m.slots.push(null);
-    if(m.slots.length > 28) m.slots.length = 28;
+    while(m.slots.length < 24) m.slots.push(null);
+    // nunca se recorta un espacio ocupado (por ejemplo, meses de cuando el cupo era de
+    // 28): solo se recortan espacios vacíos sobrantes al final, hasta llegar a 24.
+    while(m.slots.length > 24 && !m.slots[m.slots.length - 1]) m.slots.pop();
   });
   if(typeof state.ui.feedMonth !== "number" || state.ui.feedMonth < 0 || state.ui.feedMonth >= state.feedMonths.length){
     state.ui.feedMonth = 0;
@@ -2879,6 +2936,7 @@ function applyFilter(coll, list){
   const f = ensureFilter(coll);
   let out = list;
   if(f.month && f.month !== "all") out = out.filter(x => monthKey(x.createdAt || 0) === f.month);
+  if(CONTENT_QUOTA[coll]) out = out.filter(x => x.monthId === activeContentMonth().id);
   out = [...out].sort((a,b) => f.sort === "oldest"
     ? (a.createdAt||0) - (b.createdAt||0)
     : (b.createdAt||0) - (a.createdAt||0));
@@ -2887,19 +2945,81 @@ function applyFilter(coll, list){
 function filterBarHTML(coll, totalCount, shownCount){
   const f = ensureFilter(coll);
   const months = monthsAvailable(coll);
+  // Posts/Reels/Carruseles/Historias ya se filtran por el mes de contenido (pestañas
+  // arriba); el filtro viejo de "tanda" por fecha de creación queda solo para
+  // Projects, que no tiene meses de contenido.
+  const showTandaFilter = !CONTENT_QUOTA[coll];
   return `<div class="filter-bar">
     <svg width="15" height="15" style="color:var(--gold-deep)"><use href="#i-filter"/></svg>
     <select class="fsel" data-filter-sort data-coll="${coll}">
       <option value="newest" ${f.sort==="newest"?"selected":""}>Más recientes primero</option>
       <option value="oldest" ${f.sort==="oldest"?"selected":""}>Más antiguos primero</option>
     </select>
-    <select class="fsel" data-filter-month data-coll="${coll}">
+    ${showTandaFilter ? `<select class="fsel" data-filter-month data-coll="${coll}">
       <option value="all" ${f.month==="all"?"selected":""}>Todas las tandas</option>
       ${months.map(([k,label]) => `<option value="${k}" ${f.month===k?"selected":""}>${esc(label)}</option>`).join("")}
-    </select>
+    </select>` : ""}
     <span class="fcount">${shownCount} de ${totalCount}</span>
-    ${f.month!=="all" ? `<span class="fclear" data-filter-clear data-coll="${coll}">Quitar filtro</span>` : ""}
+    ${showTandaFilter && f.month!=="all" ? `<span class="fclear" data-filter-clear data-coll="${coll}">Quitar filtro</span>` : ""}
   </div>`;
+}
+
+/* ---------- Meses de contenido: Posts, Reels, Carruseles e Historias comparten un
+   mismo calendario editorial ("Mes 1 / Mes 2 / Mes 3…"). Cada pieza pertenece a un
+   mes (state.monthId); el cupo mensual (CONTENT_QUOTA) es solo informativo — el
+   contador de la pestaña lo muestra, pero no bloquea crear ni mover piezas de más. ---------- */
+function activeContentMonth(){
+  migrateContentMonths(S);
+  return S.contentMonths[S.ui.contentMonth];
+}
+function contentMonthCount(coll, monthId){
+  return (S[coll] || []).filter(x => x.monthId === monthId).length;
+}
+function contentMonthsTabsHTML(coll){
+  const quota = CONTENT_QUOTA[coll];
+  return `<div class="feed-months">
+    ${S.contentMonths.map((m, mi) => {
+      const active = mi === S.ui.contentMonth;
+      const count = contentMonthCount(coll, m.id);
+      return `<div class="month-tab ${active ? "active" : ""}" data-content-month-tab="${mi}">
+        <input class="month-label" data-content-month-label="${mi}" value="${esc(m.label)}" ${canEdit() ? "" : "disabled"} title="Renombrar mes">
+        <span class="month-count">${count}/${quota}</span>
+        ${S.contentMonths.length > 1 ? `<button type="button" class="month-del lock-viewer lock-editor" data-content-month-del="${mi}" title="Eliminar este mes"><svg width="12" height="12"><use href="#i-trash"/></svg></button>` : ""}
+      </div>`;
+    }).join("")}
+    <button type="button" class="btn btn-ghost btn-sm lock-viewer" data-action="add-content-month"><svg><use href="#i-plus"/></svg> Nuevo mes</button>
+  </div>`;
+}
+function addContentMonth(){
+  if(!guard()) return;
+  S.contentMonths.push({id:uid("cmonth"), label:`Mes ${S.contentMonths.length+1}`});
+  S.ui.contentMonth = S.contentMonths.length - 1;
+  touch(); render();
+  toast("Mes creado", "check");
+}
+function deleteContentMonth(index){
+  if(!guard()) return;
+  if(S.contentMonths.length <= 1){ toast("Debe quedar al menos un mes.", "alert", true); return; }
+  const month = S.contentMonths[index]; if(!month) return;
+  const used = ["posts","reels","carousels","stories"].reduce((n,c) => n + contentMonthCount(c, month.id), 0);
+  confirmDialog(`¿Eliminar "${esc(month.label)}"?`,
+    used ? `Ese mes tiene ${used} pieza(s) asignada(s). No se borra ninguna pieza: pasan al primer mes que quede.` : "Este mes está vacío.",
+    () => {
+      S.contentMonths.splice(index, 1);
+      const fallbackId = S.contentMonths[0].id;
+      ["posts","reels","carousels","stories"].forEach(c => {
+        (S[c] || []).forEach(x => { if(x.monthId === month.id) x.monthId = fallbackId; });
+      });
+      if(S.ui.contentMonth >= S.contentMonths.length) S.ui.contentMonth = S.contentMonths.length - 1;
+      touch(); render();
+      toast("Mes eliminado", "trash");
+    }, "Eliminar");
+}
+/* Selector compacto de mes para reasignar una pieza sin salir de su tarjeta. */
+function contentMonthSelectHTML(coll, id, monthId){
+  return `<select class="status-select month-reassign lock-viewer" title="Mes de contenido" data-content-month-reassign data-coll="${coll}" data-id="${id}">
+    ${S.contentMonths.map(m => `<option value="${m.id}" ${m.id===monthId?"selected":""}>${esc(m.label)}</option>`).join("")}
+  </select>`;
 }
 
 /* ============================================================
@@ -3061,6 +3181,7 @@ function viewPosts(q=""){
   </div>
   <div class="readonly-note"><svg width="16" height="16"><use href="#i-alert"/></svg> Modo <b>Viewer</b>: la edición está bloqueada.</div>
   ${postsPlaybookHTML()}
+  ${contentMonthsTabsHTML("posts")}
   ${filterBarHTML("posts", all.length, list.length)}
   ${list.length ? list.map((p,i) => postCard(p,i)).join("") : emptyState("Sin posts para esta tanda", "Ajusta el filtro o crea un nuevo post.", "posts")}`;
 }
@@ -3074,6 +3195,7 @@ function postCard(p, i){
       <span class="num">${pubOrderLabel("posts", p.id, "# Post")}</span>
       <input class="title-input" data-field data-coll="posts" data-id="${p.id}" data-key="title" value="${esc(p.title)}" placeholder="Título del post">
       ${statusSelect("posts", p.id, p.status)}
+      ${contentMonthSelectHTML("posts", p.id, p.monthId)}
       ${itemTools("posts", p.id)}
       ${metaRowHTML("posts", p)}
     </div>
@@ -3128,12 +3250,14 @@ function viewReels(q=""){
     </div>
   </div>
   <div class="readonly-note"><svg width="16" height="16"><use href="#i-alert"/></svg> Modo <b>Viewer</b>: la edición está bloqueada.</div>
+  ${contentMonthsTabsHTML("reels")}
   ${filterBarHTML("reels", all.length, list.length)}
   ${list.length ? list.map((r,i) => `
       <div class="reel-mini ${r.published ? "published-item" : ""}" data-item="${r.id}">
         <div class="reel-mini-head">
           <span class="num">${pubOrderLabel("reels", r.id, "Reel")}</span>
           <input class="title-input" data-field data-coll="reels" data-id="${r.id}" data-key="title" value="${esc(r.title)}" placeholder="Título">
+          ${contentMonthSelectHTML("reels", r.id, r.monthId)}
           <button class="icon-btn lock-viewer lock-editor" data-del data-coll="reels" data-id="${r.id}" title="Eliminar" style="color:var(--danger)">
             <svg><use href="#i-trash"/></svg></button>
         </div>
@@ -3173,6 +3297,7 @@ function viewCarousels(q=""){
     </div>
   </div>
   <div class="readonly-note"><svg width="16" height="16"><use href="#i-alert"/></svg> Modo <b>Viewer</b>: la edición está bloqueada.</div>
+  ${contentMonthsTabsHTML("carousels")}
   ${filterBarHTML("carousels", all.length, list.length)}
   ${list.length ? list.map((c,i) => `
     <div class="card ${c.collapsed?"collapsed item":"item"} ${c.published ? "published-item" : ""}" data-item="${c.id}">
@@ -3181,6 +3306,7 @@ function viewCarousels(q=""){
         <span class="num">${pubOrderLabel("carousels", c.id, "# Carousel")}</span>
         <input class="title-input" data-field data-coll="carousels" data-id="${c.id}" data-key="title" value="${esc(c.title)}" placeholder="Carousel #${i+1}">
         ${statusSelect("carousels", c.id, c.status)}
+        ${contentMonthSelectHTML("carousels", c.id, c.monthId)}
         ${itemTools("carousels", c.id, `<button class="btn btn-ghost btn-sm lock-viewer" data-add-slide data-id="${c.id}"><svg><use href="#i-plus"/></svg> Add Slide</button>`)}
         ${metaRowHTML("carousels", c)}
       </div>
@@ -3259,6 +3385,7 @@ function viewStories(q=""){
     </div>
   </div>
   <div class="readonly-note"><svg width="16" height="16"><use href="#i-alert"/></svg> Modo <b>Viewer</b>: la edición está bloqueada.</div>
+  ${contentMonthsTabsHTML("stories")}
   ${filterBarHTML("stories", all.length, list.length)}
   <div class="story-grid">
     ${list.length ? list.map((s,i) => storyCard(s,i)).join("") : emptyState("Sin historias para esta tanda", "Ajusta el filtro o agrega una nueva historia.", "stories")}
@@ -3271,6 +3398,7 @@ function storyCard(s, i){
     <div class="story-top">
       <span class="num">#${s.num ?? (i+1)}</span>
       ${s.format ? `<span class="fmt-chip">${esc(s.format)}</span>` : ""}
+      ${contentMonthSelectHTML("stories", s.id, s.monthId)}
       <button class="icon-btn lock-viewer lock-editor" style="margin-left:auto;width:30px;height:30px;color:var(--danger)" data-del data-coll="stories" data-id="${s.id}" title="Eliminar">
         <svg width="15" height="15"><use href="#i-trash"/></svg></button>
     </div>
@@ -3312,7 +3440,7 @@ const FEED_FORMATS = [
   {coll:"carousels", label:"Carruseles", singular:"Carrusel", icon:"i-book"},
 ];
 
-const FEED_SLOTS_PER_MONTH = 28;
+const FEED_SLOTS_PER_MONTH = 24; // 8 posts + 12 reels + 4 carruseles, el cupo real de un mes
 
 /* Mes activo (la pestaña que se ve). migrateFeedMonths ya garantiza que exista. */
 function activeMonth(){
@@ -3323,9 +3451,12 @@ function ensureFeedSlots(){
   return activeMonth().slots;
 }
 
-/* Cada mes tiene siempre 28 espacios fijos — ya no crece dinámicamente. */
+/* Cada mes tiene siempre 24 espacios fijos como mínimo — no crece dinámicamente, salvo
+   el caso raro de un mes que traiga de antes más espacios ocupados que el cupo actual
+   (ver migrateFeedMonths, que nunca borra un espacio ocupado): ahí se muestran todos,
+   para no esconder contenido ya colocado. */
 function feedSlotCount(){
-  return FEED_SLOTS_PER_MONTH;
+  return Math.max(FEED_SLOTS_PER_MONTH, ensureFeedSlots().length);
 }
 
 /* Dónde está colocada una pieza en TODO el feed (cualquier mes), o null si no está. */
@@ -3391,7 +3522,7 @@ function feedSlotIndexOf(coll, id){
 
 function assignFeedSlot(index, coll, id){
   const slots = ensureFeedSlots();
-  if(index < 0 || index >= FEED_SLOTS_PER_MONTH) return;
+  if(index < 0 || index >= slots.length) return;
   // una misma pieza no puede ocupar dos espacios, ni en este mes ni en otro
   S.feedMonths.forEach(m => m.slots.forEach((sl, i) => {
     if(sl && sl.coll === coll && sl.id === id) m.slots[i] = null;
@@ -4189,6 +4320,9 @@ function createItem(coll){
   if(!guard()) return;
   const t = now();
   const base = {id:uid(coll), createdAt:t, order:-1, rating:0, status:"draft", reviewed:false, published:false, collapsed:false, designApproved:null, designNote:""};
+  // Posts/Reels/Carruseles/Historias: la pieza nueva se crea en el mes de contenido
+  // que se esté viendo, para que aparezca directo en esa pestaña.
+  if(CONTENT_QUOTA[coll]) base.monthId = activeContentMonth().id;
   let item, label;
   if(coll === "posts"){
     item = Object.assign(base, {title:`Post ${S.posts.length+1}`, pillar:"educacion", designText:"", desarrollo:"", copy:"", cta:"", extras:"", hashtags:"", note:"", links:"", image:"", ratio:"4:5", date:""});
@@ -4322,6 +4456,7 @@ document.addEventListener("click", async e => {
       return;
     }
     if(a === "add-story-month"){ addStoryMonth(); return; }
+    if(a === "add-content-month"){ addContentMonth(); return; }
     if(a === "notifications"){ toast(dirty ? "Tienes cambios sin guardar" : "Todo está guardado", dirty ? "alert" : "check"); return; }
     if(a === "history"){ toast(S.savedAt ? "Último guardado: " + new Date(S.savedAt).toLocaleString("es") : "Aún no has guardado", "history"); return; }
     if(a === "help"){ toast("Edita cualquier campo: se guarda solo. El Feed Preview se actualiza en vivo.", "help"); return; }
@@ -4424,6 +4559,17 @@ document.addEventListener("click", async e => {
   if(storyMonthTab){
     const idx = Number(storyMonthTab.dataset.storyMonthTab);
     if(idx !== S.ui.storyMonth){ S.ui.storyMonth = idx; touch(); render(); }
+    return;
+  }
+
+  // pestaña de mes de contenido (Posts/Reels/Carruseles/Historias): eliminar / cambiar
+  const contentMonthDel = t.closest("[data-content-month-del]");
+  if(contentMonthDel){ deleteContentMonth(Number(contentMonthDel.dataset.contentMonthDel)); return; }
+
+  const contentMonthTab = t.closest("[data-content-month-tab]");
+  if(contentMonthTab){
+    const idx = Number(contentMonthTab.dataset.contentMonthTab);
+    if(idx !== S.ui.contentMonth){ S.ui.contentMonth = idx; touch(); render(); }
     return;
   }
 
@@ -4609,10 +4755,25 @@ document.addEventListener("input", e => {
     touch();
     return;
   }
+  const cml = el.closest("[data-content-month-label]");
+  if(cml){
+    if(!canEdit()){ render(); return; }
+    const m = S.contentMonths[Number(cml.dataset.contentMonthLabel)];
+    if(m) m.label = el.value;
+    touch();
+    return;
+  }
   if(el.id === "search"){ render(); }
 });
 
 document.addEventListener("change", e => {
+  const cmr = e.target.closest("[data-content-month-reassign]");
+  if(cmr){
+    if(!canEdit()){ render(); return; }
+    const it = find(cmr.dataset.coll, cmr.dataset.id);
+    if(it){ it.monthId = e.target.value; touch(); render(); }
+    return;
+  }
   const mv = e.target.closest("[data-move-slot]");
   if(mv){
     if(!canEdit()){ render(); return; }
