@@ -161,6 +161,20 @@ autorización.
   intercambiar su posición, o usa "Vaciar este mes" para dejar solo ese mes en blanco de
   nuevo (los demás meses no se tocan).
 
+### El número de Post/Reel/Carrusel es su orden real de publicación
+- El "# Post N" / "Reel N" / "# Carrusel N" que aparece en la cabecera de cada pieza ya
+  no es su número original del Banco de Ideas: es la posición **real** que ocupa en el
+  Feed Preview, contada igual que los espacios de la grilla — empezando en el espacio de
+  más abajo a la derecha (**#1**) y subiendo hacia arriba y hacia la izquierda hasta el
+  primer espacio (**#28**). Es un solo número compartido entre los tres formatos: si el
+  espacio #14 de un mes es un Reel, ese Reel es el "Reel 14", y el próximo Post que caiga
+  en el espacio #15 sería el "# Post 15".
+- Mientras una pieza no esté colocada en ningún espacio de ningún mes, su cabecera dice
+  **"Sin programar"** en vez de un número — y en cuanto la colocas, el número aparece
+  solo, sin tocar nada a mano.
+- El chip "En Feed · Mes X #N" de cada tarjeta usa este mismo número, así que siempre
+  coincide con el que se ve en la cabecera.
+
 ### Check de "Publicado"
 - Además del check de revisión, todos los formatos (Posts, Reels, Carruseles e Historias)
   tienen un segundo check dedicado: **Publicado**, también exclusivo del rol Admin.

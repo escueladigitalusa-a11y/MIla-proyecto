@@ -2735,7 +2735,7 @@ function feedBadge(coll, id){
   if(!loc) return "";
   const label = S.feedMonths[loc.month]?.label || `Mes ${loc.month+1}`;
   return `<span class="meta-chip feed-jump" data-feed-jump data-coll="${coll}" data-id="${id}" title="Ver esta posición en el Feed Preview">
-    <svg><use href="#i-feed"/></svg>En Feed · ${esc(label)} #${loc.slot+1}</span>`;
+    <svg><use href="#i-feed"/></svg>En Feed · ${esc(label)} #${FEED_SLOTS_PER_MONTH - loc.slot}</span>`;
 }
 
 /* Check de "revisado y listo para publicar" — solo el rol Admin puede marcarlo.
@@ -3001,7 +3001,7 @@ function postCard(p, i){
   <div class="card ${p.collapsed ? "collapsed item" : "item"} ${p.published ? "published-item" : ""}" data-item="${p.id}">
     <div class="item-head">
       ${itemThumbHTML(p.image, "i-post")}
-      <span class="num"># Post ${p.num ?? (i+1)}</span>
+      <span class="num">${pubOrderLabel("posts", p.id, "# Post")}</span>
       <input class="title-input" data-field data-coll="posts" data-id="${p.id}" data-key="title" value="${esc(p.title)}" placeholder="Título del post">
       ${statusSelect("posts", p.id, p.status)}
       ${itemTools("posts", p.id)}
@@ -3062,7 +3062,7 @@ function viewReels(q=""){
   ${list.length ? list.map((r,i) => `
       <div class="reel-mini ${r.published ? "published-item" : ""}" data-item="${r.id}">
         <div class="reel-mini-head">
-          <span class="num">Reel ${i+1}</span>
+          <span class="num">${pubOrderLabel("reels", r.id, "Reel")}</span>
           <input class="title-input" data-field data-coll="reels" data-id="${r.id}" data-key="title" value="${esc(r.title)}" placeholder="Título">
           <button class="icon-btn lock-viewer lock-editor" data-del data-coll="reels" data-id="${r.id}" title="Eliminar" style="color:var(--danger)">
             <svg><use href="#i-trash"/></svg></button>
@@ -3108,7 +3108,7 @@ function viewCarousels(q=""){
     <div class="card ${c.collapsed?"collapsed item":"item"} ${c.published ? "published-item" : ""}" data-item="${c.id}">
       <div class="item-head">
         ${itemThumbHTML((c.slides.find(s=>s.image)||{}).image, "i-book")}
-        <span class="num"># Carousel ${c.num ?? (i+1)}</span>
+        <span class="num">${pubOrderLabel("carousels", c.id, "# Carousel")}</span>
         <input class="title-input" data-field data-coll="carousels" data-id="${c.id}" data-key="title" value="${esc(c.title)}" placeholder="Carousel #${i+1}">
         ${statusSelect("carousels", c.id, c.status)}
         ${itemTools("carousels", c.id, `<button class="btn btn-ghost btn-sm lock-viewer" data-add-slide data-id="${c.id}"><svg><use href="#i-plus"/></svg> Add Slide</button>`)}
@@ -3267,6 +3267,23 @@ function feedLocationOf(coll, id){
   return null;
 }
 
+/* Número de orden de publicación: la posición real de la pieza dentro del mes donde
+   está colocada, contada como ya se cuentan los espacios en la grilla — de abajo hacia
+   arriba y de derecha a izquierda (el último espacio del mes, abajo a la derecha, es el
+   #1; el primero, arriba a la izquierda, es el #28). Un solo número compartido entre
+   Posts, Reels y Carruseles: si el espacio #14 de un mes es un Reel, ese Reel es el #14.
+   Devuelve null si la pieza todavía no está colocada en ningún mes. */
+function pubOrderNumber(coll, id){
+  const loc = feedLocationOf(coll, id);
+  return loc ? (FEED_SLOTS_PER_MONTH - loc.slot) : null;
+}
+/* Etiqueta lista para mostrar: "Post 14" o, si aún no está programada, "Post · Sin
+   programar". prefix ya trae el "#" cuando corresponde (ver cada llamada). */
+function pubOrderLabel(coll, id, prefix){
+  const n = pubOrderNumber(coll, id);
+  return n ? `${prefix} ${n}` : `${prefix} · Sin programar`;
+}
+
 /* Cómo se ve una pieza dentro de la grilla, según su formato. */
 function feedDisplay(coll, it){
   if(!it) return null;
@@ -3396,7 +3413,9 @@ function viewFeed(){
 
     if(it){
       const kindLabel = it.kind === "post" ? "Post" : it.kind === "reel" ? "Reel" : "Carrusel";
-      const numLabel = it.num ? ` #${it.num}` : "";
+      // El número que se muestra es la posición real de este espacio (orden de
+      // publicación), no el número original del Banco de Ideas.
+      const numLabel = ` #${cells - i}`;
       html += `<div class="cell ${it.published ? "is-published" : ""}" style="animation-delay:${delay}" draggable="true"
         data-slot="${i}" data-cell="${it.id}" data-coll="${it.coll}"
         title="${esc(kindLabel)}${numLabel} — ${esc(it.title)} · clic para editar">
@@ -3503,11 +3522,11 @@ function renderFeedPicker(){
         return `<button type="button" class="pick-item" data-pick-item data-coll="${f.coll}" data-id="${it.id}">
           <span class="thumb">${d.image ? `<img src="${d.image}" alt="">` : `<svg><use href="#${f.icon}"/></svg>`}</span>
           <span class="txt">
-            <b>${f.singular}${it.num ? ` #${it.num}` : ""}</b>
+            <b>${f.singular}</b>
             <span>${esc(it.title)}</span>
           </span>
           ${isCurrent ? `<span class="tag-used">En este espacio</span>`
-            : loc ? `<span class="tag-used">Ya en ${esc(S.feedMonths[loc.month]?.label || `Mes ${loc.month+1}`)} · #${loc.slot+1}</span>` : ""}
+            : loc ? `<span class="tag-used">Ya en ${esc(S.feedMonths[loc.month]?.label || `Mes ${loc.month+1}`)} · #${FEED_SLOTS_PER_MONTH - loc.slot}</span>` : ""}
           ${!d.image ? `<span class="no-media">Sin media</span>` : ""}
         </button>`;
       }).join("")}</div>` : `<div class="picker-empty">Todavía no hay piezas en este formato.</div>`;
