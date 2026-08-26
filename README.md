@@ -191,6 +191,15 @@ autorización.
   puede correr varias veces sin problema — si un archivo ya está en su carpeta correcta,
   simplemente se vuelve a mover a la misma carpeta y renombrar con el mismo nombre.
 
+### Vista previa ampliada en el Feed Preview y el Stories Preview
+- Cada celda ocupada que tiene imagen trae, al pasar el cursor por encima, un botón
+  redondo de ampliar (⤢) centrado sobre la miniatura. Al hacer clic se abre esa imagen
+  en grande, sobre un fondo oscuro, sin salir de la cuadrícula ni navegar a editar la
+  pieza.
+- Clic en el fondo oscuro o en la "×" cierra la vista previa; clic en la imagen misma no
+  hace nada (para no cerrarla sin querer). El resto de la celda sigue funcionando igual:
+  clic fuera del botón de ampliar todavía lleva a editar esa pieza.
+
 ### Check de "Publicado"
 - Además del check de revisión, todos los formatos (Posts, Reels, Carruseles e Historias)
   tienen un segundo check dedicado: **Publicado**, también exclusivo del rol Admin.

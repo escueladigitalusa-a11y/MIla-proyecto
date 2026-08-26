@@ -647,6 +647,24 @@ body::before{
 .modal .row{display:flex;gap:10px;justify-content:flex-end}
 .hidden{display:none!important}
 
+/* Vista previa ampliada de una imagen del Feed Preview / Stories Preview */
+.lightbox-bg{padding:32px}
+.lightbox{position:relative;max-width:min(640px,92vw);max-height:88vh;display:flex;flex-direction:column;align-items:center}
+.lightbox img{max-width:100%;max-height:80vh;border-radius:14px;box-shadow:0 30px 70px rgba(14,42,74,.4);object-fit:contain;background:#fff}
+.lightbox-cap{margin-top:14px;color:#fff;font-family:var(--serif);font-size:15px;text-align:center;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+.lightbox-close{position:absolute;top:-16px;right:-16px;width:36px;height:36px;border-radius:50%;background:#fff;color:var(--navy);
+  display:grid;place-items:center;box-shadow:0 6px 18px rgba(14,42,74,.35);transition:.15s}
+.lightbox-close:hover{background:var(--danger);color:#fff}
+.lightbox-close svg{width:16px;height:16px}
+
+/* Botón de "ampliar" centrado sobre una celda con imagen del Feed/Stories Preview */
+.cell-zoom{position:absolute;inset:0;margin:auto;width:38px;height:38px;border-radius:50%;
+  background:rgba(14,20,34,.6);color:#fff;display:grid;place-items:center;opacity:0;transition:.15s;
+  backdrop-filter:blur(2px);z-index:2}
+.cell-zoom svg{width:17px;height:17px}
+.cell:hover .cell-zoom{opacity:1}
+.cell-zoom:hover{background:var(--navy)}
+
 /* Role locking */
 body.role-viewer .lock-viewer{display:none!important}
 body.role-editor .lock-editor{display:none!important}
@@ -751,6 +769,8 @@ body.needs-auth .app{display:none}
   <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4.3-3 7.7-7 9-4-1.3-7-4.7-7-9V6z"/></symbol>
   <symbol id="i-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 8l-4 4 4 4M6 12h9"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H4v5M15 4h5v5M4 15v5h5M20 15v5h-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
   <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9a6 6 0 1 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6z"/><path d="M10 19a2 2 0 0 0 4 0"/></symbol>
   <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4.5V9H8"/><path d="M12 7.5V12l3 2"/></symbol>
   <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3.2"/><path d="M5.8 19a6.5 6.5 0 0 1 12.4 0"/></symbol>
@@ -2522,6 +2542,25 @@ function confirmDialog(title, text, onYes, yesLabel="Eliminar"){
   host.onclick = e => { if(e.target.hasAttribute("data-close")) host.innerHTML = ""; };
   $("#mYes").onclick = () => { host.innerHTML = ""; onYes(); };
 }
+
+/* Vista previa ampliada de una imagen ya colocada en el Feed Preview o el Stories
+   Preview — clic en el fondo o en la "×" cierra, clic en la imagen no hace nada (para
+   no cerrarla por accidente). */
+function openImageLightbox(src, title){
+  if(!src) return;
+  const host = $("#modalHost");
+  host.innerHTML = `
+    <div class="modal-bg lightbox-bg" data-close>
+      <div class="lightbox" role="dialog" aria-modal="true">
+        <button class="lightbox-close" data-close title="Cerrar"><svg><use href="#i-x"/></svg></button>
+        <img src="${src}" alt="${esc(title || "")}" onclick="event.stopPropagation()">
+        ${title ? `<div class="lightbox-cap">${esc(title)}</div>` : ""}
+      </div>
+    </div>`;
+  // closest() en vez de hasAttribute: el botón de cerrar trae un ícono SVG anidado, y un
+  // clic sobre el ícono llega con e.target apuntando al <svg>/<use>, no al <button>.
+  host.onclick = e => { if(e.target.closest("[data-close]")) host.innerHTML = ""; };
+}
 function canEdit(){ return S.ui.role !== "viewer"; }
 function canAdmin(){ return S.ui.role === "admin"; }
 function guard(){
@@ -3541,6 +3580,7 @@ function viewFeed(){
         title="${esc(kindLabel)}${numLabel} — ${esc(it.title)} · clic para editar">
         ${it.image ? `<img src="${it.image}" alt="${esc(it.title)}">`
                    : `<div class="noimg">${esc((it.text || it.title).slice(0,70))}</div>`}
+        ${it.image ? `<button class="cell-zoom" data-zoom data-title="${esc(kindLabel)}${numLabel} — ${esc(it.title)}" title="Ampliar vista previa"><svg><use href="#i-expand"/></svg></button>` : ""}
         ${it.published
             ? `<span class="pub-flag" title="Publicado"><svg><use href="#i-check-plain"/></svg>Publicado</span>`
             : it.reviewed
@@ -3828,6 +3868,7 @@ function viewStoriesPreview(){
         title="Historia${it.num ? ` #${it.num}` : ""} — ${esc(it.text)} · clic para editar">
         ${it.media ? `<img src="${it.media}" alt="${esc(it.text)}">`
                    : `<div class="noimg">${esc((it.text||"").slice(0,70))}</div>`}
+        ${it.media ? `<button class="cell-zoom" data-zoom data-title="Historia${it.num ? ` #${it.num}` : ""} — ${esc(it.text)}" title="Ampliar vista previa"><svg><use href="#i-expand"/></svg></button>` : ""}
         ${it.published
             ? `<span class="pub-flag" title="Publicado"><svg><use href="#i-check-plain"/></svg>Publicado</span>`
             : it.reviewed
@@ -4386,6 +4427,16 @@ document.addEventListener("click", async e => {
   if(storyPickSlot){
     if(!guard()) return;
     openStoryPicker(Number(storyPickSlot.dataset.storyPickSlot));
+    return;
+  }
+
+  // botón de ampliar sobre una celda del Feed/Stories Preview → vista previa grande,
+  // sin salir de la grilla (se lee el <img> ya presente en la celda en vez de duplicar
+  // la imagen en un atributo, para no repetir base64 grandes en el HTML)
+  const zoomBtn = t.closest("[data-zoom]");
+  if(zoomBtn){
+    const img = zoomBtn.closest(".cell")?.querySelector("img");
+    if(img) openImageLightbox(img.src, zoomBtn.dataset.title || "");
     return;
   }
 
