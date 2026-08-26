@@ -175,6 +175,22 @@ autorización.
 - El chip "En Feed · Mes X #N" de cada tarjeta usa este mismo número, así que siempre
   coincide con el que se ve en la cabecera.
 
+### Organizar Google Drive por orden del feed
+- En *Settings* → **Cuenta** (solo si Google Drive está activo) hay un botón
+  **"Organizar por orden del feed"**: crea (o reutiliza) una subcarpeta por mes dentro de
+  tu carpeta de Drive del workspace, y renombra la portada de cada Post/Reel/Carrusel
+  ya colocado en el Feed Preview con su número de orden — ej. `01 - Post - Título.jpg` —
+  para que, ordenados alfabéticamente en Drive, queden listos para publicar en el orden
+  correcto de un vistazo.
+- Solo toca la **portada** de cada pieza (la que se ve en el Feed Preview), no cada slide
+  de un carrusel ni las historias del Stories Preview. Las piezas que todavía no están
+  colocadas en ningún espacio, o cuya imagen vive solo comprimida en el dato (nunca se
+  subió a Drive), no se tocan — el aviso final dice cuántas se organizaron y cuántas se
+  saltaron, y por qué.
+- Es una acción manual: se corre cuando la pidas, no automáticamente en cada cambio. Se
+  puede correr varias veces sin problema — si un archivo ya está en su carpeta correcta,
+  simplemente se vuelve a mover a la misma carpeta y renombrar con el mismo nombre.
+
 ### Check de "Publicado"
 - Además del check de revisión, todos los formatos (Posts, Reels, Carruseles e Historias)
   tienen un segundo check dedicado: **Publicado**, también exclusivo del rol Admin.

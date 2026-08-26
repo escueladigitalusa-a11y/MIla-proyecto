@@ -3394,6 +3394,126 @@ function feedMonthsTabsHTML(){
   </div>`;
 }
 
+/* ---------- Organizar Google Drive por orden del Feed Preview ----------
+   Solo toca la portada de Posts/Reels/Carruseles ya colocados en un espacio del feed:
+   crea (o reutiliza) una subcarpeta por mes dentro de la carpeta de Drive del workspace,
+   y renombra cada archivo con su número de orden — el mismo que ya se muestra en la
+   cabecera de cada pieza — para que, ordenados alfabéticamente en Drive, queden listos
+   para publicar en el orden correcto. Las piezas sin colocar, o cuya imagen todavía vive
+   solo comprimida en el dato (nunca se subió a Drive), no se tocan. */
+
+/* El id de archivo va siempre en ?id=... tanto en el link nuevo (thumbnail) como en el
+   viejo (uc?export=view), que migrateDriveUrls debería haber reemplazado ya. */
+function extractDriveFileId(url){
+  if(typeof url !== "string") return null;
+  const m = url.match(/[?&]id=([^&]+)/);
+  return m ? m[1] : null;
+}
+
+async function driveFindOrCreateFolder(token, name, parentId){
+  const safeName = name.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  const q = encodeURIComponent(`'${parentId}' in parents and mimeType='application/vnd.google-apps.folder' and name='${safeName}' and trashed=false`);
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if(!res.ok) throw new Error("No se pudo buscar la carpeta de Drive: " + res.status);
+  const data = await res.json();
+  if(data.files && data.files.length) return data.files[0].id;
+  const createRes = await fetch(`https://www.googleapis.com/drive/v3/files?fields=id`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ name, mimeType: "application/vnd.google-apps.folder", parents: [parentId] })
+  });
+  if(!createRes.ok) throw new Error("No se pudo crear la carpeta de Drive: " + createRes.status);
+  const created = await createRes.json();
+  return created.id;
+}
+
+async function driveRenameAndMove(token, fileId, newName, newParentId){
+  const getRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?fields=parents`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if(!getRes.ok) throw new Error("No se pudo leer el archivo en Drive: " + getRes.status);
+  const meta = await getRes.json();
+  const oldParents = (meta.parents || []).join(",");
+  const params = new URLSearchParams({ addParents: newParentId });
+  if(oldParents) params.set("removeParents", oldParents);
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?${params.toString()}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ name: newName })
+  });
+  if(!res.ok) throw new Error("No se pudo renombrar/mover en Drive: " + res.status);
+}
+
+function sanitizeDriveName(s){
+  return String(s || "Sin título").replace(/[\/\\:*?"<>|]/g, "-").trim().slice(0, 80) || "Sin título";
+}
+
+const FEED_KIND_LABEL = { posts: "Post", reels: "Reel", carousels: "Carrusel" };
+function feedCoverImage(coll, it){
+  if(coll === "posts") return it.image;
+  if(coll === "reels") return it.cover;
+  if(coll === "carousels") return (it.slides.find(sl => sl.image) || {}).image;
+  return "";
+}
+
+async function organizeDriveByFeedOrder(){
+  if(!driveEnabled()){ toast("Google Drive no está configurado.", "alert", true); return; }
+  if(!guard()) return;
+
+  // El token se pide primero, en el mismo gesto síncrono del clic — igual que en
+  // pickImage() — para que el popup de autorización no falle por gesto vencido.
+  let token;
+  try{
+    token = await getDriveAccessToken();
+  }catch(e){
+    toast(`No se pudo autorizar Google Drive${e && e.message ? " (" + e.message + ")" : ""}: no se organizó nada.`, "alert", true);
+    return;
+  }
+
+  toast("Organizando Google Drive…", "upload");
+  let renamed = 0, skippedNoImage = 0, skippedNotDrive = 0, failed = 0;
+
+  for(const month of S.feedMonths){
+    if(!month.slots.some(Boolean)) continue;
+    let folderId;
+    try{
+      folderId = await driveFindOrCreateFolder(token, month.label, GOOGLE_DRIVE_FOLDER_ID);
+    }catch(e){
+      console.warn("No se pudo preparar la carpeta de", month.label, e);
+      failed += month.slots.filter(Boolean).length;
+      continue;
+    }
+    for(let i = 0; i < month.slots.length; i++){
+      const sl = month.slots[i];
+      if(!sl) continue;
+      const it = find(sl.coll, sl.id);
+      if(!it) continue;
+      const image = feedCoverImage(sl.coll, it);
+      if(!image){ skippedNoImage++; continue; }
+      const fileId = extractDriveFileId(image);
+      if(!fileId){ skippedNotDrive++; continue; }
+      const order = FEED_SLOTS_PER_MONTH - i;
+      const padded = String(order).padStart(2, "0");
+      const newName = `${padded} - ${FEED_KIND_LABEL[sl.coll] || sl.coll} - ${sanitizeDriveName(it.title)}.jpg`;
+      try{
+        await driveRenameAndMove(token, fileId, newName, folderId);
+        renamed++;
+      }catch(e){
+        console.warn("No se pudo organizar", newName, e);
+        failed++;
+      }
+    }
+  }
+
+  const parts = [`${renamed} archivo(s) organizados en Drive`];
+  if(skippedNoImage) parts.push(`${skippedNoImage} sin portada todavía`);
+  if(skippedNotDrive) parts.push(`${skippedNotDrive} guardados solo en este dispositivo`);
+  if(failed) parts.push(`${failed} con error`);
+  toast(parts.join(" · "), failed ? "alert" : "check", !!failed);
+}
+
 function viewFeed(){
   const slots = ensureFeedSlots();
   const cells = feedSlotCount();
@@ -3878,7 +3998,9 @@ function viewSettings(){
           <div class="kv"><div><b>Workspace compartido</b><small>Los cambios se sincronizan en la nube con todo tu equipo y tu clienta.</small></div></div>
           <div class="kv"><div><b>Imágenes en Google Drive</b><small>${driveEnabled()
             ? "Activo — las imágenes que subas se guardan en tu carpeta de Drive."
-            : "No configurado todavía — las imágenes se guardan comprimidas dentro del dato (ver README)."}</small></div></div>
+            : "No configurado todavía — las imágenes se guardan comprimidas dentro del dato (ver README)."}</small></div>
+            ${driveEnabled() ? `<button class="btn btn-ghost btn-sm lock-viewer" data-action="organize-drive"><svg><use href="#i-folder"/></svg> Organizar por orden del feed</button>` : ""}</div>
+          ${driveEnabled() ? `<div class="hint-line" style="padding:0 0 4px">Crea una subcarpeta por mes dentro de tu carpeta de Drive y renombra la portada de cada Post/Reel/Carrusel ya colocado en el Feed Preview con su número de orden — solo la portada, no cada slide de carrusel; las piezas sin colocar no se tocan.</div>` : ""}
         </div>
       </div>
 
@@ -4133,6 +4255,7 @@ document.addEventListener("click", async e => {
     if(a === "help"){ toast("Edita cualquier campo: se guarda solo. El Feed Preview se actualiza en vivo.", "help"); return; }
     if(a === "privacy"){ toast("Tus datos viven en tu workspace compartido de Supabase, con una copia de respaldo en este navegador.", "shield"); return; }
     if(a === "signout"){ sbClient?.auth.signOut(); return; }
+    if(a === "organize-drive"){ await organizeDriveByFeedOrder(); return; }
   }
 
   // estrellas
