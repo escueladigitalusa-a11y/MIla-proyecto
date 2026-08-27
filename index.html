@@ -445,6 +445,29 @@ body::before{
 .feed-item{display:flex;gap:14px;background:#fff;border:1px solid var(--line-2);border-radius:16px;padding:16px;box-shadow:var(--shadow-sm)}
 .feed-item + .feed-item{margin-top:12px}
 .feed-item .bubble{width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--cream-2);color:var(--navy)}
+
+/* Dashboard: estado del contenido por mes/trimestre */
+.dash-matrix{margin-bottom:30px}
+.dash-scope{display:flex;align-items:center;gap:14px;margin-left:auto;flex-wrap:wrap}
+.seg{display:flex;border:1px solid var(--line);border-radius:20px;padding:2px;background:#fff}
+.seg-btn{border-radius:18px;padding:6px 14px;font-size:12.5px;font-weight:600;color:var(--muted);transition:.15s}
+.seg-btn.active{background:var(--navy);color:#fff}
+.dash-nav{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--navy);font-weight:600;white-space:nowrap}
+.dash-nav .icon-btn{width:26px;height:26px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;color:var(--navy)}
+.dash-nav .icon-btn:hover:not(:disabled){border-color:var(--gold)}
+.dash-nav .icon-btn:disabled{opacity:.3;cursor:default}
+.dash-nav .icon-btn svg{width:13px;height:13px}
+.dash-table-wrap{overflow-x:auto;background:#fff;border:1px solid var(--line-2);border-radius:var(--r-lg);box-shadow:var(--shadow)}
+.dash-table{width:100%;border-collapse:collapse;font-size:13px}
+.dash-table th,.dash-table td{padding:12px 14px;text-align:center;white-space:nowrap}
+.dash-table thead th{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line-2);font-weight:600}
+.dash-table thead th:first-child{text-align:left}
+.dash-table tbody tr + tr td{border-top:1px solid var(--line-2)}
+.dash-fmt{display:flex;align-items:center;gap:9px;text-align:left;font-family:var(--serif);font-size:15px;color:var(--navy);font-weight:600}
+.dash-fmt svg{width:17px;height:17px;color:var(--gold)}
+.dash-cell{min-width:34px;padding:5px 10px;border-radius:20px;font-weight:600;color:var(--navy);background:var(--cream-2);transition:.15s}
+.dash-cell:hover{background:var(--gold-pale);color:var(--gold-deep)}
+.dash-cell.zero{color:var(--muted);background:transparent}
 .feed-item .bubble svg{width:19px;height:19px}
 .feed-item .bubble.alert{background:#FBEEEB;color:var(--danger)}
 .feed-item p{margin:0;font-size:14px;font-weight:300}
@@ -3042,6 +3065,120 @@ function contentMonthSelectHTML(coll, id, monthId){
 /* ============================================================
    VISTAS
    ============================================================ */
+/* ---------- Dashboard: estado del contenido por mes / trimestre ----------
+   Reutiliza el mismo calendario de meses de contenido que ya comparten
+   Posts/Reels/Carruseles/Historias (S.contentMonths). Un "trimestre" es
+   simplemente 3 meses seguidos de ese calendario, agrupados. */
+const DASH_COLLS = [
+  {coll:"posts",     label:"Posts",       icon:"i-post"},
+  {coll:"reels",     label:"Reels",       icon:"i-reel"},
+  {coll:"carousels", label:"Carruseles",  icon:"i-book"},
+  {coll:"stories",   label:"Historias",   icon:"i-story"}
+];
+const DASH_COPY_FIELD  = {posts:"copy", reels:"copy", carousels:"copy", stories:"content"};
+const DASH_IMAGE_FIELD = {posts:"image", reels:"cover", stories:"media"};
+function dashCopyOf(coll, it){ return (it[DASH_COPY_FIELD[coll]] || "").trim(); }
+function dashImageOf(coll, it){
+  if(coll === "carousels") return (it.slides.find(sl => sl.image) || {}).image || "";
+  return it[DASH_IMAGE_FIELD[coll]] || "";
+}
+const DASH_METRICS = [
+  {key:"reviewed",  label:"Revisados",          check:it => !!it.reviewed},
+  {key:"pending",   label:"Por revisar",        check:it => !it.reviewed},
+  {key:"approved",  label:"Diseño aprobado",    check:it => it.designApproved === true},
+  {key:"rejected",  label:"Diseño desaprobado", check:it => it.designApproved === false},
+  {key:"published", label:"Publicado",          check:it => !!it.published},
+  {key:"noCopy",    label:"Copy faltante",      check:(it,coll) => !dashCopyOf(coll, it)},
+  {key:"noImage",   label:"Imagen faltante",    check:(it,coll) => !dashImageOf(coll, it)}
+];
+
+/* Agrupa S.contentMonths de a 3 en "trimestres". */
+function dashboardQuarters(){
+  const months = S.contentMonths;
+  const qs = [];
+  for(let i = 0; i < months.length; i += 3) qs.push(months.slice(i, i + 3));
+  return qs;
+}
+/* Los grupos que se muestran en la tabla, sea cual sea el modo actual —
+   en modo "mes" cada grupo es un solo mes; en modo "trimestre", 3. */
+function dashboardGroups(){
+  return S.ui.dashboardScope === "quarter" ? dashboardQuarters() : S.contentMonths.map(m => [m]);
+}
+function dashboardActiveIndex(){
+  const groups = dashboardGroups();
+  return Math.min(Math.max(S.ui.dashboardIndex || 0, 0), groups.length - 1);
+}
+function dashboardMonthIds(){
+  const groups = dashboardGroups();
+  const g = groups[dashboardActiveIndex()] || [];
+  return g.map(m => m.id);
+}
+function dashboardItemsFor(coll){
+  const ids = dashboardMonthIds();
+  return sorted(coll).filter(it => ids.includes(it.monthId));
+}
+function dashboardCount(coll, metricKey){
+  const metric = DASH_METRICS.find(m => m.key === metricKey);
+  return dashboardItemsFor(coll).filter(it => metric.check(it, coll)).length;
+}
+/* Clic en un número de la tabla → salta a la PRIMERA pieza de esa
+   colección/mes que todavía cae en esa categoría. Como siempre se
+   recalcula al momento del clic (no se guarda ninguna "cola"), en cuanto
+   arreglas la primera, el próximo clic lleva sola a la que antes era la
+   segunda — y así sucesivamente. */
+function dashboardJumpTo(coll, metricKey){
+  const metric = DASH_METRICS.find(m => m.key === metricKey);
+  const items = dashboardItemsFor(coll).filter(it => metric.check(it, coll));
+  if(!items.length){ toast("Nada pendiente en esta categoría — ¡al día! 🎉", "check"); return; }
+  pendingFocus = items[0].id;
+  S.ui.view = coll;
+  render();
+}
+function dashboardMatrixHTML(){
+  const isQuarter = S.ui.dashboardScope === "quarter";
+  const groups = dashboardGroups();
+  const idx = dashboardActiveIndex();
+  const g = groups[idx] || [];
+  const currentLabel = !g.length ? "—"
+    : isQuarter ? `Trimestre ${idx+1} · ${g.map(m => esc(m.label)).join(", ")}`
+    : esc(g[0].label);
+
+  return `
+  <section class="dash-matrix">
+    <div class="sec-title">
+      <h2>Estado del contenido</h2>
+      <div class="dash-scope">
+        <div class="seg">
+          <button type="button" class="seg-btn ${!isQuarter?"active":""}" data-dash-scope="month">Por mes</button>
+          <button type="button" class="seg-btn ${isQuarter?"active":""}" data-dash-scope="quarter">Por trimestre</button>
+        </div>
+        <div class="dash-nav">
+          <button type="button" class="icon-btn" data-dash-step="-1" ${idx<=0?"disabled":""} title="Anterior"><svg style="transform:rotate(180deg)"><use href="#i-right"/></svg></button>
+          <b>${currentLabel}</b>
+          <button type="button" class="icon-btn" data-dash-step="1" ${idx>=groups.length-1?"disabled":""} title="Siguiente"><svg><use href="#i-right"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="dash-table-wrap">
+      <table class="dash-table">
+        <thead><tr>
+          <th>Formato</th>
+          ${DASH_METRICS.map(m => `<th>${esc(m.label)}</th>`).join("")}
+        </tr></thead>
+        <tbody>
+          ${DASH_COLLS.map(({coll,label,icon}) => `<tr>
+            <td class="dash-fmt"><svg><use href="#${icon}"/></svg>${esc(label)}</td>
+            ${DASH_METRICS.map(m => {
+              const n = dashboardCount(coll, m.key);
+              return `<td><button type="button" class="dash-cell ${n?"":"zero"}" data-dash-jump data-coll="${coll}" data-metric="${m.key}" title="Ver la primera pieza pendiente">${n}</button></td>`;
+            }).join("")}
+          </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
 function viewDashboard(){
   const scheduled = S.posts.filter(p => p.status === "scheduled").length
                   + S.reels.filter(r => r.status === "scheduled").length
@@ -3091,6 +3228,8 @@ function viewDashboard(){
       <div class="hint">${ratingLabel(Math.round(avg))[1]} · ${rateable.length} piezas puntuadas</div>
     </div>
   </div>
+
+  ${dashboardMatrixHTML()}
 
   <div class="two-col">
     <section>
@@ -4589,6 +4728,24 @@ document.addEventListener("click", async e => {
     if(idx !== S.ui.contentMonth){ S.ui.contentMonth = idx; touch(); render(); }
     return;
   }
+
+  // Dashboard: alternar Por mes / Por trimestre, moverse entre grupos, y saltar a la
+  // primera pieza pendiente de una categoría.
+  const dashScope = t.closest("[data-dash-scope]");
+  if(dashScope){
+    const val = dashScope.dataset.dashScope;
+    if(val !== S.ui.dashboardScope){ S.ui.dashboardScope = val; S.ui.dashboardIndex = 0; touch(); render(); }
+    return;
+  }
+  const dashStep = t.closest("[data-dash-step]");
+  if(dashStep){
+    const groups = dashboardGroups();
+    const next = dashboardActiveIndex() + Number(dashStep.dataset.dashStep);
+    if(next >= 0 && next < groups.length){ S.ui.dashboardIndex = next; touch(); render(); }
+    return;
+  }
+  const dashJump = t.closest("[data-dash-jump]");
+  if(dashJump){ dashboardJumpTo(dashJump.dataset.coll, dashJump.dataset.metric); return; }
 
   // espacio del feed: quitar la publicación asignada (antes de leer el resto de la celda)
   const slotClear = t.closest("[data-slot-clear]");

@@ -335,6 +335,20 @@ autorización.
 - Volver a hacer clic en la misma estrella baja un punto.
 - El Dashboard calcula la receptividad media sobre las piezas ya puntuadas.
 
+### Dashboard: estado del contenido por mes / trimestre
+- Una tabla en el Dashboard cruza **Posts, Reels, Carruseles e Historias** (filas) con
+  **7 categorías** (columnas): Revisados, Por revisar, Diseño aprobado, Diseño
+  desaprobado, Publicado, Copy faltante e Imagen faltante.
+- Un interruptor **"Por mes" / "Por trimestre"** arriba de la tabla cambia el alcance —
+  un trimestre es simplemente 3 meses de contenido seguidos, agrupados. Las flechas
+  a los lados navegan entre meses o trimestres.
+- **Cada número es clicable** y lleva directo a la primera pieza de esa categoría que
+  todavía falta — por ejemplo, "Imagen faltante: 3" en Reels te lleva al primer Reel sin
+  portada. En cuanto arreglas esa, el próximo clic en el mismo número te lleva sola a la
+  que antes era la segunda, y así sucesivamente — no hay que recordar en cuál ibas.
+- Si una categoría está en cero, el clic solo avisa "al día" en vez de navegar a ningún
+  lado.
+
 ### Extras
 - Búsqueda global sobre posts, reels, carruseles, historias y proyectos.
 - Registro de actividad reciente y acciones rápidas en el Dashboard (incluye "Nueva Historia").
