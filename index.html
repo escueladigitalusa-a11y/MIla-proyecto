@@ -3363,9 +3363,6 @@ function postCard(p, i){
           ${field("Texto del arte (in-graphic)","text", textarea("posts", p.id, "designText", p.designText, "Todo el texto que va dentro de la pieza, con su jerarquía...", "", 5))}
           ${field("Concepto visual / composición","list", textarea("posts", p.id, "desarrollo", p.desarrollo, "Cómo se compone la pieza: retícula, sellos, foto, iconografía...", "", 4))}
           ${field("Caption (texto final)","pen", textarea("posts", p.id, "copy", p.copy, "Redacta aquí el caption completo que acompañará la publicación en la red social...", "soft", 6))}
-          ${field("CTA","right", textarea("posts", p.id, "cta", p.cta, "Invitación final: «Comenta DOWN…», «Cuéntame…»", "", 2))}
-          ${field("Notas de publicación","story", textarea("posts", p.id, "extras", p.extras, "Empuje en Stories, serie a la que pertenece, orden sugerido en el feed...", "", 3))}
-          ${hashtagsField("posts", p.id, p.hashtags)}
           ${field("Enlaces / referencias","link", `<div style="position:relative">
               ${input("posts", p.id, "links", p.links, "Añade enlaces a Drive, referencias visuales o archivos")}
               <svg style="position:absolute;right:14px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--muted)"><use href="#i-clip"/></svg>
