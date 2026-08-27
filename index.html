@@ -3528,8 +3528,6 @@ function storyCard(s, i){
     <div class="story-body">
       ${noteBandHTML(s.note)}
       ${field(`Idea original · Banco #${s.num ?? (i+1)}`,"list", textarea("stories", s.id, "idea", s.idea, "La idea tal como salió del banco de contenido...", "", 2))}
-      ${field("Contenido / texto del sticker","text", textarea("stories", s.id, "content", s.content, "El texto exacto que va en la historia...", "", 3))}
-      ${field("Seguimiento sugerido","right", textarea("stories", s.id, "followup", s.followup, "Qué hacer después: responder, convertir en reel, segmentar...", "", 2))}
       <div class="story-foot">
         ${statusSelect("stories", s.id, s.status)}
         ${reviewCheckHTML("stories", s.id, !!s.reviewed)}
