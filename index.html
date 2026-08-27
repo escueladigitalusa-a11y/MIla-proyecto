@@ -4513,6 +4513,8 @@ function viewSettings(){
             <button class="btn btn-ghost btn-sm" data-action="export"><svg><use href="#i-down"/></svg> Exportar</button></div>
           <div class="kv"><div><b>Importar</b><small>Restaura desde un archivo exportado.</small></div>
             <button class="btn btn-ghost btn-sm lock-viewer lock-editor" data-action="import"><svg><use href="#i-upload"/></svg> Importar</button></div>
+          <div class="kv"><div><b>Empezar de cero con los checks</b><small>Desmarca revisado, publicado y diseño aprobado/desaprobado en todas las piezas. No borra contenido, ni notas, ni valoraciones.</small></div>
+            <button class="btn btn-ghost btn-sm lock-viewer lock-editor" data-action="reset-checks"><svg><use href="#i-history"/></svg> Desmarcar todo</button></div>
           <div class="kv"><div><b>Restablecer</b><small>Borra todo y vuelve al contenido de ejemplo.</small></div>
             <button class="btn btn-danger btn-sm lock-viewer lock-editor" data-action="reset"><svg><use href="#i-trash"/></svg> Restablecer</button></div>
         </div>
@@ -4732,6 +4734,22 @@ document.addEventListener("click", async e => {
       confirmDialog("¿Restablecer todo?", "Esto borra el workspace compartido en la nube para TODOS (tu equipo y tu clienta), y vuelve al contenido de ejemplo.", () => {
         localStorage.removeItem(KEY); S = seed(); persist(); render(); toast("Workspace restablecido", "history");
       }, "Restablecer");
+      return;
+    }
+    if(a === "reset-checks"){
+      if(!guard()) return;
+      const n = COLL.reduce((t,c) => t + (S[c]||[]).filter(x => x.reviewed || x.published || x.designApproved !== null).length, 0);
+      confirmDialog("¿Desmarcar todos los checks?",
+        `Se van a desmarcar "revisado", "publicado" y "diseño aprobado/desaprobado" en ${n} pieza(s), para empezar la revisión desde cero. No se borra ningún contenido, ni las notas de la clienta, ni las valoraciones. Aplica al workspace compartido en la nube.`,
+        () => {
+          COLL.forEach(c => (S[c]||[]).forEach(x => {
+            x.reviewed = false; x.published = false; x.designApproved = null;
+            if(x.status === "published") x.status = "draft";
+          }));
+          logActivity("ok", `<b>Checks reiniciados:</b> se desmarcaron revisado, publicado y diseño en ${n} pieza(s).`);
+          touch(); persist(); render();
+          toast("Checks desmarcados", "history");
+        }, "Desmarcar todo");
       return;
     }
     if(a === "clear-feed"){
