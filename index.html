@@ -677,6 +677,20 @@ body::before{
 .modal .row{display:flex;gap:10px;justify-content:flex-end}
 .hidden{display:none!important}
 
+/* Menú del botón "Crear" — elegir formato antes de crear la pieza */
+.create-modal p{margin-bottom:16px}
+.create-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.create-opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;
+  background:var(--cream);border:1px solid var(--line-2);border-radius:var(--r);transition:.16s;cursor:pointer}
+.create-opt:hover{background:var(--gold-pale);border-color:var(--gold-soft);transform:translateX(2px)}
+.create-opt .ico{width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:11px;
+  background:#fff;border:1px solid var(--line-2);color:var(--gold-deep)}
+.create-opt .ico svg{width:19px;height:19px}
+.create-opt .txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.create-opt .txt b{font-size:13.5px;font-weight:600;color:var(--navy)}
+.create-opt .txt small{font-size:11.5px;color:var(--muted)}
+.create-opt .arr{width:16px;height:16px;flex:none;color:var(--muted)}
+
 /* Vista previa ampliada de una imagen del Feed Preview / Stories Preview */
 .lightbox-bg{padding:32px}
 .lightbox{position:relative;max-width:min(640px,92vw);max-height:88vh;display:flex;flex-direction:column;align-items:center}
@@ -798,6 +812,7 @@ body.needs-auth .app{display:none}
   <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
   <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
   <symbol id="i-reel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M8 5l2.5 4M15 5l2.5 4M2.5 9.5h19"/></symbol>
+  <symbol id="i-youtube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="4.5"/><path d="M10.3 9.2v5.6l5-2.8z" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6.5C10.5 5 8 4.5 4 5v13c4-.5 6.5 0 8 1.5 1.5-1.5 4-2 8-1.5V5c-4-.5-6.5 0-8 1.5z"/><path d="M12 6.5v13"/></symbol>
   <symbol id="i-post" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="13" height="17" rx="2"/><path d="M7 8h6M7 12h6M7 16h4"/><path d="M19 7v6M22 10h-6"/></symbol>
   <symbol id="i-feed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 9v12M15 9v12"/></symbol>
@@ -898,7 +913,7 @@ body.needs-auth .app{display:none}
     </div>
 
     <button class="btn-create lock-viewer" data-action="create-menu">
-      <svg width="16" height="16"><use href="#i-plus"/></svg> Crear Post
+      <svg width="16" height="16"><use href="#i-plus"/></svg> Crear
     </button>
 
     <nav class="nav" id="nav"></nav>
@@ -986,7 +1001,7 @@ function saveLocalRole(role){
    apenas carga el script — una const declarada más abajo todavía no existiría en ese
    momento. Es solo informativo (el contador de cada pestaña de mes lo muestra), no
    bloquea crear ni mover piezas de más. */
-const CONTENT_QUOTA = { posts:8, reels:12, carousels:4, stories:30 };
+const CONTENT_QUOTA = { posts:8, reels:12, carousels:4, stories:30, youtube:4 };
 
 /* ---------- Supabase: workspace compartido ---------- */
 const SUPABASE_URL = "https://rgxxyezzxaqaawswreyl.supabase.co";
@@ -1113,6 +1128,7 @@ const now = () => Date.now();
 const NAV = [
   {id:"dashboard", label:"Dashboard",     icon:"i-grid"},
   {id:"reels",     label:"Reels",         icon:"i-reel",   coll:"reels"},
+  {id:"youtube",   label:"YouTube",       icon:"i-youtube", coll:"youtube"},
   {id:"carousels", label:"Carruseles",    icon:"i-book",   coll:"carousels"},
   {id:"posts",     label:"Posts",         icon:"i-post",   coll:"posts"},
   {id:"stories",   label:"Historias",     icon:"i-story",  coll:"stories"},
@@ -1403,6 +1419,11 @@ const CONTENT_REELS = [
     "hashtags": ""
   }
 ];
+
+/* Videos de YouTube: sección gemela a Reels — mismos campos, mismo diseño de tarjeta —
+   pero para el contenido que se sube a YouTube (cupo real: 4 videos al mes). Arranca
+   vacía; se llena creando videos nuevos desde el botón "Crear" o "Nuevo video". */
+const CONTENT_YOUTUBE = [];
 
 const CONTENT_POSTS = [
   {
@@ -2350,6 +2371,12 @@ function seed(){
       monthId: monthForIndex(i, CONTENT_QUOTA.reels)
     }, r, {createdAt: at(r.days), published: r.status === "published"})),
 
+    youtube: CONTENT_YOUTUBE.map((r, i) => Object.assign({
+      id:uid("yt"), order:i, cover:"", collapsed:false,
+      notes:"", hashtags:"", note:"", reviewed:false,
+      monthId: monthForIndex(i, CONTENT_QUOTA.youtube)
+    }, r, {createdAt: at(r.days), published: r.status === "published"})),
+
     carousels: CONTENT_CAROUSELS.map((c, i) => Object.assign({
       id:uid("car"), order:i, collapsed:false, copy:"", hashtags:"", note:"", reviewed:false,
       designApproved:null, designNote:"",
@@ -2420,7 +2447,7 @@ function migrateContentMonths(state){
     state.contentMonths = [{id:uid("cmonth"), label:"Mes 1"}];
   }
   const validIds = new Set(state.contentMonths.map(m => m.id));
-  ["posts","reels","carousels","stories"].forEach(coll => {
+  ["posts","reels","carousels","stories","youtube"].forEach(coll => {
     const quota = CONTENT_QUOTA[coll] || 10;
     (state[coll] || []).forEach((it, i) => {
       if(!it.monthId || !validIds.has(it.monthId)){
@@ -2449,6 +2476,7 @@ function migrateDriveUrls(state){
   if(state.profile) state.profile.avatar = fix(state.profile.avatar);
   (state.posts||[]).forEach(p => { p.image = fix(p.image); });
   (state.reels||[]).forEach(r => { r.cover = fix(r.cover); });
+  (state.youtube||[]).forEach(y => { y.cover = fix(y.cover); });
   (state.stories||[]).forEach(s => { s.media = fix(s.media); });
   (state.projects||[]).forEach(p => { p.cover = fix(p.cover); });
   (state.carousels||[]).forEach(c => (c.slides||[]).forEach(sl => { sl.image = fix(sl.image); }));
@@ -2683,6 +2711,43 @@ function openImageLightbox(src, title){
   // clic sobre el ícono llega con e.target apuntando al <svg>/<use>, no al <button>.
   host.onclick = e => { if(e.target.closest("[data-close]")) host.innerHTML = ""; };
 }
+
+/* Menú del botón "Crear": en vez de crear siempre un Post, pregunta primero qué
+   formato se quiere crear. El orden es el mismo que el del menú lateral. */
+const CREATE_OPTIONS = [
+  {coll:"reels",     label:"Reel",              hint:"Video vertical para IG/TikTok",  icon:"i-reel"},
+  {coll:"youtube",   label:"Video de YouTube",  hint:"Video largo para el canal",      icon:"i-youtube"},
+  {coll:"carousels", label:"Carrusel",          hint:"Varias slides en una publicación", icon:"i-book"},
+  {coll:"posts",     label:"Post",              hint:"Imagen simple de feed",          icon:"i-post"},
+  {coll:"stories",   label:"Historia",          hint:"Contenido ágil de 24 horas",     icon:"i-story"}
+];
+function openCreateMenu(){
+  if(!guard()) return;
+  const host = $("#modalHost");
+  host.innerHTML = `
+    <div class="modal-bg" data-close>
+      <div class="modal create-modal" role="dialog" aria-modal="true">
+        <h3>¿Qué quieres crear?</h3>
+        <p>Se creará en <b>${esc(activeContentMonth()?.label || "Mes 1")}</b>, el mes que tienes abierto.</p>
+        <div class="create-list">
+          ${CREATE_OPTIONS.map(o => `
+            <button type="button" class="create-opt" data-create-coll="${o.coll}">
+              <span class="ico"><svg><use href="#${o.icon}"/></svg></span>
+              <span class="txt"><b>${esc(o.label)}</b><small>${esc(o.hint)}</small></span>
+              <svg class="arr"><use href="#i-right"/></svg>
+            </button>`).join("")}
+        </div>
+        <div class="row"><button class="btn btn-ghost" data-close>Cancelar</button></div>
+      </div>
+    </div>`;
+  // closest(): cada opción trae íconos y <span> anidados, así que el clic puede llegar
+  // con e.target apuntando a un hijo y no al <button>.
+  host.onclick = e => {
+    const opt = e.target.closest("[data-create-coll]");
+    if(opt){ host.innerHTML = ""; createItem(opt.dataset.createColl); return; }
+    if(e.target.closest("[data-close]")) host.innerHTML = "";
+  };
+}
 function canEdit(){ return S.ui.role !== "viewer"; }
 function canAdmin(){ return S.ui.role === "admin"; }
 function guard(){
@@ -2770,7 +2835,7 @@ function compress(dataUrl, maxW=1280, q=.82){
 }
 
 /* ---------- Colecciones ---------- */
-const COLL = ["posts","reels","carousels","stories"];
+const COLL = ["posts","reels","carousels","stories","youtube"];
 const PILLARS = {
   educacion:  {label:"Educación",   cls:"pillar-educacion"},
   patrimonio: {label:"Patrimonio",  cls:"pillar-patrimonio"},
@@ -3043,13 +3108,13 @@ function deleteContentMonth(index){
   if(!guard()) return;
   if(S.contentMonths.length <= 1){ toast("Debe quedar al menos un mes.", "alert", true); return; }
   const month = S.contentMonths[index]; if(!month) return;
-  const used = ["posts","reels","carousels","stories"].reduce((n,c) => n + contentMonthCount(c, month.id), 0);
+  const used = ["posts","reels","carousels","stories","youtube"].reduce((n,c) => n + contentMonthCount(c, month.id), 0);
   confirmDialog(`¿Eliminar "${esc(month.label)}"?`,
     used ? `Ese mes tiene ${used} pieza(s) asignada(s). No se borra ninguna pieza: pasan al primer mes que quede.` : "Este mes está vacío.",
     () => {
       S.contentMonths.splice(index, 1);
       const fallbackId = S.contentMonths[0].id;
-      ["posts","reels","carousels","stories"].forEach(c => {
+      ["posts","reels","carousels","stories","youtube"].forEach(c => {
         (S[c] || []).forEach(x => { if(x.monthId === month.id) x.monthId = fallbackId; });
       });
       if(S.ui.contentMonth >= S.contentMonths.length) S.ui.contentMonth = S.contentMonths.length - 1;
@@ -3074,11 +3139,12 @@ function contentMonthSelectHTML(coll, id, monthId){
 const DASH_COLLS = [
   {coll:"posts",     label:"Posts",       icon:"i-post"},
   {coll:"reels",     label:"Reels",       icon:"i-reel"},
+  {coll:"youtube",   label:"YouTube",     icon:"i-youtube"},
   {coll:"carousels", label:"Carruseles",  icon:"i-book"},
   {coll:"stories",   label:"Historias",   icon:"i-story"}
 ];
-const DASH_COPY_FIELD  = {posts:"copy", reels:"copy", carousels:"copy", stories:"content"};
-const DASH_IMAGE_FIELD = {posts:"image", reels:"cover", stories:"media"};
+const DASH_COPY_FIELD  = {posts:"copy", reels:"copy", carousels:"copy", stories:"content", youtube:"copy"};
+const DASH_IMAGE_FIELD = {posts:"image", reels:"cover", stories:"media", youtube:"cover"};
 function dashCopyOf(coll, it){ return (it[DASH_COPY_FIELD[coll]] || "").trim(); }
 function dashImageOf(coll, it){
   if(coll === "carousels") return (it.slides.find(sl => sl.image) || {}).image || "";
@@ -3185,12 +3251,13 @@ function viewDashboard(){
   const scheduled = S.posts.filter(p => p.status === "scheduled").length
                   + S.reels.filter(r => r.status === "scheduled").length
                   + S.carousels.filter(c => c.status === "scheduled").length
-                  + S.stories.filter(s => s.status === "scheduled").length;
+                  + S.stories.filter(s => s.status === "scheduled").length
+                  + S.youtube.filter(y => y.status === "scheduled").length;
   const pending = COLL.reduce((n,c) => n + S[c].filter(x => x.status === "review").length, 0);
-  const rateable = [...S.posts, ...S.reels, ...S.carousels].filter(x => (Number(x.rating)||0) > 0);
+  const rateable = [...S.posts, ...S.reels, ...S.carousels, ...S.youtube].filter(x => (Number(x.rating)||0) > 0);
   const avg = rateable.length ? (rateable.reduce((n,x) => n + (Number(x.rating)||0), 0) / rateable.length) : 0;
-  const ready = ["posts","reels","carousels","stories"].reduce((n,c) => n + S[c].filter(x => x.reviewed).length, 0);
-  const totalFormats = S.posts.length + S.reels.length + S.carousels.length + S.stories.length;
+  const ready = ["posts","reels","carousels","stories","youtube"].reduce((n,c) => n + S[c].filter(x => x.reviewed).length, 0);
+  const totalFormats = S.posts.length + S.reels.length + S.carousels.length + S.stories.length + S.youtube.length;
 
   return `
   <div class="page-head">
@@ -3428,6 +3495,53 @@ function viewReels(q=""){
           ${starsHTML("reels", r.id, r.rating, "Valoración (1 a 10)")}
         </div>
       </div>`).join("") : emptyState("Sin reels para esta tanda", "Ajusta el filtro o planifica un nuevo reel.", "reels")}`;
+}
+
+/* Sección gemela a Reels (mismos campos, misma tarjeta, misma clase CSS "reel-mini")
+   pero para los videos que se suben a YouTube — cupo real: 4 videos al mes. No
+   participa del Feed Preview (es un canal aparte), así que en vez del número de
+   orden de publicación usa simplemente su posición en la lista. */
+function viewYoutube(q=""){
+  const all = sorted("youtube").filter(r => matches(r, q));
+  const list = applyFilter("youtube", all);
+  return `
+  <div class="page-head">
+    <div><h1>YouTube Planner</h1><p>${esc(S.profile.tagline || "Plan. Create. Captivate.")}</p></div>
+    <div class="actions">
+      <button class="btn btn-ghost lock-viewer" data-action="new" data-coll="youtube"><svg><use href="#i-plus"/></svg> Nuevo Video</button>
+      <button class="btn btn-gold lock-viewer" data-action="save"><svg><use href="#i-save"/></svg> Guardar Cambios</button>
+    </div>
+  </div>
+  <div class="readonly-note"><svg width="16" height="16"><use href="#i-alert"/></svg> Modo <b>Viewer</b>: la edición está bloqueada.</div>
+  ${contentMonthsTabsHTML("youtube")}
+  ${filterBarHTML("youtube", all.length, list.length)}
+  ${list.length ? list.map((r,i) => `
+      <div class="reel-mini ${r.published ? "published-item" : ""}" data-item="${r.id}">
+        <div class="reel-mini-head">
+          <span class="num">Video ${i+1}</span>
+          <input class="title-input" data-field data-coll="youtube" data-id="${r.id}" data-key="title" value="${esc(r.title)}" placeholder="Título">
+          ${contentMonthSelectHTML("youtube", r.id, r.monthId)}
+          <button class="icon-btn lock-viewer lock-editor" data-del data-coll="youtube" data-id="${r.id}" title="Eliminar" style="color:var(--danger)">
+            <svg><use href="#i-trash"/></svg></button>
+        </div>
+        <div class="reel-mini-body">
+          <div class="reel-cover-row">
+            <div class="reel-cover-box">${mediaBox({coll:"youtube", id:r.id, field:"cover", src:r.cover, ratio:"ratio-916", title:"Subir portada", hint:"9:16"})}</div>
+            <div class="reel-cover-info">
+              <b>Portada</b>
+              <small>Miniatura de este video.</small>
+              ${r.cover ? `<button type="button" class="btn btn-ghost btn-sm lock-viewer" data-clear data-coll="youtube" data-id="${r.id}" data-field="cover"><svg><use href="#i-trash"/></svg> Quitar</button>` : ""}
+            </div>
+          </div>
+          ${field("Tomas — Desarrollo y acción","list", textarea("youtube", r.id, "desarrollo", r.desarrollo, "Describe las tomas, el desarrollo y la acción de este video: el guion completo va aquí...", "big", 8))}
+          ${field("Copy","pen", textarea("youtube", r.id, "copy", r.copy, "El copy / descripción que acompaña la publicación...", "soft", 4))}
+          <div class="reel-checklist">
+            ${reviewCheckHTML("youtube", r.id, !!r.reviewed, "Aprobado para publicar")}
+            ${publishCheckHTML("youtube", r.id, !!r.published, "Publicado")}
+          </div>
+          ${starsHTML("youtube", r.id, r.rating, "Valoración (1 a 10)")}
+        </div>
+      </div>`).join("") : emptyState("Sin videos para esta tanda", "Ajusta el filtro o planifica un nuevo video.", "youtube")}`;
 }
 
 function viewCarousels(q=""){
@@ -4409,6 +4523,7 @@ function render(){
   const html =
     v === "posts"     ? viewPosts(q) :
     v === "reels"     ? viewReels(q) :
+    v === "youtube"   ? viewYoutube(q) :
     v === "carousels" ? viewCarousels(q) :
     v === "stories"   ? viewStories(q) :
     v === "feed"      ? viewFeed() :
@@ -4458,6 +4573,9 @@ function createItem(coll){
   }else if(coll === "reels"){
     item = Object.assign(base, {title:`Reel #${S.reels.length+1}`, pillar:"educacion", kind:"H", coverText:"", cover:"", hook:"", desarrollo:"", cta:"", copy:"", hashtags:"", note:"", notes:""});
     label = "Reel";
+  }else if(coll === "youtube"){
+    item = Object.assign(base, {title:`Video #${S.youtube.length+1}`, pillar:"educacion", kind:"H", coverText:"", cover:"", hook:"", desarrollo:"", cta:"", copy:"", hashtags:"", note:"", notes:""});
+    label = "Video de YouTube";
   }else if(coll === "carousels"){
     item = Object.assign(base, {title:`Carousel #${S.carousels.length+1}`, pillar:"educacion", hook:"", cta:"", copy:"", hashtags:"", note:"", slides:[
       {id:uid("sl"), image:"", caption:"Slide 1 — Portada"}, {id:uid("sl"), image:"", caption:"Slide 2 — Desarrollo"}
@@ -4554,7 +4672,7 @@ document.addEventListener("click", async e => {
     const a = act.dataset.action;
     if(a === "save"){ persist(); return; }
     if(a === "new"){ createItem(act.dataset.coll); return; }
-    if(a === "create-menu"){ createItem("posts"); return; }
+    if(a === "create-menu"){ openCreateMenu(); return; }
     if(a === "export"){ exportJSON(); return; }
     if(a === "import"){ importJSON(); return; }
     if(a === "reset"){
