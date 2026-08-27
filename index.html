@@ -2431,6 +2431,7 @@ function mergeIntoSeed(data){
   migrateStoryMonths(merged);
   migrateContentMonths(merged);
   migrateDriveUrls(merged);
+  migratePubSort(merged);
   // el rol que haya traído el dato guardado/de la nube no manda: siempre gana el rol
   // de este navegador (ver ROLE_KEY más arriba).
   merged.ui.role = loadLocalRole();
@@ -2467,6 +2468,20 @@ function migrateContentMonths(state){
    vez de la imagen — sale como ícono roto en un <img>. El endpoint /thumbnail sí está
    pensado para incrustarse directo. Esto arregla las imágenes ya subidas sin que haya
    que volver a subirlas. */
+/* "Orden de publicación" es el orden nuevo por defecto en Posts/Reels/Carruseles. Los
+   workspaces guardados desde antes traen el viejo por defecto ("newest") pegado, así que
+   se los pasa una sola vez al nuevo. La marca evita volver a forzarlo si más adelante se
+   elige "Más recientes primero" a propósito. */
+function migratePubSort(state){
+  if(state.ui.pubSortMigrated) return state;
+  ["posts","reels","carousels"].forEach(coll => {
+    const f = state.ui.filters && state.ui.filters[coll];
+    if(f && f.sort === "newest") f.sort = "pub";
+  });
+  state.ui.pubSortMigrated = true;
+  return state;
+}
+
 function migrateDriveUrls(state){
   const fix = url => {
     if(typeof url !== "string") return url;
@@ -2961,7 +2976,7 @@ function feedBadge(coll, id){
   if(!loc) return "";
   const label = S.feedMonths[loc.month]?.label || `Mes ${loc.month+1}`;
   return `<span class="meta-chip feed-jump" data-feed-jump data-coll="${coll}" data-id="${id}" title="Ver esta posición en el Feed Preview">
-    <svg><use href="#i-feed"/></svg>En Feed · ${esc(label)} #${FEED_SLOTS_PER_MONTH - loc.slot}</span>`;
+    <svg><use href="#i-feed"/></svg>En Feed · ${esc(label)} #${feedPubOrder(loc.slot, monthSlotCount(loc.month))}</span>`;
 }
 
 /* Check de "revisado y listo para publicar" — solo el rol Admin puede marcarlo.
@@ -3027,8 +3042,11 @@ function metaRowHTML(coll, item, {feed=true} = {}){
 }
 
 /* ---------- Filtros: tandas de mes + orden reciente/antiguo ---------- */
+/* Formatos que se colocan en el Feed Preview y por lo tanto comparten un único número
+   de publicación: se pueden ordenar por ese número. */
+const FEED_COLLS = new Set(["posts","reels","carousels"]);
 function ensureFilter(coll){
-  if(!S.ui.filters[coll]) S.ui.filters[coll] = {sort:"newest", month:"all"};
+  if(!S.ui.filters[coll]) S.ui.filters[coll] = {sort: FEED_COLLS.has(coll) ? "pub" : "newest", month:"all"};
   return S.ui.filters[coll];
 }
 function monthsAvailable(coll){
@@ -3044,9 +3062,20 @@ function applyFilter(coll, list){
   let out = list;
   if(f.month && f.month !== "all") out = out.filter(x => monthKey(x.createdAt || 0) === f.month);
   if(CONTENT_QUOTA[coll]) out = out.filter(x => x.monthId === activeContentMonth().id);
-  out = [...out].sort((a,b) => f.sort === "oldest"
-    ? (a.createdAt||0) - (b.createdAt||0)
-    : (b.createdAt||0) - (a.createdAt||0));
+  out = [...out].sort((a,b) => {
+    // Orden de publicación: el que se publica primero va primero en la lista, en el
+    // mismo orden exacto en el que están los espacios en el Feed Preview. Lo que aún
+    // no está colocado en el feed queda al final (empatado en Infinity), y entre esos
+    // se desempata por fecha, más recientes primero.
+    if(f.sort === "pub"){
+      const ka = pubSortKey(coll, a.id), kb = pubSortKey(coll, b.id);
+      if(ka !== kb) return ka - kb;
+      return (b.createdAt||0) - (a.createdAt||0);
+    }
+    return f.sort === "oldest"
+      ? (a.createdAt||0) - (b.createdAt||0)
+      : (b.createdAt||0) - (a.createdAt||0);
+  });
   return out;
 }
 function filterBarHTML(coll, totalCount, shownCount){
@@ -3059,6 +3088,7 @@ function filterBarHTML(coll, totalCount, shownCount){
   return `<div class="filter-bar">
     <svg width="15" height="15" style="color:var(--gold-deep)"><use href="#i-filter"/></svg>
     <select class="fsel" data-filter-sort data-coll="${coll}">
+      ${FEED_COLLS.has(coll) ? `<option value="pub" ${f.sort==="pub"?"selected":""}>Orden de publicación</option>` : ""}
       <option value="newest" ${f.sort==="newest"?"selected":""}>Más recientes primero</option>
       <option value="oldest" ${f.sort==="oldest"?"selected":""}>Más antiguos primero</option>
     </select>
@@ -3471,7 +3501,7 @@ function viewReels(q=""){
   ${list.length ? list.map((r,i) => `
       <div class="reel-mini ${r.published ? "published-item" : ""}" data-item="${r.id}">
         <div class="reel-mini-head">
-          <span class="num">${pubOrderLabel("reels", r.id, "Reel")}</span>
+          <span class="num">${pubOrderLabel("reels", r.id, "# Reel")}</span>
           <input class="title-input" data-field data-coll="reels" data-id="${r.id}" data-key="title" value="${esc(r.title)}" placeholder="Título">
           ${contentMonthSelectHTML("reels", r.id, r.monthId)}
           <button class="icon-btn lock-viewer lock-editor" data-del data-coll="reels" data-id="${r.id}" title="Eliminar" style="color:var(--danger)">
@@ -3690,6 +3720,25 @@ function ensureFeedSlots(){
 function feedSlotCount(){
   return Math.max(FEED_SLOTS_PER_MONTH, ensureFeedSlots().length);
 }
+/* Igual que feedSlotCount() pero para un mes cualquiera, no solo el que se está viendo. */
+function monthSlotCount(mi){
+  const m = S.feedMonths[mi];
+  return Math.max(FEED_SLOTS_PER_MONTH, (m && m.slots ? m.slots.length : 0));
+}
+
+/* Número de publicación de un espacio de la grilla, tal como se publica de verdad:
+   la PRIMERA publicación del mes es la de ABAJO A LA IZQUIERDA, y de ahí se avanza de
+   izquierda a derecha; al terminar la fila se sube a la de arriba. Así, en un mes de 24
+   espacios (8 filas de 3), el de abajo-izquierda es el #1, el de abajo-derecha el #3, y
+   el de arriba-derecha —el último en publicarse— el #24.
+   El número es uno solo compartido entre Posts, Reels y Carruseles: lo que cambia entre
+   ellos es el formato, no la numeración. */
+function feedPubOrder(slot, cells){
+  const rows = Math.ceil(cells / FEED_COLS);
+  const row  = Math.floor(slot / FEED_COLS);
+  const col  = slot % FEED_COLS;
+  return (rows - 1 - row) * FEED_COLS + col + 1;
+}
 
 /* Dónde está colocada una pieza en TODO el feed (cualquier mes), o null si no está. */
 function feedLocationOf(coll, id){
@@ -3700,15 +3749,19 @@ function feedLocationOf(coll, id){
   return null;
 }
 
-/* Número de orden de publicación: la posición real de la pieza dentro del mes donde
-   está colocada, contada como ya se cuentan los espacios en la grilla — de abajo hacia
-   arriba y de derecha a izquierda (el último espacio del mes, abajo a la derecha, es el
-   #1; el primero, arriba a la izquierda, es el #28). Un solo número compartido entre
-   Posts, Reels y Carruseles: si el espacio #14 de un mes es un Reel, ese Reel es el #14.
-   Devuelve null si la pieza todavía no está colocada en ningún mes. */
+/* Número de orden de publicación de una pieza: el número del espacio que ocupa en la
+   grilla de su mes (ver feedPubOrder). Devuelve null si todavía no está colocada. */
 function pubOrderNumber(coll, id){
   const loc = feedLocationOf(coll, id);
-  return loc ? (FEED_SLOTS_PER_MONTH - loc.slot) : null;
+  return loc ? feedPubOrder(loc.slot, monthSlotCount(loc.month)) : null;
+}
+/* Clave para ordenar una lista por orden real de publicación: primero por mes del feed,
+   después por número de publicación dentro de ese mes. Lo que todavía no está colocado
+   en el feed se va al final. */
+function pubSortKey(coll, id){
+  const loc = feedLocationOf(coll, id);
+  if(!loc) return Infinity;
+  return loc.month * 10000 + feedPubOrder(loc.slot, monthSlotCount(loc.month));
 }
 /* Etiqueta lista para mostrar: "Post 14" o, si aún no está programada, "Post · Sin
    programar". prefix ya trae el "#" cuando corresponde (ver cada llamada). */
@@ -3927,7 +3980,7 @@ async function organizeDriveByFeedOrder(){
       if(!image){ skippedNoImage++; continue; }
       const fileId = extractDriveFileId(image);
       if(!fileId){ skippedNotDrive++; continue; }
-      const order = FEED_SLOTS_PER_MONTH - i;
+      const order = feedPubOrder(i, Math.max(FEED_SLOTS_PER_MONTH, month.slots.length));
       const padded = String(order).padStart(2, "0");
       const newName = `${padded} - ${FEED_KIND_LABEL[sl.coll] || sl.coll} - ${sanitizeDriveName(it.title)}.jpg`;
       try{
@@ -3968,7 +4021,7 @@ function viewFeed(){
       const kindLabel = it.kind === "post" ? "Post" : it.kind === "reel" ? "Reel" : "Carrusel";
       // El número que se muestra es la posición real de este espacio (orden de
       // publicación), no el número original del Banco de Ideas.
-      const numLabel = ` #${cells - i}`;
+      const numLabel = ` #${feedPubOrder(i, cells)}`;
       html += `<div class="cell ${it.published ? "is-published" : ""}" style="animation-delay:${delay}" draggable="true"
         data-slot="${i}" data-cell="${it.id}" data-coll="${it.coll}"
         title="${esc(kindLabel)}${numLabel} — ${esc(it.title)} · clic para editar">
@@ -3990,7 +4043,7 @@ function viewFeed(){
         <span class="meta">${esc(it.title)} · ${STATUS[it.status]||""}</span>
       </div>`;
     }else{
-      const n = String(cells - i).padStart(2,"0");
+      const n = String(feedPubOrder(i, cells)).padStart(2,"0");
       html += `<div class="cell empty" style="animation-delay:${delay}" data-slot="${i}" data-pick-slot="${i}"
         title="Elegir qué publicación va en este espacio">
         <div class="ph">
@@ -4080,7 +4133,7 @@ function renderFeedPicker(){
             <span>${esc(it.title)}</span>
           </span>
           ${isCurrent ? `<span class="tag-used">En este espacio</span>`
-            : loc ? `<span class="tag-used">Ya en ${esc(S.feedMonths[loc.month]?.label || `Mes ${loc.month+1}`)} · #${FEED_SLOTS_PER_MONTH - loc.slot}</span>` : ""}
+            : loc ? `<span class="tag-used">Ya en ${esc(S.feedMonths[loc.month]?.label || `Mes ${loc.month+1}`)} · #${feedPubOrder(loc.slot, monthSlotCount(loc.month))}</span>` : ""}
           ${!d.image ? `<span class="no-media">Sin media</span>` : ""}
         </button>`;
       }).join("")}</div>` : `<div class="picker-empty">Todavía no hay piezas en este formato.</div>`;
