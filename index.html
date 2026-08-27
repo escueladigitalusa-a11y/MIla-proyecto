@@ -1106,7 +1106,6 @@ const now = () => Date.now();
 /* ---------- Estado ---------- */
 const NAV = [
   {id:"dashboard", label:"Dashboard",     icon:"i-grid"},
-  {id:"projects",  label:"Projects",      icon:"i-folder", coll:"projects"},
   {id:"reels",     label:"Reels",         icon:"i-reel",   coll:"reels"},
   {id:"carousels", label:"Carruseles",    icon:"i-book",   coll:"carousels"},
   {id:"posts",     label:"Posts",         icon:"i-post",   coll:"posts"},
@@ -2374,17 +2373,6 @@ function seed(){
        llenan a mano eligiendo la historia desde la lista plegable. */
     storyMonths: [{id:uid("month"), label:"Mes 1", slots:Array(30).fill(null)}],
 
-    projects:[{
-      id:uid("prj"), name:"Tanda 1 — Educación Inmobiliaria", desc:"Grabación agrupada de los reels y posts del pilar educativo (mismo fondo y vestuario por sesión).",
-      cover:"", status:"published", rating:9, createdAt: at(70), order:0
-    },{
-      id:uid("prj"), name:"Tanda 2 — Patrimonio y Servicio", desc:"Segunda sesión de batch content: piezas de equity, inversión y testimonios.",
-      cover:"", status:"scheduled", rating:9, createdAt: at(48), order:1
-    },{
-      id:uid("prj"), name:"Tanda 3 — Fe y Comunidad", desc:"Tercera sesión: piezas de propósito, gratitud y relaciones. Tono testimonial.",
-      cover:"", status:"review", rating:10, createdAt: at(26), order:2
-    }],
-
     activity:[
       {id:uid("a"), type:"ok",    text:"<b>Contenido desarrollado cargado:</b> 15 reels con guion, 10 posts, 10 carruseles slide-by-slide y 44 historias con texto exacto.", at:t-18e5},
       {id:uid("a"), type:"alert", text:"<b>Requieren autorización escrita:</b> Post 21, Carruseles 30 y 50, e Historias 42, 46 y 89.", at:t-36e5},
@@ -2776,7 +2764,7 @@ function compress(dataUrl, maxW=1280, q=.82){
 }
 
 /* ---------- Colecciones ---------- */
-const COLL = ["posts","reels","carousels","stories","projects"];
+const COLL = ["posts","reels","carousels","stories"];
 const PILLARS = {
   educacion:  {label:"Educación",   cls:"pillar-educacion"},
   patrimonio: {label:"Patrimonio",  cls:"pillar-patrimonio"},
@@ -3088,6 +3076,7 @@ const DASH_METRICS = [
   {key:"approved",  label:"Diseño aprobado",    check:it => it.designApproved === true},
   {key:"rejected",  label:"Diseño desaprobado", check:it => it.designApproved === false},
   {key:"published", label:"Publicado",          check:it => !!it.published},
+  {key:"toPublish", label:"Cantidad a publicar",check:it => !!it.reviewed && !it.published},
   {key:"noCopy",    label:"Copy faltante",      check:(it,coll) => !dashCopyOf(coll, it)},
   {key:"noImage",   label:"Imagen faltante",    check:(it,coll) => !dashImageOf(coll, it)}
 ];
@@ -3185,7 +3174,7 @@ function viewDashboard(){
                   + S.carousels.filter(c => c.status === "scheduled").length
                   + S.stories.filter(s => s.status === "scheduled").length;
   const pending = COLL.reduce((n,c) => n + S[c].filter(x => x.status === "review").length, 0);
-  const rateable = [...S.posts, ...S.reels, ...S.carousels, ...S.projects].filter(x => (Number(x.rating)||0) > 0);
+  const rateable = [...S.posts, ...S.reels, ...S.carousels].filter(x => (Number(x.rating)||0) > 0);
   const avg = rateable.length ? (rateable.reduce((n,x) => n + (Number(x.rating)||0), 0) / rateable.length) : 0;
   const ready = ["posts","reels","carousels","stories"].reduce((n,c) => n + S[c].filter(x => x.reviewed).length, 0);
   const totalFormats = S.posts.length + S.reels.length + S.carousels.length + S.stories.length;
@@ -3202,11 +3191,6 @@ function viewDashboard(){
   <div class="readonly-note"><svg width="16" height="16"><use href="#i-alert"/></svg> Estás en modo <b>Viewer</b>: la edición está bloqueada.</div>
 
   <div class="stat-grid">
-    <div class="stat">
-      <svg class="ico"><use href="#i-build"/></svg>
-      <h4>Active Projects</h4><div class="val">${String(S.projects.length).padStart(2,"0")}</div>
-      <div class="hint gold">${S.projects.filter(p=>p.status!=="published").length} en curso</div>
-    </div>
     <div class="stat">
       <svg class="ico"><use href="#i-cal"/></svg>
       <h4>Scheduled</h4><div class="val">${String(scheduled).padStart(2,"0")}</div>
@@ -3494,35 +3478,6 @@ function viewCarousels(q=""){
     </div>`).join("") : emptyState("Sin carruseles", "Crea tu primer carrusel.", "carousels")}`;
 }
 
-function viewProjects(q=""){
-  const all = sorted("projects").filter(p => matches(p, q));
-  const list = applyFilter("projects", all);
-  return `
-  <div class="page-head">
-    <div><h1>Projects</h1><p>Agrupa campañas, listings y entregables por proyecto.</p></div>
-    <div class="actions">
-      <button class="btn btn-gold lock-viewer" data-action="new" data-coll="projects"><svg><use href="#i-plus"/></svg> Nuevo proyecto</button>
-    </div>
-  </div>
-  <div class="readonly-note"><svg width="16" height="16"><use href="#i-alert"/></svg> Modo <b>Viewer</b>: la edición está bloqueada.</div>
-  ${filterBarHTML("projects", all.length, list.length)}
-  <div class="proj-grid">
-    ${list.length ? list.map(p => `
-      <div class="proj" data-item="${p.id}">
-        ${mediaBox({coll:"projects", id:p.id, field:"cover", src:p.cover, ratio:"cover", title:"Portada del proyecto"})}
-        <div class="body">
-          <input class="title-input" style="font-size:19px;padding:0" data-field data-coll="projects" data-id="${p.id}" data-key="name" value="${esc(p.name)}" placeholder="Nombre del proyecto">
-          ${textarea("projects", p.id, "desc", p.desc, "Descripción breve...", "", 2)}
-          <span class="meta-chip" style="align-self:flex-start"><svg><use href="#i-cal"/></svg>${fmtDate(p.createdAt)}</span>
-          <div style="display:flex;gap:8px;align-items:center">
-            ${statusSelect("projects", p.id, p.status)}
-            <button class="icon-btn lock-viewer lock-editor" style="margin-left:auto;color:var(--danger)" data-del data-coll="projects" data-id="${p.id}"><svg width="17" height="17"><use href="#i-trash"/></svg></button>
-          </div>
-          ${starsHTML("projects", p.id, p.rating)}
-        </div>
-      </div>`).join("") : emptyState("Sin proyectos para esta tanda", "Ajusta el filtro o crea un nuevo proyecto.", "projects")}
-  </div>`;
-}
 
 /* ---------- HISTORIAS (Stories) ---------- */
 function viewStories(q=""){
@@ -4438,7 +4393,6 @@ function render(){
     v === "reels"     ? viewReels(q) :
     v === "carousels" ? viewCarousels(q) :
     v === "stories"   ? viewStories(q) :
-    v === "projects"  ? viewProjects(q) :
     v === "feed"      ? viewFeed() :
     v === "storiesPreview" ? viewStoriesPreview() :
     v === "settings"  ? viewSettings() : viewDashboard();
@@ -4495,14 +4449,13 @@ function createItem(coll){
     item = Object.assign(base, {pillar:"educacion", format:"Pregunta", idea:"", content:"", followup:"", note:"", media:""});
     label = "Historia";
   }else{
-    item = Object.assign(base, {name:`Proyecto ${S.projects.length+1}`, desc:"", cover:""});
-    label = "Proyecto";
+    return;
   }
   S[coll].unshift(item);
   reindex(coll);
   logActivity("ok", `<b>${label} creado:</b> ${esc(item.title || item.name || "Nueva historia")} está listo para editarse.`);
   touch();
-  S.ui.view = coll === "projects" ? "projects" : coll;
+  S.ui.view = coll;
   render();
   toast(`${label} creado`, "check");
 }

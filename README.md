@@ -1,7 +1,7 @@
 # Mila Meekins Real Estate — Content Studio
 
 Página HTML **única e interactiva** (`index.html`) para planificar el contenido de la marca:
-Dashboard, Projects, Reels, Carruseles, Posts, Historias, **Feed Preview** y **Stories
+Dashboard, Reels, Carruseles, Posts, Historias, **Feed Preview** y **Stories
 Preview** en tiempo real.
 No requiere build ni framework — un solo archivo — pero sí requiere iniciar sesión: el
 workspace vive en **Supabase** (base de datos + autenticación) y se comparte en tiempo real
@@ -126,7 +126,7 @@ autorización.
 - El Rol es una preferencia **de este navegador**, no del workspace compartido: cada
   persona ve y usa su propio Rol sin afectar a las demás, aunque el resto del contenido
   sí se sincronice para todos en tiempo real.
-- Cada texto es editable in-place en Posts, Reels, Carruseles, Historias y Projects.
+- Cada texto es editable in-place en Posts, Reels, Carruseles y Historias.
 - Estados por pieza: Borrador · En revisión · Programado · Publicado.
 - Crear, duplicar, plegar, eliminar y reordenar piezas.
 
@@ -159,8 +159,6 @@ autorización.
 ### Filtros por tandas
 - Posts/Reels/Carruseles/Historias ya se organizan por el mes de contenido de arriba;
   la barra de filtros de esas secciones solo trae **ordenar** (más recientes/antiguos).
-  Projects, que no tiene meses de contenido, conserva el filtro por **tanda de mes**
-  calculada automáticamente a partir de las fechas de creación reales.
 
 ### Imágenes y media adjuntas
 - Clic en cualquier zona visual (post 4:5, portada de reel 9:16, slides 1080×1350, media
@@ -275,7 +273,7 @@ autorización.
 - Debajo lleva un **checklist** de 3 puntos, exclusivo del rol Admin: **Aprobado para
   publicar** y **Publicado** (checkboxes de etiqueta fija — a diferencia del resto de
   la app, el texto no cambia según el estado, solo el color) y **Valoración (1 a 10)**
-  con el mismo medidor de estrellas que usan Posts, Carruseles y Projects.
+  con el mismo medidor de estrellas que usan Posts y Carruseles.
 
 ### Stories Preview: la misma idea del Feed Preview, pero para historias
 - Vive en su propia sección (pestaña **Stories Preview** en el menú, o el botón
@@ -330,15 +328,16 @@ autorización.
   publicación en lugar de repetir siempre los mismos.
 
 ### Medidor de receptividad (1–10 con estrellas)
-- Post, Reel, Carrusel y Project tienen un medidor de **Receptividad del público** de 1 a
+- Post, Reel y Carrusel tienen un medidor de **Receptividad del público** de 1 a
   10 estrellas, con puntaje numérico y etiqueta (Baja / Media / Alta receptividad).
 - Volver a hacer clic en la misma estrella baja un punto.
 - El Dashboard calcula la receptividad media sobre las piezas ya puntuadas.
 
 ### Dashboard: estado del contenido por mes / trimestre
 - Una tabla en el Dashboard cruza **Posts, Reels, Carruseles e Historias** (filas) con
-  **7 categorías** (columnas): Revisados, Por revisar, Diseño aprobado, Diseño
-  desaprobado, Publicado, Copy faltante e Imagen faltante.
+  **8 categorías** (columnas): Revisados, Por revisar, Diseño aprobado, Diseño
+  desaprobado, Publicado, Cantidad a publicar (revisado y todavía no publicado — la cola
+  real de lo que falta sacar), Copy faltante e Imagen faltante.
 - Un interruptor **"Por mes" / "Por trimestre"** arriba de la tabla cambia el alcance —
   un trimestre es simplemente 3 meses de contenido seguidos, agrupados. Las flechas
   a los lados navegan entre meses o trimestres.
@@ -350,10 +349,8 @@ autorización.
   lado.
 
 ### Extras
-- Búsqueda global sobre posts, reels, carruseles, historias y proyectos.
+- Búsqueda global sobre posts, reels, carruseles e historias.
 - Registro de actividad reciente y acciones rápidas en el Dashboard (incluye "Nueva Historia").
-- Los proyectos vienen organizados como las **tandas de grabación** sugeridas (batch content):
-  Educación, Patrimonio + Servicio, y Fe + Comunidad.
 - Exportar / importar el workspace completo en `.json` y restablecer al contenido de ejemplo.
 - Diseño responsive (escritorio, tablet y móvil).
 
