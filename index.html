@@ -3076,7 +3076,6 @@ const DASH_METRICS = [
   {key:"approved",  label:"Diseño aprobado",    check:it => it.designApproved === true},
   {key:"rejected",  label:"Diseño desaprobado", check:it => it.designApproved === false},
   {key:"published", label:"Publicado",          check:it => !!it.published},
-  {key:"toPublish", label:"Cantidad a publicar",check:it => !!it.reviewed && !it.published},
   {key:"noCopy",    label:"Copy faltante",      check:(it,coll) => !dashCopyOf(coll, it)},
   {key:"noImage",   label:"Imagen faltante",    check:(it,coll) => !dashImageOf(coll, it)}
 ];

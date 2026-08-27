@@ -335,9 +335,8 @@ autorización.
 
 ### Dashboard: estado del contenido por mes / trimestre
 - Una tabla en el Dashboard cruza **Posts, Reels, Carruseles e Historias** (filas) con
-  **8 categorías** (columnas): Revisados, Por revisar, Diseño aprobado, Diseño
-  desaprobado, Publicado, Cantidad a publicar (revisado y todavía no publicado — la cola
-  real de lo que falta sacar), Copy faltante e Imagen faltante.
+  **7 categorías** (columnas): Revisados, Por revisar, Diseño aprobado, Diseño
+  desaprobado, Publicado, Copy faltante e Imagen faltante.
 - Un interruptor **"Por mes" / "Por trimestre"** arriba de la tabla cambia el alcance —
   un trimestre es simplemente 3 meses de contenido seguidos, agrupados. Las flechas
   a los lados navegan entre meses o trimestres.
