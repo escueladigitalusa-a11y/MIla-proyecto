@@ -212,6 +212,7 @@ body::before{
 .ratio-45{aspect-ratio:4/5}
 .ratio-916{aspect-ratio:9/16}
 .ratio-11{aspect-ratio:1/1}
+.ratio-169{aspect-ratio:16/9}
 .media-tools{display:flex;gap:8px;margin-top:12px}
 .media-tools .btn{flex:1;justify-content:center}
 .media-tools .btn.icon-only{flex:0 0 auto;padding:8px 11px}
@@ -372,6 +373,16 @@ body::before{
 .reel-cover-info b{font-size:12.5px;color:var(--navy)}
 .reel-cover-info small{font-size:11.5px;color:var(--muted)}
 .reel-cover-info .btn{align-self:flex-start;margin-top:4px}
+
+/* YouTube: la portada es horizontal 16:9 y ocupa la mitad del ancho de la tarjeta,
+   así se ve como la miniatura real del video y no como un ícono. */
+.yt-cover-row{display:flex;gap:18px;align-items:flex-start;margin-bottom:18px}
+.yt-cover-box{flex:1 1 50%;max-width:50%;min-width:0}
+.yt-cover-box .media{border-radius:12px}
+.yt-cover-info{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:3px;padding-top:2px}
+.yt-cover-info b{font-size:13px;color:var(--navy)}
+.yt-cover-info small{font-size:11.5px;color:var(--muted);line-height:1.5}
+.yt-cover-info .btn{align-self:flex-start;margin-top:6px}
 
 /* Historias */
 .story-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
@@ -760,6 +771,8 @@ body.role-viewer .readonly-note{display:flex}
   .post-layout{grid-template-columns:1fr!important}
   .reel-layout{grid-template-columns:1fr}
   .reel-cover-col .ratio-916{max-width:220px;margin:0 auto}
+  .yt-cover-row{flex-direction:column;gap:12px}
+  .yt-cover-box{flex:none;max-width:100%;width:100%}
   .story-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
   .filter-bar{width:100%}
 }
@@ -3542,11 +3555,11 @@ function viewYoutube(q=""){
             <svg><use href="#i-trash"/></svg></button>
         </div>
         <div class="reel-mini-body">
-          <div class="reel-cover-row">
-            <div class="reel-cover-box">${mediaBox({coll:"youtube", id:r.id, field:"cover", src:r.cover, ratio:"ratio-916", title:"Subir portada", hint:"9:16"})}</div>
-            <div class="reel-cover-info">
+          <div class="yt-cover-row">
+            <div class="yt-cover-box">${mediaBox({coll:"youtube", id:r.id, field:"cover", src:r.cover, ratio:"ratio-169", title:"Subir portada", hint:"16:9 — 1920 x 1080px"})}</div>
+            <div class="yt-cover-info">
               <b>Portada</b>
-              <small>Miniatura de este video.</small>
+              <small>Miniatura de este video, horizontal 16:9. Arrástrala aquí o haz clic para subirla.</small>
               ${r.cover ? `<button type="button" class="btn btn-ghost btn-sm lock-viewer" data-clear data-coll="youtube" data-id="${r.id}" data-field="cover"><svg><use href="#i-trash"/></svg> Quitar</button>` : ""}
             </div>
           </div>
