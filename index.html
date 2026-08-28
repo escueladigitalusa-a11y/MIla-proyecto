@@ -423,10 +423,6 @@ body::before{
 .timing{font-size:10px;letter-spacing:.1em;color:var(--gold-deep);background:var(--gold-pale);
   border-radius:20px;padding:2px 8px;margin-left:6px;font-weight:600}
 
-/* Historias: chip de formato de sticker */
-.fmt-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:#fff;
-  border-radius:20px;padding:3px 9px;font-size:10.5px;color:var(--navy);letter-spacing:.02em}
-
 /* Resalte temporal al saltar desde "En Feed · #k" o desde una celda del feed */
 .flash{animation:flashHighlight 1.5s ease}
 @keyframes flashHighlight{0%,100%{box-shadow:var(--shadow-sm)}25%{box-shadow:0 0 0 4px var(--gold),var(--shadow)}}
@@ -642,6 +638,9 @@ body::before{
 .slide{flex:0 0 240px;border:1px solid var(--line-2);border-radius:16px;background:#fff;padding:14px;scroll-snap-align:start;box-shadow:var(--shadow-sm)}
 .slide.dragging{opacity:.45}
 .slide.drag-over{outline:2px dashed var(--gold);outline-offset:3px}
+/* Resalte del espacio multimedia mientras se le arrastra un archivo encima */
+.file-over{outline:2px dashed var(--gold-deep);outline-offset:3px;background:var(--gold-pale)!important;
+  box-shadow:0 0 0 6px rgba(219,184,121,.18)}
 .slide-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .slide-head b{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--navy)}
 .slide-head .tools{margin-left:auto;display:flex;gap:4px}
@@ -2794,45 +2793,72 @@ function logActivity(type, text){
    del <input>, Chrome ya no considera eso una interacción reciente del usuario, y por
    eso bloqueaba el popup de Google pidiéndolo ahí (mensaje "Failed to open popup
    window" con gesto:no). Pedirlo aquí, primero, usa el gesto real y fresco del clic. */
-async function pickImage(){
-  let driveToken = null, driveAuthFailed = false, driveAuthReason = "";
-  if(driveEnabled()){
-    try{
-      driveToken = await getDriveAccessToken();
-    }catch(e){
-      console.warn("No se pudo autorizar Google Drive", e);
-      driveAuthFailed = true;
-      driveAuthReason = (e && e.message) || (e && e.type) || "";
-    }
+/* Pide el permiso de Drive ANTES de abrir cualquier diálogo. Chrome exige que el popup
+   de OAuth salga del gesto original del usuario, y ese gesto ya no vale una vez que se
+   cerró el selector de archivos del sistema. */
+async function requestDriveAuth(){
+  const out = {token:null, failed:false, reason:""};
+  if(!driveEnabled()) return out;
+  try{
+    out.token = await getDriveAccessToken();
+  }catch(e){
+    console.warn("No se pudo autorizar Google Drive", e);
+    out.failed = true;
+    out.reason = (e && e.message) || (e && e.type) || "";
   }
+  return out;
+}
+
+/* Convierte un File en la URL final de la imagen: la comprime y, si Drive está activo y
+   autorizado, la sube y devuelve el link de Drive; si no, devuelve la imagen embebida
+   para guardarla en este dispositivo. Compartido por el selector de archivos y por
+   arrastrar y soltar. */
+function fileToImageUrl(f, auth){
+  return new Promise(resolve => {
+    if(!f) return resolve(null);
+    if(!/^image\//.test(f.type)){ toast("El archivo no es una imagen.", "alert", true); return resolve(null); }
+    const fr = new FileReader();
+    fr.onload = async () => {
+      const compressed = await compress(fr.result);
+      if(!auth.token){
+        if(auth.failed) toast(`No se pudo autorizar Google Drive${auth.reason ? " (" + auth.reason + ")" : ""}: se guardó en este dispositivo en su lugar.`, "alert", true);
+        resolve(compressed);
+        return;
+      }
+      try{
+        toast("Subiendo imagen a Google Drive…", "upload");
+        const url = await uploadToDriveWithToken(auth.token, compressed, f.name || `imagen-${Date.now()}.jpg`);
+        resolve(url);
+      }catch(e){
+        console.warn("No se pudo subir a Google Drive, se guarda localmente", e);
+        toast("No se pudo subir a Google Drive: se guardó en este dispositivo en su lugar.", "alert", true);
+        resolve(compressed);
+      }
+    };
+    fr.onerror = () => { toast("No se pudo leer la imagen.", "alert", true); resolve(null); };
+    fr.readAsDataURL(f);
+  });
+}
+
+/* Guarda una imagen ya procesada en el destino que corresponda. */
+function applyUploadedImage(coll, id, f, data){
+  if(coll === "profile"){ S.profile.avatar = data; }
+  else if(f === "slide"){
+    const [carId, slideId] = id.split("::");
+    const c = find("carousels", carId);
+    const sl = c && c.slides.find(x => x.id === slideId);
+    if(sl) sl.image = data;
+  }else{
+    const it = find(coll, id); if(it) it[f] = data;
+  }
+}
+
+async function pickImage(){
+  const auth = await requestDriveAuth();
   return new Promise(resolve => {
     const inp = $("#filePicker");
     inp.value = "";
-    inp.onchange = () => {
-      const f = inp.files && inp.files[0];
-      if(!f) return resolve(null);
-      if(!/^image\//.test(f.type)){ toast("El archivo no es una imagen.", "alert", true); return resolve(null); }
-      const fr = new FileReader();
-      fr.onload = async () => {
-        const compressed = await compress(fr.result);
-        if(!driveToken){
-          if(driveAuthFailed) toast(`No se pudo autorizar Google Drive${driveAuthReason ? " (" + driveAuthReason + ")" : ""}: se guardó en este dispositivo en su lugar.`, "alert", true);
-          resolve(compressed);
-          return;
-        }
-        try{
-          toast("Subiendo imagen a Google Drive…", "upload");
-          const url = await uploadToDriveWithToken(driveToken, compressed, f.name || `imagen-${Date.now()}.jpg`);
-          resolve(url);
-        }catch(e){
-          console.warn("No se pudo subir a Google Drive, se guarda localmente", e);
-          toast("No se pudo subir a Google Drive: se guardó en este dispositivo en su lugar.", "alert", true);
-          resolve(compressed);
-        }
-      };
-      fr.onerror = () => { toast("No se pudo leer la imagen.", "alert", true); resolve(null); };
-      fr.readAsDataURL(f);
-    };
+    inp.onchange = () => resolve(fileToImageUrl(inp.files && inp.files[0], auth));
     inp.click();
   });
 }
@@ -3653,21 +3679,19 @@ function viewStories(q=""){
   </div>`;
 }
 
+/* i = posición de la historia dentro del mes que se está viendo, así el número va
+   simplemente del 1 al 30 (el cupo mensual) en vez del número del Banco de Ideas. */
 function storyCard(s, i){
+  const badge = feedBadge("stories", s.id);
   return `
   <div class="story-card ${s.published ? "published-item" : ""}" data-item="${s.id}">
     <div class="story-top">
-      <span class="num">#${s.num ?? (i+1)}</span>
-      ${s.format ? `<span class="fmt-chip">${esc(s.format)}</span>` : ""}
+      <span class="num">#${i+1}</span>
       ${contentMonthSelectHTML("stories", s.id, s.monthId)}
       <button class="icon-btn lock-viewer lock-editor" style="margin-left:auto;width:30px;height:30px;color:var(--danger)" data-del data-coll="stories" data-id="${s.id}" title="Eliminar">
         <svg width="15" height="15"><use href="#i-trash"/></svg></button>
     </div>
-    <div class="story-top" style="padding-top:6px">
-      ${s.pillar ? pillarChip(s.pillar) : ""}
-      ${feedBadge("stories", s.id)}
-      <span class="meta-chip" style="margin-left:auto;border:0;padding:2px 0;background:transparent"><svg><use href="#i-cal"/></svg>${fmtDate(s.createdAt)}</span>
-    </div>
+    ${badge ? `<div class="story-top" style="padding-top:6px">${badge}</div>` : ""}
     <div class="story-media">
       ${mediaBox({coll:"stories", id:s.id, field:"media", src:s.media, ratio:"ratio-916", title:"Subir media", hint:"Foto o clip 9:16"})}
       <div class="media-tools lock-viewer" style="margin-top:8px">
@@ -3676,10 +3700,8 @@ function storyCard(s, i){
       </div>
     </div>
     <div class="story-body">
-      ${noteBandHTML(s.note)}
-      ${field(`Idea original · Banco #${s.num ?? (i+1)}`,"list", textarea("stories", s.id, "idea", s.idea, "La idea tal como salió del banco de contenido...", "", 2))}
+      ${field("Idea original","list", textarea("stories", s.id, "idea", s.idea, "La idea de esta historia...", "", 2))}
       <div class="story-foot">
-        ${statusSelect("stories", s.id, s.status)}
         ${reviewCheckHTML("stories", s.id, !!s.reviewed)}
         ${publishCheckHTML("stories", s.id, !!s.published)}
         ${designApprovalHTML("stories", s.id, s.designApproved, s.designNote)}
@@ -5011,15 +5033,7 @@ document.addEventListener("click", async e => {
     const {coll, id, field:f} = up.dataset;
     const data = await pickImage();
     if(!data) return;
-    if(coll === "profile"){ S.profile.avatar = data; }
-    else if(f === "slide"){
-      const [carId, slideId] = id.split("::");
-      const c = find("carousels", carId);
-      const s = c && c.slides.find(x => x.id === slideId);
-      if(s) s.image = data;
-    }else{
-      const it = find(coll, id); if(it) it[f] = data;
-    }
+    applyUploadedImage(coll, id, f, data);
     touch(); render(); toast("Imagen adjuntada", "img"); return;
   }
 
@@ -5338,6 +5352,46 @@ function refreshRating(coll, id){
 
 /* ---------- Drag & drop: feed y slides ---------- */
 let dragSrc = null;
+/* ---------- Arrastrar archivos desde la computadora hasta un espacio multimedia ----------
+   Se distingue de los arrastres internos (reordenar el feed o las slides) porque un
+   arrastre de archivos trae "Files" en dataTransfer.types; los internos no, y además
+   solo actúan cuando dragSrc está puesto. */
+function isFileDrag(e){
+  const t = e.dataTransfer && e.dataTransfer.types;
+  return !!t && Array.from(t).includes("Files");
+}
+function clearFileOver(){ $$(".file-over").forEach(x => x.classList.remove("file-over")); }
+
+document.addEventListener("dragover", e => {
+  if(!isFileDrag(e)) return;
+  const box = e.target.closest("[data-upload]");
+  // se cancela igual fuera de un destino válido, para que el navegador no abra la
+  // imagen soltada en la pestaña y se pierda todo lo que no esté guardado
+  e.preventDefault();
+  if(!box || !canEdit()){ clearFileOver(); e.dataTransfer.dropEffect = "none"; return; }
+  e.dataTransfer.dropEffect = "copy";
+  if(!box.classList.contains("file-over")){ clearFileOver(); box.classList.add("file-over"); }
+});
+document.addEventListener("dragleave", e => { if(isFileDrag(e) && !e.relatedTarget) clearFileOver(); });
+
+document.addEventListener("drop", async e => {
+  if(!isFileDrag(e)) return;
+  e.preventDefault();
+  clearFileOver();
+  const box = e.target.closest("[data-upload]");
+  if(!box) return;
+  if(!guard()) return;
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if(!f) return;
+  const {coll, id, field:fld} = box.dataset;
+  // el permiso de Drive se pide de una vez: soltar el archivo es el gesto del usuario
+  const auth = await requestDriveAuth();
+  const data = await fileToImageUrl(f, auth);
+  if(!data) return;
+  applyUploadedImage(coll, id, fld, data);
+  touch(); render(); toast("Imagen adjuntada", "img");
+});
+
 document.addEventListener("dragstart", e => {
   const cell = e.target.closest("[data-cell]");
   const slide = e.target.closest("[data-slide]");
