@@ -97,6 +97,35 @@ body::before{
 }
 .btn-create:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(180,137,74,.38)}
 
+/* Tarjeta de limpieza masiva por mes (Settings) */
+.clean-row{padding:13px 0;border-top:1px solid var(--line-2)}
+.clean-row b{display:block;font-size:13px;color:var(--navy);font-weight:600}
+.clean-row small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5}
+.clean-btns{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.clean-row.danger-row b{color:var(--danger)}
+
+/* Bloque del mes activo en el menú lateral: selector de mes + resumen en números
+   de ese mes (mismo calendario de contenido que usan Posts/Reels/YouTube/Carruseles
+   e Historias). */
+.side-month{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:14px;
+  padding:12px;box-shadow:var(--shadow-sm)}
+.side-month .sm-cap{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+  display:block;margin-bottom:7px}
+.side-month select{width:100%;font-family:inherit;font-size:13px;font-weight:500;color:var(--navy);
+  background:var(--cream-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer}
+.side-month select:hover{border-color:var(--gold-soft)}
+.sm-ready{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-top:11px}
+.sm-ready b{font-family:var(--serif);font-size:19px;color:var(--navy);line-height:1}
+.sm-ready span{font-size:10.5px;color:var(--muted)}
+.sm-bar{height:5px;border-radius:20px;background:var(--cream-2);overflow:hidden;margin-top:7px}
+.sm-bar i{display:block;height:100%;border-radius:20px;
+  background:linear-gradient(90deg,var(--gold-soft),var(--gold-deep));transition:width .3s}
+.sm-rows{margin-top:10px;padding-top:9px;border-top:1px solid var(--line-2);
+  display:flex;flex-direction:column;gap:5px}
+.sm-rows div{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11.5px;color:#43566C}
+.sm-rows div b{font-weight:600;color:var(--navy);font-variant-numeric:tabular-nums}
+.sm-rows div.warn b{color:var(--danger)}
+
 .nav{margin-top:22px;display:flex;flex-direction:column;gap:3px}
 .nav button{
   display:flex;align-items:center;gap:13px;padding:11px 13px;border-radius:12px;
@@ -410,8 +439,6 @@ body::before{
 .note-band svg{width:16px;height:16px;flex:none;margin-top:1px;color:#B4894A}
 .note-band b{color:#6B4F22}
 
-/* Hashtags */
-.tags-field .input{font-size:13.5px;color:#4E6076;letter-spacing:.01em}
 .hint-line{font-size:11.5px;color:var(--muted);margin-top:6px;display:block}
 
 /* Guion de reel: numeración de tiempos */
@@ -915,6 +942,8 @@ body.needs-auth .app{display:none}
     <button class="btn-create lock-viewer" data-action="create-menu">
       <svg width="16" height="16"><use href="#i-plus"/></svg> Crear
     </button>
+
+    <div class="side-month" id="sideMonth"></div>
 
     <nav class="nav" id="nav"></nav>
 
@@ -2949,13 +2978,6 @@ function noteBandHTML(note){
 }
 
 /* Campo de hashtags con recordatorio de la base de marca */
-function hashtagsField(coll, id, value){
-  return `<div class="field tags-field">
-    <div class="label"><svg><use href="#i-flag"/></svg>Hashtags</div>
-    ${input(coll, id, "hashtags", value, "#Hashtag #DeEstaPieza")}
-    <span class="hint-line">Base de marca (variar 2–3, no repetir siempre los mismos): ${esc(S.profile.hashtagsBase || "")}</span>
-  </div>`;
-}
 
 /* Miniatura del formato (imagen principal o placeholder) */
 function itemThumbHTML(src, iconId="i-img"){
@@ -3625,7 +3647,6 @@ function viewCarousels(q=""){
           ${field("Call To Action (CTA)","link", input("carousels", c.id, "cta", c.cta, "Link in bio, deja un comentario, etc."))}
         </div>
         ${field("Caption (texto final)","pen", textarea("carousels", c.id, "copy", c.copy, "El caption que acompaña al carrusel...", "soft", 3))}
-        ${hashtagsField("carousels", c.id, c.hashtags)}
         ${starsHTML("carousels", c.id, c.rating)}
       </div>
     </div>`).join("") : emptyState("Sin carruseles", "Crea tu primer carrusel.", "carousels")}`;
@@ -4505,6 +4526,47 @@ function viewSettings(){
       </div>
 
       <div class="card">
+        <div class="card-head"><h3>Limpieza por mes</h3></div>
+        <div class="card-body">
+          <div class="kv"><div><b>Mes sobre el que se trabaja</b><small>Todo lo de abajo se aplica solo a lo que elijas acá.</small></div>
+            <select class="fsel" id="cleanMonth" title="Elegir el mes a limpiar">
+              <option value="all">Todos los meses</option>
+              ${S.contentMonths.map((m, mi) => `<option value="${mi}" ${mi === S.ui.contentMonth ? "selected" : ""}>${esc(m.label)}</option>`).join("")}
+            </select></div>
+
+          <div class="clean-row"><b>Limpiar copys</b><small>Vacía el caption de cada pieza.</small>
+            <div class="clean-btns lock-viewer">
+              ${CLEAN_COLLS.filter(c => CLEAN_COPY[c.coll].length).map(c => `<button class="btn btn-ghost btn-sm" data-clean="copy" data-coll="${c.coll}">${c.label}</button>`).join("")}
+              <button class="btn btn-ghost btn-sm" data-clean="copy" data-coll="all">Todas</button>
+            </div></div>
+
+          <div class="clean-row"><b>Limpiar guiones y textos extras</b><small>Tomas y desarrollo, texto del arte, hooks, CTA, enlaces, ideas de historias y textos de slides.</small>
+            <div class="clean-btns lock-viewer">
+              ${CLEAN_COLLS.map(c => `<button class="btn btn-ghost btn-sm" data-clean="text" data-coll="${c.coll}">${c.label}</button>`).join("")}
+              <button class="btn btn-ghost btn-sm" data-clean="text" data-coll="all">Todas</button>
+            </div></div>
+
+          <div class="clean-row"><b>Quitar imágenes y portadas</b><small>Portadas de Reels y YouTube, imágenes de Posts, media de Historias e imágenes de cada slide.</small>
+            <div class="clean-btns lock-viewer">
+              ${CLEAN_COLLS.map(c => `<button class="btn btn-ghost btn-sm" data-clean="media" data-coll="${c.coll}">${c.label}</button>`).join("")}
+              <button class="btn btn-ghost btn-sm" data-clean="media" data-coll="all">Todas</button>
+            </div></div>
+
+          <div class="clean-row"><b>Limpiar previews</b><small>Suelta los espacios ocupados. Las piezas no se borran, solo quedan sin ubicación.</small>
+            <div class="clean-btns lock-viewer">
+              <button class="btn btn-ghost btn-sm" data-clean-preview="feed">Feed Preview</button>
+              <button class="btn btn-ghost btn-sm" data-clean-preview="stories">Stories Preview</button>
+            </div></div>
+
+          <div class="clean-row danger-row"><b>Eliminar piezas completas</b><small>Borra las piezas con todo su contenido y libera sus espacios en los previews. No se puede deshacer.</small>
+            <div class="clean-btns lock-viewer lock-editor">
+              ${CLEAN_COLLS.map(c => `<button class="btn btn-danger btn-sm" data-clean-del data-coll="${c.coll}">${c.label}</button>`).join("")}
+              <button class="btn btn-danger btn-sm" data-clean-del data-coll="all">Todas</button>
+            </div></div>
+        </div>
+      </div>
+
+      <div class="card">
         <div class="card-head"><h3>Datos</h3></div>
         <div class="card-body">
           <div class="kv"><div><b>Guardado local</b><small>Último guardado: ${S.savedAt ? new Date(S.savedAt).toLocaleString("es") : "nunca"} · ${(bytes/1024).toFixed(0)} KB</small></div>
@@ -4552,6 +4614,171 @@ function navReadyLabel(coll){
   const ready = (S[coll] || []).filter(it => it.monthId === monthId && it.reviewed).length;
   return `${ready}/${quota}`;
 }
+/* ---------- Limpieza masiva por mes (Settings) ----------
+   Cada acción trabaja sobre un solo mes de contenido o sobre todos, según lo que se
+   elija en el selector de la tarjeta. Los campos de cada sección salen de lo que de
+   verdad se edita hoy en cada tarjeta; si mañana se agrega o se quita un campo, hay
+   que actualizarlo acá también. */
+const CLEAN_COLLS = [
+  {coll:"posts",     label:"Posts"},
+  {coll:"reels",     label:"Reels"},
+  {coll:"youtube",   label:"YouTube"},
+  {coll:"carousels", label:"Carruseles"},
+  {coll:"stories",   label:"Historias"}
+];
+/* Campos de texto "copy" (el caption que acompaña la publicación). */
+const CLEAN_COPY = {posts:["copy"], reels:["copy"], youtube:["copy"], carousels:["copy"], stories:[]};
+/* Guiones y textos extras: todo lo demás que se escribe a mano en la pieza. */
+const CLEAN_TEXT = {
+  posts:["designText","links"],
+  reels:["desarrollo"],
+  youtube:["desarrollo"],
+  carousels:["hook","cta"],
+  stories:["idea"]
+};
+/* Campos de imagen / portada. Los carruseles se tratan aparte (van por slide). */
+const CLEAN_MEDIA = {posts:["image"], reels:["cover"], youtube:["cover"], carousels:[], stories:["media"]};
+
+/* Piezas de una sección dentro del alcance elegido. monthIdx null = todos los meses. */
+function cleanScopeItems(coll, monthIdx){
+  const list = S[coll] || [];
+  if(monthIdx === null) return list;
+  const m = S.contentMonths[monthIdx];
+  return m ? list.filter(it => it.monthId === m.id) : [];
+}
+function cleanScopeLabel(monthIdx){
+  return monthIdx === null ? "todos los meses" : `"${S.contentMonths[monthIdx]?.label || ""}"`;
+}
+
+/* Vacía un grupo de campos (copy / textos / media) en una o todas las secciones. */
+function bulkClear(kind, coll, monthIdx){
+  if(!guard()) return;
+  const colls = coll === "all" ? CLEAN_COLLS.map(c => c.coll) : [coll];
+  const map = kind === "copy" ? CLEAN_COPY : kind === "text" ? CLEAN_TEXT : CLEAN_MEDIA;
+  const what = kind === "copy" ? "los copys" : kind === "text" ? "los guiones y textos extras" : "las imágenes y portadas";
+
+  let n = 0;
+  colls.forEach(c => cleanScopeItems(c, monthIdx).forEach(it => {
+    let hit = false;
+    (map[c] || []).forEach(f => { if(it[f]){ it[f] = ""; hit = true; } });
+    if(kind === "media" && c === "carousels") (it.slides || []).forEach(sl => { if(sl.image){ sl.image = ""; hit = true; } });
+    if(kind === "text" && c === "carousels") (it.slides || []).forEach(sl => { if(sl.caption){ sl.caption = ""; hit = true; } });
+    if(hit) n++;
+  }));
+
+  if(!n){ toast(`No había ${what} que borrar en ${cleanScopeLabel(monthIdx)}`, "alert", true); return; }
+  const scope = coll === "all" ? "todas las secciones" : CLEAN_COLLS.find(c => c.coll === coll).label;
+  confirmDialog(`¿Borrar ${what}?`,
+    `Se van a vaciar ${what} de ${n} pieza(s) en ${scope}, dentro de ${cleanScopeLabel(monthIdx)}. Las piezas NO se borran: solo quedan esos campos en blanco. Aplica al workspace compartido en la nube.`,
+    () => {
+      // se vuelve a recorrer al confirmar, por si algo cambió mientras el aviso estaba abierto
+      colls.forEach(c => cleanScopeItems(c, monthIdx).forEach(it => {
+        (map[c] || []).forEach(f => { it[f] = ""; });
+        if(kind === "media" && c === "carousels") (it.slides || []).forEach(sl => { sl.image = ""; });
+        if(kind === "text" && c === "carousels") (it.slides || []).forEach(sl => { sl.caption = ""; });
+      }));
+      logActivity("ok", `<b>Limpieza:</b> se borraron ${what} de ${n} pieza(s) en ${esc(scope)} · ${esc(cleanScopeLabel(monthIdx))}.`);
+      touch(); persist(); render();
+      toast(`${n} pieza(s) limpiada(s)`, "history");
+    }, "Borrar");
+}
+
+/* Borra piezas completas de una o todas las secciones, y las saca de los previews. */
+function bulkDelete(coll, monthIdx){
+  if(!guard()) return;
+  const colls = coll === "all" ? CLEAN_COLLS.map(c => c.coll) : [coll];
+  const doomed = colls.flatMap(c => cleanScopeItems(c, monthIdx).map(it => ({coll:c, id:it.id})));
+  if(!doomed.length){ toast(`No hay piezas en ${cleanScopeLabel(monthIdx)}`, "alert", true); return; }
+  const scope = coll === "all" ? "todas las secciones" : CLEAN_COLLS.find(c => c.coll === coll).label;
+  confirmDialog(`¿Eliminar ${doomed.length} pieza(s)?`,
+    `Se van a borrar por completo ${doomed.length} pieza(s) de ${scope} en ${cleanScopeLabel(monthIdx)}, con todo su contenido, y se liberarán los espacios que ocupen en el Feed Preview y el Stories Preview. Esto no se puede deshacer.`,
+    () => {
+      const kill = new Set(doomed.map(d => d.coll + "|" + d.id));
+      colls.forEach(c => {
+        S[c] = (S[c] || []).filter(x => !kill.has(c + "|" + x.id));
+        reindex(c);
+      });
+      S.feedMonths.forEach(m => m.slots.forEach((sl, i) => { if(sl && kill.has(sl.coll + "|" + sl.id)) m.slots[i] = null; }));
+      S.storyMonths.forEach(m => m.slots.forEach((sid, i) => { if(sid && kill.has("stories|" + sid)) m.slots[i] = null; }));
+      logActivity("alert", `<b>Eliminadas:</b> ${doomed.length} pieza(s) de ${esc(scope)} · ${esc(cleanScopeLabel(monthIdx))}.`);
+      touch(); persist(); render();
+      toast(`${doomed.length} pieza(s) eliminada(s)`, "trash", true);
+    }, "Eliminar");
+}
+
+/* Vacía los espacios de un preview (las piezas en sí no se borran). */
+function bulkClearPreview(which, monthIdx){
+  if(!guard()) return;
+  const isFeed = which === "feed";
+  const months = isFeed ? S.feedMonths : S.storyMonths;
+  // El Feed y el Stories Preview tienen su propio calendario de meses, aparte del de
+  // contenido: acá el índice elegido se aplica a ese calendario si existe, y si se
+  // eligió "todos", se vacían todos sus meses.
+  const targets = monthIdx === null ? months.map((m,i) => i) : (months[monthIdx] ? [monthIdx] : []);
+  if(!targets.length){ toast("Ese mes no existe en el preview", "alert", true); return; }
+  const n = targets.reduce((t,i) => t + months[i].slots.filter(Boolean).length, 0);
+  if(!n){ toast("Ese preview ya está vacío", "alert", true); return; }
+  const name = isFeed ? "Feed Preview" : "Stories Preview";
+  const where = monthIdx === null ? "todos los meses" : `"${months[monthIdx].label}"`;
+  confirmDialog(`¿Vaciar el ${name}?`,
+    `Se van a soltar ${n} espacio(s) ocupado(s) en ${where}. Las piezas NO se borran: solo quedan sin ubicación, listas para volver a colocarse.`,
+    () => {
+      targets.forEach(i => { months[i].slots = months[i].slots.map(() => null); });
+      logActivity("ok", `<b>${name} vaciado:</b> ${n} espacio(s) liberado(s) en ${esc(where)}.`);
+      touch(); persist(); render();
+      toast(`${name} vaciado`, "history");
+    }, "Vaciar");
+}
+
+/* Índice de mes elegido en la tarjeta de limpieza; null = todos los meses. */
+function cleanMonthIdx(){
+  const el = $("#cleanMonth");
+  if(!el || el.value === "all") return null;
+  return Number(el.value);
+}
+
+/* Resumen en números del mes de contenido activo, para el menú lateral. Suma las
+   cinco secciones que viven en el calendario de contenido (Posts, Reels, YouTube,
+   Carruseles e Historias) y las mide contra el cupo mensual real de cada una. */
+function contentMonthSummary(monthId){
+  const colls = Object.keys(CONTENT_QUOTA);
+  const items = colls.flatMap(c => (S[c] || []).filter(it => it.monthId === monthId));
+  const quota = colls.reduce((n,c) => n + CONTENT_QUOTA[c], 0);
+  return {
+    quota,
+    total:     items.length,
+    ready:     items.filter(it => it.reviewed).length,
+    published: items.filter(it => it.published).length,
+    approved:  items.filter(it => it.designApproved === true).length,
+    rejected:  items.filter(it => it.designApproved === false).length,
+    pending:   items.filter(it => !it.reviewed).length
+  };
+}
+
+/* Bloque del mes activo en el menú lateral: elegir mes + ver su resumen en números.
+   Cambiar el mes acá es lo mismo que cambiar la pestaña de mes dentro de Posts,
+   Reels, YouTube, Carruseles o Historias: es un solo calendario compartido. */
+function renderSideMonth(){
+  migrateContentMonths(S);
+  const month = activeContentMonth();
+  const s = contentMonthSummary(month.id);
+  const pct = s.quota ? Math.round(s.ready / s.quota * 100) : 0;
+  $("#sideMonth").innerHTML = `
+    <span class="sm-cap">Mes de contenido</span>
+    <select data-side-month title="Cambiar el mes que se está viendo">
+      ${S.contentMonths.map((m, mi) => `<option value="${mi}" ${mi === S.ui.contentMonth ? "selected" : ""}>${esc(m.label)}</option>`).join("")}
+    </select>
+    <div class="sm-ready"><b>${s.ready}/${s.quota}</b><span>listos · ${pct}%</span></div>
+    <div class="sm-bar"><i style="width:${pct}%"></i></div>
+    <div class="sm-rows">
+      <div><span>Piezas cargadas</span><b>${s.total}</b></div>
+      <div><span>Publicadas</span><b>${s.published}</b></div>
+      <div><span>Diseño aprobado</span><b>${s.approved}</b></div>
+      ${s.rejected ? `<div class="warn"><span>Diseño desaprobado</span><b>${s.rejected}</b></div>` : ""}
+      <div><span>Por revisar</span><b>${s.pending}</b></div>
+    </div>`;
+}
+
 function renderNav(){
   $("#nav").innerHTML = NAV.map(n => `
     <button class="${S.ui.view === n.id ? "active" : ""}" data-nav="${n.id}">
@@ -4574,6 +4801,7 @@ function render(){
   if($("#footerMark") && !$("#footerMark").src) $("#footerMark").src = LOGO_WHITE;
 
   renderNav();
+  renderSideMonth();
   const v = S.ui.view;
   const html =
     v === "posts"     ? viewPosts(q) :
@@ -4721,6 +4949,14 @@ document.addEventListener("click", async e => {
   // rol desde settings
   const role = t.closest("[data-role]");
   if(role){ S.ui.role = role.dataset.role; saveLocalRole(S.ui.role); touch(); render(); toast("Rol: " + S.ui.role, "user"); return; }
+
+  // limpieza masiva por mes (Settings)
+  const cl = t.closest("[data-clean]");
+  if(cl){ bulkClear(cl.dataset.clean, cl.dataset.coll, cleanMonthIdx()); return; }
+  const clp = t.closest("[data-clean-preview]");
+  if(clp){ bulkClearPreview(clp.dataset.cleanPreview, cleanMonthIdx()); return; }
+  const cld = t.closest("[data-clean-del]");
+  if(cld){ bulkDelete(cld.dataset.coll, cleanMonthIdx()); return; }
 
   const act = t.closest("[data-action]");
   if(act){
@@ -5137,6 +5373,9 @@ document.addEventListener("change", e => {
     return;
   }
   if(e.target.id === "roleSelect"){ S.ui.role = e.target.value; saveLocalRole(S.ui.role); touch(); render(); toast("Rol: " + S.ui.role, "user"); }
+
+  const sm = e.target.closest("[data-side-month]");
+  if(sm){ S.ui.contentMonth = Number(sm.value) || 0; touch(); render(); return; }
 
   const fs = e.target.closest("[data-filter-sort]");
   if(fs){ ensureFilter(fs.dataset.coll).sort = fs.value; render(); return; }
