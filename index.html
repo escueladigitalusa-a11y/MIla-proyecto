@@ -587,10 +587,6 @@ body::before{
 
 /* Rejilla del Stories Preview: los mismos espacios que el feed (.cell), pero
    verticales 9:16 y más angostos, uno por historia/día. */
-.story-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;padding:20px 24px 24px}
-.cell.story-cell{aspect-ratio:9/16}
-.cell.story-cell .badge{font-size:10px;padding:2px 5px}
-.cell.story-cell .meta{padding:20px 8px 7px;font-size:10px}
 
 /* Selector de publicación: lista plegable formato → títulos */
 .picker{max-width:560px;width:100%;background:#fff;border-radius:20px;box-shadow:0 30px 70px rgba(26,30,57,.34);
@@ -741,7 +737,6 @@ body.role-viewer .readonly-note{display:flex}
   .ig-stats{gap:22px;margin:10px 0 8px}
   .ig-grid{padding:16px;gap:6px}
   .ig-sep{margin:0 16px}
-  .story-preview-grid{padding:16px;gap:6px;grid-template-columns:repeat(auto-fill,minmax(72px,1fr))}
   .cell .sched{font-size:9px;letter-spacing:.06em;gap:6px}
   .cell .rt,.cell .badge{font-size:10px}
   .sidebar{position:relative;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 18px}
@@ -1137,7 +1132,6 @@ const NAV = [
   {id:"posts",     label:"Posts",         icon:"i-post",   coll:"posts"},
   {id:"stories",   label:"Historias",     icon:"i-story",  coll:"stories"},
   {id:"feed",      label:"Feed Preview",  icon:"i-feed"},
-  {id:"storiesPreview", label:"Stories Preview", icon:"i-story"},
 ];
 
 const STATUS = {
@@ -2361,7 +2355,7 @@ function seed(){
       followers:"12.5K", following:"415", avatar:"", tagline:"Plan. Create. Captivate.",
       hashtagsBase: HASHTAGS_BASE
     },
-    ui:{view:"dashboard", role:loadLocalRole(), filters:{}, postsGuideOpen:true, feedMonth:0, storyMonth:0, contentMonth:0},
+    ui:{view:"dashboard", role:loadLocalRole(), filters:{}, postsGuideOpen:true, feedMonth:0, contentMonth:0},
 
     posts: CONTENT_POSTS.map((p, i) => Object.assign({
       id:uid("post"), order:i, image:"", ratio:"4:5", date:"", links:"", collapsed:false,
@@ -2405,11 +2399,6 @@ function seed(){
        plegable. */
     feedMonths: [{id:uid("month"), label:"Mes 1", slots:Array(24).fill(null)}],
 
-    /* El Stories Preview también se organiza en meses (pestañas); cada mes
-       arranca con 30 espacios vacíos (el cupo real de historias por mes) que se
-       llenan a mano eligiendo la historia desde la lista plegable. */
-    storyMonths: [{id:uid("month"), label:"Mes 1", slots:Array(30).fill(null)}],
-
     activity:[
       {id:uid("a"), type:"ok",    text:"<b>Contenido desarrollado cargado:</b> 15 reels con guion, 10 posts, 10 carruseles slide-by-slide y 44 historias con texto exacto.", at:t-18e5},
       {id:uid("a"), type:"alert", text:"<b>Requieren autorización escrita:</b> Post 21, Carruseles 30 y 50, e Historias 42, 46 y 89.", at:t-36e5},
@@ -2432,7 +2421,6 @@ function mergeIntoSeed(data){
     ui: Object.assign(base.ui, data.ui||{})
   });
   migrateFeedMonths(merged);
-  migrateStoryMonths(merged);
   migrateContentMonths(merged);
   migrateDriveUrls(merged);
   migratePubSort(merged);
@@ -2522,24 +2510,6 @@ function migrateFeedMonths(state){
   });
   if(typeof state.ui.feedMonth !== "number" || state.ui.feedMonth < 0 || state.ui.feedMonth >= state.feedMonths.length){
     state.ui.feedMonth = 0;
-  }
-  return state;
-}
-
-/* Igual que migrateFeedMonths, pero para el Stories Preview: garantiza que
-   exista al menos un mes, que cada mes tenga siempre 30 espacios, y que
-   S.ui.storyMonth apunte a un mes que sí existe. */
-function migrateStoryMonths(state){
-  if(!Array.isArray(state.storyMonths) || !state.storyMonths.length){
-    state.storyMonths = [{id:uid("month"), label:"Mes 1", slots:Array(30).fill(null)}];
-  }
-  state.storyMonths.forEach(m => {
-    if(!Array.isArray(m.slots)) m.slots = [];
-    while(m.slots.length < 30) m.slots.push(null);
-    if(m.slots.length > 30) m.slots.length = 30;
-  });
-  if(typeof state.ui.storyMonth !== "number" || state.ui.storyMonth < 0 || state.ui.storyMonth >= state.storyMonths.length){
-    state.ui.storyMonth = 0;
   }
   return state;
 }
@@ -2989,13 +2959,6 @@ function itemThumbHTML(src, iconId="i-img"){
 /* Chip clicable que muestra la posición real del formato dentro del Feed Preview,
    sin importar en qué mes esté colocado. */
 function feedBadge(coll, id){
-  if(coll === "stories"){
-    const loc = storyLocationOf(id);
-    if(!loc) return "";
-    const label = S.storyMonths[loc.month]?.label || `Mes ${loc.month+1}`;
-    return `<span class="meta-chip feed-jump" data-story-jump data-id="${id}" title="Ver esta posición en el Stories Preview">
-      <svg><use href="#i-story"/></svg>En Stories Preview · ${esc(label)} #${loc.slot+1}</span>`;
-  }
   const loc = feedLocationOf(coll, id);
   if(!loc) return "";
   const label = S.feedMonths[loc.month]?.label || `Mes ${loc.month+1}`;
@@ -3667,7 +3630,6 @@ function viewStories(q=""){
     </div>
     <div class="actions">
       <button class="btn btn-ghost lock-viewer" data-action="new" data-coll="stories"><svg><use href="#i-plus"/></svg> Nueva historia</button>
-      <button class="btn btn-ghost" data-nav="storiesPreview"><svg><use href="#i-eye"/></svg> Preview</button>
       <button class="btn btn-gold lock-viewer" data-action="save"><svg><use href="#i-save"/></svg> Guardar Cambios</button>
     </div>
   </div>
@@ -4205,252 +4167,6 @@ function renderFeedPicker(){
   };
 }
 
-/* ---------- STORIES PREVIEW (tiempo real) ----------
-   Mismo patrón que el Feed Preview (meses en pestañas, espacios fijos que se
-   llenan a mano), pero un solo formato — historias — así que cada espacio
-   guarda directamente el id de la historia, sin necesidad de {coll,id}. */
-const STORY_SLOTS_PER_MONTH = 30;
-
-/* Mes activo del Stories Preview. migrateStoryMonths ya garantiza que exista. */
-function activeStoryMonth(){
-  migrateStoryMonths(S);
-  return S.storyMonths[S.ui.storyMonth];
-}
-function ensureStorySlots(){
-  return activeStoryMonth().slots;
-}
-function storySlotCount(){
-  return STORY_SLOTS_PER_MONTH;
-}
-
-/* Dónde está colocada una historia en TODOS los meses, o null si no está. */
-function storyLocationOf(id){
-  for(let m = 0; m < S.storyMonths.length; m++){
-    const idx = S.storyMonths[m].slots.findIndex(sid => sid === id);
-    if(idx >= 0) return {month:m, slot:idx};
-  }
-  return null;
-}
-
-function storyDisplay(it){
-  if(!it) return null;
-  const text = (it.content || it.idea || "Historia").split("\n")[0];
-  return {id:it.id, num:it.num, media:it.media, text, status:it.status, reviewed:!!it.reviewed, published:!!it.published};
-}
-
-/* Historias colocadas en el mes activo, en el orden de los espacios. */
-function storyItems(){
-  return ensureStorySlots()
-    .map(id => id ? storyDisplay(find("stories", id)) : null)
-    .filter(Boolean);
-}
-
-function assignStorySlot(index, id){
-  const slots = ensureStorySlots();
-  if(index < 0 || index >= STORY_SLOTS_PER_MONTH) return;
-  // una misma historia no puede ocupar dos espacios, ni en este mes ni en otro
-  S.storyMonths.forEach(m => m.slots.forEach((sid, i) => {
-    if(sid === id) m.slots[i] = null;
-  }));
-  slots[index] = id;
-  touch();
-}
-
-function clearStorySlot(index){
-  const slots = ensureStorySlots();
-  if(index >= 0 && index < slots.length){ slots[index] = null; touch(); }
-}
-
-/* Mueve una historia del mes activo a la primera celda libre de otro mes. */
-function moveStoryItemToMonth(fromIndex, toMonthIndex){
-  const fromSlots = ensureStorySlots();
-  const id = fromSlots[fromIndex];
-  const target = S.storyMonths[toMonthIndex];
-  if(!id || !target) return;
-  const freeIndex = target.slots.findIndex(sl => !sl);
-  if(freeIndex < 0){ toast(`"${esc(target.label)}" ya está lleno (${STORY_SLOTS_PER_MONTH}/${STORY_SLOTS_PER_MONTH}).`, "alert", true); return; }
-  fromSlots[fromIndex] = null;
-  target.slots[freeIndex] = id;
-  touch(); render();
-  toast(`Movido a "${target.label}" · #${freeIndex+1}`, "check");
-}
-
-function addStoryMonth(){
-  if(!guard()) return;
-  S.storyMonths.push({id:uid("month"), label:`Mes ${S.storyMonths.length+1}`, slots:Array(STORY_SLOTS_PER_MONTH).fill(null)});
-  S.ui.storyMonth = S.storyMonths.length - 1;
-  touch(); render();
-  toast("Mes creado", "check");
-}
-
-function deleteStoryMonth(index){
-  if(!guard()) return;
-  if(S.storyMonths.length <= 1){ toast("Debe quedar al menos un mes.", "alert", true); return; }
-  const month = S.storyMonths[index]; if(!month) return;
-  const used = month.slots.filter(Boolean).length;
-  confirmDialog(`¿Eliminar "${month.label}"?`,
-    used ? `Ese mes tiene ${used} espacio(s) ocupado(s). Las historias en sí no se borran, solo dejan de estar programadas en este mes.` : "Este mes está vacío.",
-    () => {
-      S.storyMonths.splice(index, 1);
-      if(S.ui.storyMonth >= S.storyMonths.length) S.ui.storyMonth = S.storyMonths.length - 1;
-      touch(); render();
-      toast("Mes eliminado", "trash");
-    }, "Eliminar");
-}
-
-function storyMonthsTabsHTML(){
-  return `<div class="feed-months">
-    ${S.storyMonths.map((m, mi) => {
-      const active = mi === S.ui.storyMonth;
-      const count = m.slots.filter(Boolean).length;
-      return `<div class="month-tab ${active ? "active" : ""}" data-story-month-tab="${mi}">
-        <input class="month-label" data-story-month-label="${mi}" value="${esc(m.label)}" ${canEdit() ? "" : "disabled"} title="Renombrar mes">
-        <span class="month-count">${count}/${STORY_SLOTS_PER_MONTH}</span>
-        ${S.storyMonths.length > 1 ? `<button type="button" class="month-del lock-viewer lock-editor" data-story-month-del="${mi}" title="Eliminar este mes"><svg width="12" height="12"><use href="#i-trash"/></svg></button>` : ""}
-      </div>`;
-    }).join("")}
-    <button type="button" class="btn btn-ghost btn-sm lock-viewer" data-action="add-story-month"><svg><use href="#i-plus"/></svg> Nuevo mes</button>
-  </div>`;
-}
-
-function viewStoriesPreview(){
-  const slots = ensureStorySlots();
-  const cells = storySlotCount();
-  const placed = storyItems();
-  const otherMonths = S.storyMonths.map((m, mi) => ({m, mi})).filter(x => x.mi !== S.ui.storyMonth);
-
-  let html = "";
-  const MAX_STAGGER = 480;
-  const stepMs = cells > 1 ? MAX_STAGGER / (cells - 1) : 0;
-
-  for(let i = 0; i < cells; i++){
-    const delay = Math.round(i * stepMs) + "ms";
-    const id = slots[i];
-    const it = id ? storyDisplay(find("stories", id)) : null;
-
-    if(it){
-      html += `<div class="cell story-cell ${it.published ? "is-published" : ""}" style="animation-delay:${delay}" draggable="true"
-        data-story-slot="${i}" data-cell="${it.id}" data-coll="stories"
-        title="Historia${it.num ? ` #${it.num}` : ""} — ${esc(it.text)} · clic para editar">
-        ${it.media ? `<img src="${it.media}" alt="${esc(it.text)}">`
-                   : `<div class="noimg">${esc((it.text||"").slice(0,70))}</div>`}
-        ${it.media ? `<button class="cell-zoom" data-zoom data-title="Historia${it.num ? ` #${it.num}` : ""} — ${esc(it.text)}" title="Ampliar vista previa"><svg><use href="#i-expand"/></svg></button>` : ""}
-        ${it.published
-            ? `<span class="pub-flag" title="Publicado"><svg><use href="#i-check-plain"/></svg>Publicado</span>`
-            : it.reviewed
-              ? `<span class="ready" title="Revisado y listo para publicar"><svg><use href="#i-check-plain"/></svg></span>`
-              : ""}
-        <button class="slot-clear lock-viewer" data-story-slot-clear="${i}" title="Quitar de este mes"><svg><use href="#i-trash"/></svg></button>
-        ${otherMonths.length ? `<select class="slot-move lock-viewer" data-story-move-slot="${i}" title="Mover a otro mes" onclick="event.stopPropagation()">
-          <option value="">Mover a…</option>
-          ${otherMonths.map(({m,mi}) => `<option value="${mi}">${esc(m.label)}</option>`).join("")}
-        </select>` : ""}
-        <span class="badge"><svg><use href="#i-story"/></svg>Historia${it.num ? ` #${it.num}` : ""}</span>
-        <span class="meta">${esc(it.text)} · ${STATUS[it.status]||""}</span>
-      </div>`;
-    }else{
-      const n = String(i+1).padStart(2,"0");
-      html += `<div class="cell story-cell empty" style="animation-delay:${delay}" data-story-slot="${i}" data-story-pick-slot="${i}"
-        title="Elegir qué historia va en este espacio">
-        <div class="ph">
-          <svg><use href="#i-img-plus"/></svg>
-          Elegir historia
-        </div>
-        <span class="sched"><span>Día</span><span>#${n}</span></span>
-      </div>`;
-    }
-  }
-
-  return `
-  <div class="page-head">
-    <div>
-      <h1 style="letter-spacing:.04em">STORIES PREVIEW</h1>
-      <p>Cada mes tiene ${STORY_SLOTS_PER_MONTH} espacios fijos, uno por historia/día. Haz clic en uno y elige la
-      historia: su media se coloca sola. Arrastra para reordenar dentro del mismo mes, o usa "Mover a…" en una
-      historia colocada para pasarla a otro mes.</p>
-      <div class="mono-strip" style="margin-top:10px"><span class="live-dot"></span> Sincronizado en vivo · ${placed.length} de ${cells} espacios ocupados en este mes</div>
-    </div>
-    <div class="actions">
-      <button class="btn btn-ghost lock-viewer" data-action="clear-stories"><svg><use href="#i-history"/></svg> Vaciar este mes</button>
-      <button class="btn btn-ghost" data-nav="stories"><svg><use href="#i-story"/></svg> Ir a Historias</button>
-    </div>
-  </div>
-  <div class="readonly-note"><svg width="16" height="16"><use href="#i-alert"/></svg> Modo <b>Viewer</b>: la edición está bloqueada.</div>
-
-  ${storyMonthsTabsHTML()}
-
-  <div class="card">
-    <div class="story-preview-grid">${html}</div>
-  </div>`;
-}
-
-/* ---------- Selector de historia para un espacio del Stories Preview ---------- */
-let storyPickerSlot = -1;
-
-function openStoryPicker(slotIndex){
-  storyPickerSlot = slotIndex;
-  renderStoryPicker();
-}
-
-function renderStoryPicker(){
-  const host = $("#modalHost");
-  const slots = ensureStorySlots();
-  const currentId = slots[storyPickerSlot] || null;
-  const list = sorted("stories");
-
-  const inner = list.length ? `<div class="pick-list">${list.map(s => {
-    const d = storyDisplay(s);
-    const isCurrent = currentId === s.id;
-    const loc = isCurrent ? null : storyLocationOf(s.id);
-    return `<button type="button" class="pick-item" data-story-pick-item data-id="${s.id}">
-      <span class="thumb">${d.media ? `<img src="${d.media}" alt="">` : `<svg><use href="#i-story"/></svg>`}</span>
-      <span class="txt">
-        <b>Historia${s.num ? ` #${s.num}` : ""}</b>
-        <span>${esc(d.text)}</span>
-      </span>
-      ${isCurrent ? `<span class="tag-used">En este espacio</span>`
-        : loc ? `<span class="tag-used">Ya en ${esc(S.storyMonths[loc.month]?.label || `Mes ${loc.month+1}`)} · #${loc.slot+1}</span>` : ""}
-      ${!d.media ? `<span class="no-media">Sin media</span>` : ""}
-    </button>`;
-  }).join("")}</div>` : `<div class="picker-empty">Todavía no hay historias creadas.</div>`;
-
-  host.innerHTML = `
-    <div class="modal-bg" data-close>
-      <div class="picker" role="dialog" aria-modal="true">
-        <div class="picker-head">
-          <h3>${esc(activeStoryMonth().label)} · Día #${String(storyPickerSlot+1).padStart(2,"0")}</h3>
-          <p>Elige la historia. Su media se coloca automáticamente.</p>
-        </div>
-        <div class="picker-body">${inner}</div>
-        <div class="picker-foot">
-          ${currentId ? `<button class="btn btn-danger btn-sm" data-story-pick-empty><svg><use href="#i-trash"/></svg> Vaciar espacio</button>` : `<span></span>`}
-          <button class="btn btn-ghost btn-sm" data-close>Cancelar</button>
-        </div>
-      </div>
-    </div>`;
-
-  host.onclick = e => {
-    if(e.target.hasAttribute("data-close")){ host.innerHTML = ""; return; }
-
-    const item = e.target.closest("[data-story-pick-item]");
-    if(item){
-      assignStorySlot(storyPickerSlot, item.dataset.id);
-      host.innerHTML = "";
-      render();
-      toast("Historia colocada", "check");
-      return;
-    }
-
-    if(e.target.closest("[data-story-pick-empty]")){
-      clearStorySlot(storyPickerSlot);
-      host.innerHTML = "";
-      render();
-      toast("Espacio vaciado", "trash");
-      return;
-    }
-  };
-}
-
 function viewSettings(){
   const p = S.profile;
   const bytes = new Blob([JSON.stringify(S)]).size;
@@ -4550,10 +4266,9 @@ function viewSettings(){
               <button class="btn btn-ghost btn-sm" data-clean="media" data-coll="all">Todas</button>
             </div></div>
 
-          <div class="clean-row"><b>Limpiar previews</b><small>Suelta los espacios ocupados. Las piezas no se borran, solo quedan sin ubicación.</small>
+          <div class="clean-row"><b>Limpiar el Feed Preview</b><small>Suelta los espacios ocupados. Las piezas no se borran, solo quedan sin ubicación.</small>
             <div class="clean-btns lock-viewer">
-              <button class="btn btn-ghost btn-sm" data-clean-preview="feed">Feed Preview</button>
-              <button class="btn btn-ghost btn-sm" data-clean-preview="stories">Stories Preview</button>
+              <button class="btn btn-ghost btn-sm" data-clean-preview>Vaciar espacios</button>
             </div></div>
 
           <div class="clean-row danger-row"><b>Eliminar piezas completas</b><small>Borra las piezas con todo su contenido y libera sus espacios en los previews. No se puede deshacer.</small>
@@ -4697,26 +4412,24 @@ function bulkDelete(coll, monthIdx){
         reindex(c);
       });
       S.feedMonths.forEach(m => m.slots.forEach((sl, i) => { if(sl && kill.has(sl.coll + "|" + sl.id)) m.slots[i] = null; }));
-      S.storyMonths.forEach(m => m.slots.forEach((sid, i) => { if(sid && kill.has("stories|" + sid)) m.slots[i] = null; }));
       logActivity("alert", `<b>Eliminadas:</b> ${doomed.length} pieza(s) de ${esc(scope)} · ${esc(cleanScopeLabel(monthIdx))}.`);
       touch(); persist(); render();
       toast(`${doomed.length} pieza(s) eliminada(s)`, "trash", true);
     }, "Eliminar");
 }
 
-/* Vacía los espacios de un preview (las piezas en sí no se borran). */
-function bulkClearPreview(which, monthIdx){
+/* Vacía los espacios del Feed Preview (las piezas en sí no se borran). */
+function bulkClearPreview(monthIdx){
   if(!guard()) return;
-  const isFeed = which === "feed";
-  const months = isFeed ? S.feedMonths : S.storyMonths;
-  // El Feed y el Stories Preview tienen su propio calendario de meses, aparte del de
-  // contenido: acá el índice elegido se aplica a ese calendario si existe, y si se
-  // eligió "todos", se vacían todos sus meses.
+  const months = S.feedMonths;
+  // El Feed Preview tiene su propio calendario de meses, aparte del de contenido: acá
+  // el índice elegido se aplica a ese calendario si existe, y si se eligió "todos", se
+  // vacían todos sus meses.
   const targets = monthIdx === null ? months.map((m,i) => i) : (months[monthIdx] ? [monthIdx] : []);
   if(!targets.length){ toast("Ese mes no existe en el preview", "alert", true); return; }
   const n = targets.reduce((t,i) => t + months[i].slots.filter(Boolean).length, 0);
-  if(!n){ toast("Ese preview ya está vacío", "alert", true); return; }
-  const name = isFeed ? "Feed Preview" : "Stories Preview";
+  if(!n){ toast("El Feed Preview ya está vacío", "alert", true); return; }
+  const name = "Feed Preview";
   const where = monthIdx === null ? "todos los meses" : `"${months[monthIdx].label}"`;
   confirmDialog(`¿Vaciar el ${name}?`,
     `Se van a soltar ${n} espacio(s) ocupado(s) en ${where}. Las piezas NO se borran: solo quedan sin ubicación, listas para volver a colocarse.`,
@@ -4765,7 +4478,6 @@ function render(){
     v === "carousels" ? viewCarousels(q) :
     v === "stories"   ? viewStories(q) :
     v === "feed"      ? viewFeed() :
-    v === "storiesPreview" ? viewStoriesPreview() :
     v === "settings"  ? viewSettings() : viewDashboard();
   $("#view").innerHTML = html;
   $$(".textarea").forEach(autosize);
@@ -4841,10 +4553,6 @@ function deleteItem(coll, id){
     reindex(coll);
     // libera el espacio del feed que esta pieza pudiera estar ocupando, en cualquier mes
     S.feedMonths.forEach(m => m.slots.forEach((sl, i) => { if(sl && sl.coll === coll && sl.id === id) m.slots[i] = null; }));
-    // igual, pero para el Stories Preview (solo aplica a historias)
-    if(coll === "stories"){
-      S.storyMonths.forEach(m => m.slots.forEach((sid, i) => { if(sid === id) m.slots[i] = null; }));
-    }
     logActivity("alert", `<b>Elemento eliminado:</b> ${esc(it.title || it.name)}.`);
     touch(); render(); toast("Elemento eliminado", "trash");
   });
@@ -4909,7 +4617,7 @@ document.addEventListener("click", async e => {
   const cl = t.closest("[data-clean]");
   if(cl){ bulkClear(cl.dataset.clean, cl.dataset.coll, cleanMonthIdx()); return; }
   const clp = t.closest("[data-clean-preview]");
-  if(clp){ bulkClearPreview(clp.dataset.cleanPreview, cleanMonthIdx()); return; }
+  if(clp){ bulkClearPreview(cleanMonthIdx()); return; }
   const cld = t.closest("[data-clean-del]");
   if(cld){ bulkDelete(cld.dataset.coll, cleanMonthIdx()); return; }
 
@@ -4953,16 +4661,6 @@ document.addEventListener("click", async e => {
       return;
     }
     if(a === "add-month"){ addFeedMonth(); return; }
-    if(a === "clear-stories"){
-      if(!guard()) return;
-      const month = activeStoryMonth();
-      confirmDialog(`¿Vaciar "${esc(month.label)}"?`, "Se quitarán todas las historias colocadas en este mes; las historias en sí no se borran, y los demás meses no se tocan.", () => {
-        month.slots = Array(STORY_SLOTS_PER_MONTH).fill(null);
-        touch(); render(); toast("Mes vaciado", "history");
-      }, "Vaciar mes");
-      return;
-    }
-    if(a === "add-story-month"){ addStoryMonth(); return; }
     if(a === "add-content-month"){ addContentMonth(); return; }
     if(a === "notifications"){ toast(dirty ? "Tienes cambios sin guardar" : "Todo está guardado", dirty ? "alert" : "check"); return; }
     if(a === "history"){ toast(S.savedAt ? "Último guardado: " + new Date(S.savedAt).toLocaleString("es") : "Aún no has guardado", "history"); return; }
@@ -5051,16 +4749,6 @@ document.addEventListener("click", async e => {
   }
 
   // pestaña de mes del Stories Preview: eliminar / cambiar de mes activo
-  const storyMonthDel = t.closest("[data-story-month-del]");
-  if(storyMonthDel){ deleteStoryMonth(Number(storyMonthDel.dataset.storyMonthDel)); return; }
-
-  const storyMonthTab = t.closest("[data-story-month-tab]");
-  if(storyMonthTab){
-    const idx = Number(storyMonthTab.dataset.storyMonthTab);
-    if(idx !== S.ui.storyMonth){ S.ui.storyMonth = idx; touch(); render(); }
-    return;
-  }
-
   // pestaña de mes de contenido (Posts/Reels/Carruseles/Historias): eliminar / cambiar
   const contentMonthDel = t.closest("[data-content-month-del]");
   if(contentMonthDel){ deleteContentMonth(Number(contentMonthDel.dataset.contentMonthDel)); return; }
@@ -5099,28 +4787,11 @@ document.addEventListener("click", async e => {
     return;
   }
 
-  // espacio del Stories Preview: quitar la historia asignada
-  const storySlotClear = t.closest("[data-story-slot-clear]");
-  if(storySlotClear){
-    if(!guard()) return;
-    clearStorySlot(Number(storySlotClear.dataset.storySlotClear));
-    render(); toast("Espacio vaciado", "trash");
-    return;
-  }
-
   // espacio vacío del feed → abrir selector de formato/título
   const pickSlot = t.closest("[data-pick-slot]");
   if(pickSlot){
     if(!guard()) return;
     openFeedPicker(Number(pickSlot.dataset.pickSlot));
-    return;
-  }
-
-  // espacio vacío del Stories Preview → abrir selector de historia
-  const storyPickSlot = t.closest("[data-story-pick-slot]");
-  if(storyPickSlot){
-    if(!guard()) return;
-    openStoryPicker(Number(storyPickSlot.dataset.storyPickSlot));
     return;
   }
 
@@ -5144,14 +4815,6 @@ document.addEventListener("click", async e => {
     const loc = feedLocationOf(jump.dataset.coll, jump.dataset.id);
     if(loc) S.ui.feedMonth = loc.month;
     pendingFocus = jump.dataset.id; S.ui.view = "feed"; render(); return;
-  }
-
-  // saltar de la historia a su posición exacta en el Stories Preview (cambia de mes si hace falta)
-  const storyJump = t.closest("[data-story-jump]");
-  if(storyJump){
-    const loc = storyLocationOf(storyJump.dataset.id);
-    if(loc) S.ui.storyMonth = loc.month;
-    pendingFocus = storyJump.dataset.id; S.ui.view = "storiesPreview"; render(); return;
   }
 
   // check de revisión — solo Admin
@@ -5264,14 +4927,6 @@ document.addEventListener("input", e => {
     touch();
     return;
   }
-  const sml = el.closest("[data-story-month-label]");
-  if(sml){
-    if(!canEdit()){ render(); return; }
-    const m = S.storyMonths[Number(sml.dataset.storyMonthLabel)];
-    if(m) m.label = el.value;
-    touch();
-    return;
-  }
   const cml = el.closest("[data-content-month-label]");
   if(cml){
     if(!canEdit()){ render(); return; }
@@ -5298,14 +4953,6 @@ document.addEventListener("change", e => {
     if(target !== "") moveFeedItemToMonth(Number(mv.dataset.moveSlot), Number(target));
     return;
   }
-  const smv = e.target.closest("[data-story-move-slot]");
-  if(smv){
-    if(!canEdit()){ render(); return; }
-    const target = e.target.value;
-    if(target !== "") moveStoryItemToMonth(Number(smv.dataset.storyMoveSlot), Number(target));
-    return;
-  }
-
   const st = e.target.closest("[data-status]");
   if(st){
     if(!canEdit()){ render(); return; }
@@ -5408,14 +5055,11 @@ document.addEventListener("dragend", () => {
   dragSrc = null;
 });
 document.addEventListener("dragover", e => {
-  // en el feed / stories preview cualquier espacio (ocupado o vacío) es un
-  // destino válido — por eso se ubica por [data-slot]/[data-story-slot] y no
-  // solo por [data-cell].
+  // en el feed cualquier espacio (ocupado o vacío) es un destino válido — por eso se
+  // ubica por [data-slot] y no solo por [data-cell].
   const target = dragSrc && dragSrc.dataset.slot != null
     ? e.target.closest("[data-slot]")
-    : dragSrc && dragSrc.dataset.storySlot != null
-      ? e.target.closest("[data-story-slot]")
-      : e.target.closest("[data-slide]");
+    : e.target.closest("[data-slide]");
   if(!target || !dragSrc || target === dragSrc) return;
   e.preventDefault();
   e.dataTransfer.dropEffect = "move";
@@ -5425,9 +5069,7 @@ document.addEventListener("dragover", e => {
 document.addEventListener("drop", e => {
   const target = dragSrc && dragSrc.dataset.slot != null
     ? e.target.closest("[data-slot]")
-    : dragSrc && dragSrc.dataset.storySlot != null
-      ? e.target.closest("[data-story-slot]")
-      : e.target.closest("[data-slide]");
+    : e.target.closest("[data-slide]");
   if(!target || !dragSrc || target === dragSrc) return;
   e.preventDefault();
 
@@ -5438,13 +5080,6 @@ document.addEventListener("drop", e => {
     while(slots.length <= Math.max(from, to)) slots.push(null);
     [slots[from], slots[to]] = [slots[to] || null, slots[from] || null];
     touch(); render(); toast("Feed reordenado", "grid");
-  }else if(target.dataset.storySlot != null && dragSrc.dataset.storySlot != null){
-    // intercambia el contenido de dos espacios del Stories Preview por su índice
-    const slots = ensureStorySlots();
-    const from = Number(dragSrc.dataset.storySlot), to = Number(target.dataset.storySlot);
-    while(slots.length <= Math.max(from, to)) slots.push(null);
-    [slots[from], slots[to]] = [slots[to] || null, slots[from] || null];
-    touch(); render(); toast("Stories reordenadas", "grid");
   }else if(target.dataset.slide && dragSrc.dataset.slide && target.dataset.car === dragSrc.dataset.car){
     const c = find("carousels", target.dataset.car);
     if(!c) return;
