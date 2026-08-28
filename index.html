@@ -104,28 +104,6 @@ body::before{
 .clean-btns{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
 .clean-row.danger-row b{color:var(--danger)}
 
-/* Bloque del mes activo en el menú lateral: selector de mes + resumen en números
-   de ese mes (mismo calendario de contenido que usan Posts/Reels/YouTube/Carruseles
-   e Historias). */
-.side-month{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:14px;
-  padding:12px;box-shadow:var(--shadow-sm)}
-.side-month .sm-cap{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
-  display:block;margin-bottom:7px}
-.side-month select{width:100%;font-family:inherit;font-size:13px;font-weight:500;color:var(--navy);
-  background:var(--cream-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer}
-.side-month select:hover{border-color:var(--gold-soft)}
-.sm-ready{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-top:11px}
-.sm-ready b{font-family:var(--serif);font-size:19px;color:var(--navy);line-height:1}
-.sm-ready span{font-size:10.5px;color:var(--muted)}
-.sm-bar{height:5px;border-radius:20px;background:var(--cream-2);overflow:hidden;margin-top:7px}
-.sm-bar i{display:block;height:100%;border-radius:20px;
-  background:linear-gradient(90deg,var(--gold-soft),var(--gold-deep));transition:width .3s}
-.sm-rows{margin-top:10px;padding-top:9px;border-top:1px solid var(--line-2);
-  display:flex;flex-direction:column;gap:5px}
-.sm-rows div{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11.5px;color:#43566C}
-.sm-rows div b{font-weight:600;color:var(--navy);font-variant-numeric:tabular-nums}
-.sm-rows div.warn b{color:var(--danger)}
-
 .nav{margin-top:22px;display:flex;flex-direction:column;gap:3px}
 .nav button{
   display:flex;align-items:center;gap:13px;padding:11px 13px;border-radius:12px;
@@ -942,8 +920,6 @@ body.needs-auth .app{display:none}
     <button class="btn-create lock-viewer" data-action="create-menu">
       <svg width="16" height="16"><use href="#i-plus"/></svg> Crear
     </button>
-
-    <div class="side-month" id="sideMonth"></div>
 
     <nav class="nav" id="nav"></nav>
 
@@ -4737,48 +4713,6 @@ function cleanMonthIdx(){
   return Number(el.value);
 }
 
-/* Resumen en números del mes de contenido activo, para el menú lateral. Suma las
-   cinco secciones que viven en el calendario de contenido (Posts, Reels, YouTube,
-   Carruseles e Historias) y las mide contra el cupo mensual real de cada una. */
-function contentMonthSummary(monthId){
-  const colls = Object.keys(CONTENT_QUOTA);
-  const items = colls.flatMap(c => (S[c] || []).filter(it => it.monthId === monthId));
-  const quota = colls.reduce((n,c) => n + CONTENT_QUOTA[c], 0);
-  return {
-    quota,
-    total:     items.length,
-    ready:     items.filter(it => it.reviewed).length,
-    published: items.filter(it => it.published).length,
-    approved:  items.filter(it => it.designApproved === true).length,
-    rejected:  items.filter(it => it.designApproved === false).length,
-    pending:   items.filter(it => !it.reviewed).length
-  };
-}
-
-/* Bloque del mes activo en el menú lateral: elegir mes + ver su resumen en números.
-   Cambiar el mes acá es lo mismo que cambiar la pestaña de mes dentro de Posts,
-   Reels, YouTube, Carruseles o Historias: es un solo calendario compartido. */
-function renderSideMonth(){
-  migrateContentMonths(S);
-  const month = activeContentMonth();
-  const s = contentMonthSummary(month.id);
-  const pct = s.quota ? Math.round(s.ready / s.quota * 100) : 0;
-  $("#sideMonth").innerHTML = `
-    <span class="sm-cap">Mes de contenido</span>
-    <select data-side-month title="Cambiar el mes que se está viendo">
-      ${S.contentMonths.map((m, mi) => `<option value="${mi}" ${mi === S.ui.contentMonth ? "selected" : ""}>${esc(m.label)}</option>`).join("")}
-    </select>
-    <div class="sm-ready"><b>${s.ready}/${s.quota}</b><span>listos · ${pct}%</span></div>
-    <div class="sm-bar"><i style="width:${pct}%"></i></div>
-    <div class="sm-rows">
-      <div><span>Piezas cargadas</span><b>${s.total}</b></div>
-      <div><span>Publicadas</span><b>${s.published}</b></div>
-      <div><span>Diseño aprobado</span><b>${s.approved}</b></div>
-      ${s.rejected ? `<div class="warn"><span>Diseño desaprobado</span><b>${s.rejected}</b></div>` : ""}
-      <div><span>Por revisar</span><b>${s.pending}</b></div>
-    </div>`;
-}
-
 function renderNav(){
   $("#nav").innerHTML = NAV.map(n => `
     <button class="${S.ui.view === n.id ? "active" : ""}" data-nav="${n.id}">
@@ -4801,7 +4735,6 @@ function render(){
   if($("#footerMark") && !$("#footerMark").src) $("#footerMark").src = LOGO_WHITE;
 
   renderNav();
-  renderSideMonth();
   const v = S.ui.view;
   const html =
     v === "posts"     ? viewPosts(q) :
@@ -5373,9 +5306,6 @@ document.addEventListener("change", e => {
     return;
   }
   if(e.target.id === "roleSelect"){ S.ui.role = e.target.value; saveLocalRole(S.ui.role); touch(); render(); toast("Rol: " + S.ui.role, "user"); }
-
-  const sm = e.target.closest("[data-side-month]");
-  if(sm){ S.ui.contentMonth = Number(sm.value) || 0; touch(); render(); return; }
 
   const fs = e.target.closest("[data-filter-sort]");
   if(fs){ ensureFilter(fs.dataset.coll).sort = fs.value; render(); return; }
