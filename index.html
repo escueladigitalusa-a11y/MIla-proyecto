@@ -374,15 +374,58 @@ body::before{
 .reel-cover-info small{font-size:11.5px;color:var(--muted)}
 .reel-cover-info .btn{align-self:flex-start;margin-top:4px}
 
-/* YouTube: la portada es horizontal 16:9 y ocupa la mitad del ancho de la tarjeta,
-   así se ve como la miniatura real del video y no como un ícono. */
-.yt-cover-row{display:flex;gap:18px;align-items:flex-start;margin-bottom:18px}
-.yt-cover-box{flex:1 1 50%;max-width:50%;min-width:0}
-.yt-cover-box .media{border-radius:12px}
-.yt-cover-info{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:3px;padding-top:2px}
-.yt-cover-info b{font-size:13px;color:var(--navy)}
-.yt-cover-info small{font-size:11.5px;color:var(--muted);line-height:1.5}
-.yt-cover-info .btn{align-self:flex-start;margin-top:6px}
+/* Dashboard: tarjeta "Por revisar · observaciones y cambios" */
+.obs-card{background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:20px 22px;
+  box-shadow:var(--shadow-sm);margin-bottom:26px}
+.obs-count{font-size:11.5px;color:var(--muted);background:var(--cream-2);border-radius:20px;padding:3px 11px}
+.obs-count.alert{color:var(--danger);background:#FBEBE9}
+.obs-list{display:flex;flex-direction:column;gap:8px}
+.obs-item{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;padding:12px 14px;
+  border:1px solid var(--line-2);border-radius:14px;background:var(--cream);transition:.15s}
+.obs-item:hover{border-color:var(--gold-soft);background:var(--gold-pale);transform:translateX(2px)}
+.obs-item.done{opacity:.55}
+.obs-ico{flex:none;width:32px;height:32px;border-radius:10px;background:#fff;border:1px solid var(--line);
+  display:grid;place-items:center;color:var(--gold-deep)}
+.obs-ico svg{width:16px;height:16px}
+.obs-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.obs-head{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.obs-head b{font-size:12.5px;color:var(--navy);font-weight:600}
+.obs-tag{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;border-radius:20px;padding:2px 8px}
+.obs-tag.rej{color:var(--danger);background:#FBEBE9}
+.obs-tag.ok{color:var(--ok);background:#E8F4EE}
+.obs-note{font-size:12px;color:#43566C;line-height:1.5;word-break:break-word}
+.obs-note.muted{color:var(--muted);font-style:italic}
+.obs-arr{width:16px;height:16px;flex:none;color:var(--muted);margin-top:8px}
+
+/* Par de recuadros multimedia (video + portada) de Reels y YouTube.
+   .wide = YouTube, horizontal: cada recuadro ocupa la mitad de la tarjeta.
+   .tall = Reels, vertical: se acota el ancho para que no queden larguísimos. */
+.media-pair{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px}
+.media-slot{min-width:0;display:flex;flex-direction:column;gap:7px}
+.media-pair.wide .media-slot{flex:1 1 0}
+.media-pair.tall .media-slot{flex:0 0 158px;max-width:158px}
+.media-slot .cap{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.media-slot .media{border-radius:12px}
+.media-slot .btn{align-self:flex-start}
+.media-pair-info{flex:1 1 190px;min-width:0;display:flex;flex-direction:column;gap:3px;padding-top:18px}
+.media-pair-info b{font-size:13px;color:var(--navy)}
+.media-pair-info small{font-size:11.5px;color:var(--muted);line-height:1.5}
+
+/* Recuadro con un video ya cargado */
+.media.is-video.has-img{border-style:solid;border-color:var(--line);background:#EFE7DA}
+.media .ph.video-loaded{color:var(--gold-deep)}
+
+/* Botón de ampliar de cualquier archivo multimedia */
+.media-zoom{position:absolute;right:8px;bottom:8px;width:32px;height:32px;border-radius:50%;
+  background:rgba(26,30,57,.72);color:#fff;display:grid;place-items:center;opacity:0;transition:.15s;z-index:3}
+.media-zoom svg{width:15px;height:15px}
+.media:hover .media-zoom,.media-zoom:focus-visible{opacity:1}
+.media-zoom:hover{background:var(--navy)}
+@media (hover:none){.media-zoom{opacity:1}}
+
+/* Lightbox en modo video */
+.lightbox.is-video{width:min(1100px,92vw)}
+.lightbox-video{width:100%;aspect-ratio:16/9;border:0;border-radius:12px;background:#000;display:block}
 
 /* Historias */
 .story-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
@@ -771,8 +814,10 @@ body.role-viewer .readonly-note{display:flex}
   .post-layout{grid-template-columns:1fr!important}
   .reel-layout{grid-template-columns:1fr}
   .reel-cover-col .ratio-916{max-width:220px;margin:0 auto}
-  .yt-cover-row{flex-direction:column;gap:12px}
-  .yt-cover-box{flex:none;max-width:100%;width:100%}
+  .media-pair{gap:12px}
+  .media-pair.wide .media-slot{flex:1 1 100%}
+  .media-pair.tall .media-slot{flex:1 1 calc(50% - 6px);max-width:none}
+  .media-pair-info{flex:1 1 100%;padding-top:0}
   .story-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
   .filter-bar{width:100%}
 }
@@ -1105,7 +1150,14 @@ function getDriveAccessToken(){
 }
 
 async function uploadToDriveWithToken(token, dataUrl, filename){
-  const blob = await (await fetch(dataUrl)).blob();
+  return uploadBlobToDrive(token, await (await fetch(dataUrl)).blob(), filename, false);
+}
+
+/* Sube un archivo a Drive y lo deja visible con el link. Para las imágenes devuelve el
+   endpoint /thumbnail, que se puede incrustar directo en un <img>; para los videos
+   devuelve /preview, que es el único que Drive sirve reproducible (dentro de un iframe:
+   los links de descarga directa no funcionan como src de <video>). */
+async function uploadBlobToDrive(token, blob, filename, asVideo){
   const metadata = { name: filename, parents: [GOOGLE_DRIVE_FOLDER_ID] };
   const form = new FormData();
   form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
@@ -1123,6 +1175,7 @@ async function uploadToDriveWithToken(token, dataUrl, filename){
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ role: "reader", type: "anyone" })
   });
+  if(asVideo) return `https://drive.google.com/file/d/${id}/preview`;
   // uc?export=view muestra cada vez más seguido una página de aviso en vez de la imagen
   // (Google lo restringió) y sale como ícono roto en un <img>. El endpoint /thumbnail sí
   // está pensado para incrustarse directo — se pide un ancho grande porque acá las fotos
@@ -2377,13 +2430,13 @@ function seed(){
     }, p, {createdAt: at(p.days), published: p.status === "published"})),
 
     reels: CONTENT_REELS.map((r, i) => Object.assign({
-      id:uid("reel"), order:i, cover:"", collapsed:false,
+      id:uid("reel"), order:i, cover:"", video:"", collapsed:false,
       notes:"", hashtags:"", note:"", reviewed:false,
       monthId: monthForIndex(i, CONTENT_QUOTA.reels)
     }, r, {createdAt: at(r.days), published: r.status === "published"})),
 
     youtube: CONTENT_YOUTUBE.map((r, i) => Object.assign({
-      id:uid("yt"), order:i, cover:"", collapsed:false,
+      id:uid("yt"), order:i, cover:"", video:"", collapsed:false,
       notes:"", hashtags:"", note:"", reviewed:false,
       monthId: monthForIndex(i, CONTENT_QUOTA.youtube)
     }, r, {createdAt: at(r.days), published: r.status === "published"})),
@@ -2698,14 +2751,17 @@ function confirmDialog(title, text, onYes, yesLabel="Eliminar"){
 /* Vista previa ampliada de una imagen ya colocada en el Feed Preview o el Stories
    Preview — clic en el fondo o en la "×" cierra, clic en la imagen no hace nada (para
    no cerrarla por accidente). */
-function openImageLightbox(src, title){
+function openImageLightbox(src, title, kind){
   if(!src) return;
   const host = $("#modalHost");
+  const body = kind === "video"
+    ? `<iframe class="lightbox-video" src="${esc(src)}" allow="autoplay; fullscreen" allowfullscreen onclick="event.stopPropagation()"></iframe>`
+    : `<img src="${src}" alt="${esc(title || "")}" onclick="event.stopPropagation()">`;
   host.innerHTML = `
     <div class="modal-bg lightbox-bg" data-close>
-      <div class="lightbox" role="dialog" aria-modal="true">
+      <div class="lightbox ${kind === "video" ? "is-video" : ""}" role="dialog" aria-modal="true">
         <button class="lightbox-close" data-close title="Cerrar"><svg><use href="#i-x"/></svg></button>
-        <img src="${src}" alt="${esc(title || "")}" onclick="event.stopPropagation()">
+        ${body}
         ${title ? `<div class="lightbox-cap">${esc(title)}</div>` : ""}
       </div>
     </div>`;
@@ -2792,13 +2848,31 @@ async function requestDriveAuth(){
   return out;
 }
 
-/* Convierte un File en la URL final de la imagen: la comprime y, si Drive está activo y
-   autorizado, la sube y devuelve el link de Drive; si no, devuelve la imagen embebida
-   para guardarla en este dispositivo. Compartido por el selector de archivos y por
-   arrastrar y soltar. */
-function fileToImageUrl(f, auth){
-  return new Promise(resolve => {
+/* Convierte un File en la URL final que se guarda en la pieza.
+   Imágenes: se comprimen y, si Drive está activo y autorizado, se suben y se guarda el
+   link; si no, se guarda la imagen embebida en este dispositivo.
+   Videos: van SIEMPRE a Drive. Un video embebido en el workspace lo haría pesar decenas
+   de megas y rompería la sincronización, así que sin Drive no se acepta. */
+function fileToMediaUrl(f, auth, kind){
+  const wantVideo = kind === "video";
+  return new Promise(async resolve => {
     if(!f) return resolve(null);
+    if(wantVideo){
+      if(!/^video\//.test(f.type)){ toast("El archivo no es un video.", "alert", true); return resolve(null); }
+      if(!auth.token){
+        toast(`Los videos se guardan en Google Drive y no se pudo autorizar${auth.reason ? " (" + auth.reason + ")" : ""}. Vuelve a intentarlo: un video no se puede guardar en este dispositivo.`, "alert", true);
+        return resolve(null);
+      }
+      try{
+        toast("Subiendo video a Google Drive… puede tardar.", "upload");
+        resolve(await uploadBlobToDrive(auth.token, f, f.name || `video-${Date.now()}.mp4`, true));
+      }catch(e){
+        console.warn("No se pudo subir el video a Google Drive", e);
+        toast("No se pudo subir el video a Google Drive.", "alert", true);
+        resolve(null);
+      }
+      return;
+    }
     if(!/^image\//.test(f.type)){ toast("El archivo no es una imagen.", "alert", true); return resolve(null); }
     const fr = new FileReader();
     fr.onload = async () => {
@@ -2836,12 +2910,13 @@ function applyUploadedImage(coll, id, f, data){
   }
 }
 
-async function pickImage(){
+async function pickImage(kind="image"){
   const auth = await requestDriveAuth();
   return new Promise(resolve => {
     const inp = $("#filePicker");
     inp.value = "";
-    inp.onchange = () => resolve(fileToImageUrl(inp.files && inp.files[0], auth));
+    inp.accept = kind === "video" ? "video/*" : "image/*";
+    inp.onchange = () => resolve(fileToMediaUrl(inp.files && inp.files[0], auth, kind));
     inp.click();
   });
 }
@@ -2925,13 +3000,32 @@ function statusSelect(coll, id, value){
     ${Object.entries(STATUS).map(([k,v]) => `<option value="${k}" ${k===value?"selected":""}>${v}</option>`).join("")}
   </select>`;
 }
-function mediaBox({coll, id, field, src, ratio="ratio-45", title="Subir imagen", hint=""}){
-  return `<div class="media ${ratio} ${src ? "has-img" : ""}" data-upload data-coll="${coll}" data-id="${id}" data-field="${field}" title="Clic para ${src?"reemplazar":"subir"}">
-    ${src ? `<img src="${src}" alt="">` : `<div class="ph">
-      <svg><use href="#i-img-plus"/></svg>
+/* kind:"video" cambia lo que se acepta al subir y cómo se muestra lo ya cargado. Los
+   videos viven en Google Drive y se guardan como link /preview, que Drive sirve dentro
+   de un iframe; por eso no se pueden dibujar con <img> ni <video> y en el recuadro se
+   muestra un cartel con el botón de ampliar. */
+function mediaBox({coll, id, field, src, ratio="ratio-45", title="Subir imagen", hint="", kind="image"}){
+  const isVideo = kind === "video";
+  const zoomTitle = esc(title);
+  let inner;
+  if(!src){
+    inner = `<div class="ph">
+      <svg><use href="#${isVideo ? "i-play" : "i-img-plus"}"/></svg>
       <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase">${esc(title)}</div>
       ${hint ? `<small>${esc(hint)}</small>` : ""}
-    </div>`}
+    </div>`;
+  }else if(isVideo){
+    inner = `<div class="ph video-loaded">
+      <svg><use href="#i-play"/></svg>
+      <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase">Video cargado</div>
+      <small>Amplía para reproducirlo</small>
+    </div>`;
+  }else{
+    inner = `<img src="${src}" alt="">`;
+  }
+  return `<div class="media ${ratio} ${src ? "has-img" : ""} ${isVideo ? "is-video" : ""}" data-upload data-kind="${kind}" data-coll="${coll}" data-id="${id}" data-field="${field}" title="Clic para ${src?"reemplazar":"subir"}">
+    ${inner}
+    ${src ? `<button type="button" class="media-zoom" data-zoom data-src="${esc(src)}" data-mkind="${kind}" data-title="${zoomTitle}" title="Ver en pantalla completa"><svg><use href="#i-expand"/></svg></button>` : ""}
   </div>`;
 }
 function field(labelText, icon, inner, timing=""){
@@ -3224,6 +3318,54 @@ function dashboardCount(coll, metricKey){
    recalcula al momento del clic (no se guarda ninguna "cola"), en cuanto
    arreglas la primera, el próximo clic lleva sola a la que antes era la
    segunda — y así sucesivamente. */
+/* Junta TODAS las observaciones y cambios escritos en la app: cada pieza cuyo diseño
+   quedó desaprobado o que tiene una nota de la clienta, de cualquier sección. Es la
+   fuente de la tarjeta "Por revisar" del Dashboard. */
+function observationItems(){
+  const label = c => (DASH_COLLS.find(d => d.coll === c) || {}).label || c;
+  const icon  = c => (DASH_COLLS.find(d => d.coll === c) || {}).icon || "i-post";
+  return COLL.flatMap(c => (S[c] || [])
+    .filter(it => (it.designNote || "").trim() || it.designApproved === false)
+    .map(it => ({
+      coll:c, id:it.id, section:label(c), icon:icon(c),
+      title: it.title || (it.idea ? it.idea.slice(0,60) : "") || "Sin título",
+      note: (it.designNote || "").trim(),
+      rejected: it.designApproved === false,
+      done: !!it.reviewed
+    })));
+}
+
+function observationsHTML(){
+  const all = observationItems();
+  // primero lo que sigue pendiente de revisar, y dentro de eso lo desaprobado
+  const list = [...all].sort((a,b) => (a.done - b.done) || (b.rejected - a.rejected));
+  const pending = all.filter(o => !o.done).length;
+  return `
+  <section class="obs-card">
+    <div class="sec-title">
+      <h2>Por revisar · observaciones y cambios</h2>
+      <span class="obs-count ${pending ? "alert" : ""}">${pending} pendiente(s) de ${all.length}</span>
+    </div>
+    ${list.length ? `<div class="obs-list">${list.map(o => `
+      <button type="button" class="obs-item ${o.done ? "done" : ""}" data-obs-jump data-coll="${o.coll}" data-id="${o.id}" title="Ir a esta pieza">
+        <span class="obs-ico"><svg><use href="#${o.icon}"/></svg></span>
+        <span class="obs-txt">
+          <span class="obs-head">
+            <b>${esc(o.section)} · ${esc(o.title)}</b>
+            ${o.rejected ? `<span class="obs-tag rej">Diseño desaprobado</span>` : ""}
+            ${o.done ? `<span class="obs-tag ok">Revisado</span>` : ""}
+          </span>
+          ${o.note ? `<span class="obs-note">${esc(o.note)}</span>` : `<span class="obs-note muted">Sin nota escrita — solo marcado como desaprobado.</span>`}
+        </span>
+        <svg class="obs-arr"><use href="#i-right"/></svg>
+      </button>`).join("")}</div>`
+    : `<div class="empty-state" style="padding:26px 18px">
+        <svg><use href="#i-check"/></svg>
+        <h3>Sin observaciones</h3><p>Nadie ha dejado cambios ni ha desaprobado un diseño. Todo al día.</p>
+      </div>`}
+  </section>`;
+}
+
 function dashboardJumpTo(coll, metricKey){
   const metric = DASH_METRICS.find(m => m.key === metricKey);
   const items = dashboardItemsFor(coll).filter(it => metric.check(it, coll));
@@ -3324,6 +3466,8 @@ function viewDashboard(){
   </div>
 
   ${dashboardMatrixHTML()}
+
+  ${observationsHTML()}
 
   <div class="two-col">
     <section>
@@ -3508,12 +3652,20 @@ function viewReels(q=""){
             <svg><use href="#i-trash"/></svg></button>
         </div>
         <div class="reel-mini-body">
-          <div class="reel-cover-row">
-            <div class="reel-cover-box">${mediaBox({coll:"reels", id:r.id, field:"cover", src:r.cover, ratio:"ratio-916", title:"Subir portada", hint:"9:16"})}</div>
-            <div class="reel-cover-info">
-              <b>Portada</b>
-              <small>Así se ve este reel en el Feed Preview.</small>
+          <div class="media-pair tall">
+            <div class="media-slot">
+              <span class="cap">Video</span>
+              ${mediaBox({coll:"reels", id:r.id, field:"video", src:r.video, ratio:"ratio-916", title:"Subir video", hint:"Vertical 9:16", kind:"video"})}
+              ${r.video ? `<button type="button" class="btn btn-ghost btn-sm lock-viewer" data-clear data-coll="reels" data-id="${r.id}" data-field="video"><svg><use href="#i-trash"/></svg> Quitar</button>` : ""}
+            </div>
+            <div class="media-slot">
+              <span class="cap">Portada</span>
+              ${mediaBox({coll:"reels", id:r.id, field:"cover", src:r.cover, ratio:"ratio-916", title:"Subir portada", hint:"9:16"})}
               ${r.cover ? `<button type="button" class="btn btn-ghost btn-sm lock-viewer" data-clear data-coll="reels" data-id="${r.id}" data-field="cover"><svg><use href="#i-trash"/></svg> Quitar</button>` : ""}
+            </div>
+            <div class="media-pair-info">
+              <b>Video y portada</b>
+              <small>El video es el reel ya editado; la portada es la miniatura con la que se ve en el Feed Preview. Arrastra los archivos encima o haz clic para subirlos.</small>
             </div>
           </div>
           ${field("Tomas — Desarrollo y acción","list", textarea("reels", r.id, "desarrollo", r.desarrollo, "Describe las tomas, el desarrollo y la acción de este reel: el guion completo va aquí...", "big", 8))}
@@ -3555,12 +3707,20 @@ function viewYoutube(q=""){
             <svg><use href="#i-trash"/></svg></button>
         </div>
         <div class="reel-mini-body">
-          <div class="yt-cover-row">
-            <div class="yt-cover-box">${mediaBox({coll:"youtube", id:r.id, field:"cover", src:r.cover, ratio:"ratio-169", title:"Subir portada", hint:"16:9 — 1920 x 1080px"})}</div>
-            <div class="yt-cover-info">
-              <b>Portada</b>
-              <small>Miniatura de este video, horizontal 16:9. Arrástrala aquí o haz clic para subirla.</small>
+          <div class="media-pair wide">
+            <div class="media-slot">
+              <span class="cap">Video</span>
+              ${mediaBox({coll:"youtube", id:r.id, field:"video", src:r.video, ratio:"ratio-169", title:"Subir video", hint:"Horizontal 16:9", kind:"video"})}
+              ${r.video ? `<button type="button" class="btn btn-ghost btn-sm lock-viewer" data-clear data-coll="youtube" data-id="${r.id}" data-field="video"><svg><use href="#i-trash"/></svg> Quitar</button>` : ""}
+            </div>
+            <div class="media-slot">
+              <span class="cap">Portada</span>
+              ${mediaBox({coll:"youtube", id:r.id, field:"cover", src:r.cover, ratio:"ratio-169", title:"Subir portada", hint:"16:9 — 1920 x 1080px"})}
               ${r.cover ? `<button type="button" class="btn btn-ghost btn-sm lock-viewer" data-clear data-coll="youtube" data-id="${r.id}" data-field="cover"><svg><use href="#i-trash"/></svg> Quitar</button>` : ""}
+            </div>
+            <div class="media-pair-info">
+              <b>Video y portada</b>
+              <small>El video es el que se sube a YouTube; la portada es su miniatura, horizontal 16:9. Arrastra los archivos encima o haz clic para subirlos.</small>
             </div>
           </div>
           ${field("Tomas — Desarrollo y acción","list", textarea("youtube", r.id, "desarrollo", r.desarrollo, "Describe las tomas, el desarrollo y la acción de este video: el guion completo va aquí...", "big", 8))}
@@ -4363,7 +4523,7 @@ const CLEAN_TEXT = {
   stories:["idea"]
 };
 /* Campos de imagen / portada. Los carruseles se tratan aparte (van por slide). */
-const CLEAN_MEDIA = {posts:["image"], reels:["cover"], youtube:["cover"], carousels:[], stories:["media"]};
+const CLEAN_MEDIA = {posts:["image"], reels:["cover","video"], youtube:["cover","video"], carousels:[], stories:["media"]};
 
 /* Piezas de una sección dentro del alcance elegido. monthIdx null = todos los meses. */
 function cleanScopeItems(coll, monthIdx){
@@ -4534,10 +4694,10 @@ function createItem(coll){
     item = Object.assign(base, {title:`Post ${S.posts.length+1}`, pillar:"educacion", designText:"", desarrollo:"", copy:"", cta:"", extras:"", hashtags:"", note:"", links:"", image:"", ratio:"4:5", date:""});
     label = "Post";
   }else if(coll === "reels"){
-    item = Object.assign(base, {title:`Reel #${S.reels.length+1}`, pillar:"educacion", kind:"H", coverText:"", cover:"", hook:"", desarrollo:"", cta:"", copy:"", hashtags:"", note:"", notes:""});
+    item = Object.assign(base, {title:`Reel #${S.reels.length+1}`, pillar:"educacion", kind:"H", coverText:"", cover:"", video:"", hook:"", desarrollo:"", cta:"", copy:"", hashtags:"", note:"", notes:""});
     label = "Reel";
   }else if(coll === "youtube"){
-    item = Object.assign(base, {title:`Video #${S.youtube.length+1}`, pillar:"educacion", kind:"H", coverText:"", cover:"", hook:"", desarrollo:"", cta:"", copy:"", hashtags:"", note:"", notes:""});
+    item = Object.assign(base, {title:`Video #${S.youtube.length+1}`, pillar:"educacion", kind:"H", coverText:"", cover:"", video:"", hook:"", desarrollo:"", cta:"", copy:"", hashtags:"", note:"", notes:""});
     label = "Video de YouTube";
   }else if(coll === "carousels"){
     item = Object.assign(base, {title:`Carousel #${S.carousels.length+1}`, pillar:"educacion", hook:"", cta:"", copy:"", hashtags:"", note:"", slides:[
@@ -4738,14 +4898,29 @@ document.addEventListener("click", async e => {
   }
 
   // subir imagen
+  // botón de ampliar de cualquier archivo multimedia → pantalla completa. Va ANTES del
+   // manejador de subir, porque el botón vive dentro del propio recuadro [data-upload].
+  // observación del Dashboard → abrir esa pieza exacta en su sección
+  const obs = t.closest("[data-obs-jump]");
+  if(obs){ pendingFocus = obs.dataset.id; S.ui.view = obs.dataset.coll; render(); return; }
+
+  const zoomBtn = t.closest("[data-zoom]");
+  if(zoomBtn){
+    // en el Feed Preview la imagen ya está en la celda y no se repite en un atributo,
+    // para no arrastrar base64 grandes dentro del HTML
+    const src = zoomBtn.dataset.src || zoomBtn.closest(".cell")?.querySelector("img")?.src;
+    if(src) openImageLightbox(src, zoomBtn.dataset.title || "", zoomBtn.dataset.mkind || "image");
+    return;
+  }
+
   const up = t.closest("[data-upload]");
   if(up){
     if(!guard()) return;
-    const {coll, id, field:f} = up.dataset;
-    const data = await pickImage();
+    const {coll, id, field:f, kind} = up.dataset;
+    const data = await pickImage(kind || "image");
     if(!data) return;
     applyUploadedImage(coll, id, f, data);
-    touch(); render(); toast("Imagen adjuntada", "img"); return;
+    touch(); render(); toast(kind === "video" ? "Video adjuntado" : "Imagen adjuntada", "img"); return;
   }
 
   // pestaña de mes del Feed Preview: eliminar (antes que el cambio de pestaña)
@@ -4805,16 +4980,6 @@ document.addEventListener("click", async e => {
   if(pickSlot){
     if(!guard()) return;
     openFeedPicker(Number(pickSlot.dataset.pickSlot));
-    return;
-  }
-
-  // botón de ampliar sobre una celda del Feed/Stories Preview → vista previa grande,
-  // sin salir de la grilla (se lee el <img> ya presente en la celda en vez de duplicar
-  // la imagen en un atributo, para no repetir base64 grandes en el HTML)
-  const zoomBtn = t.closest("[data-zoom]");
-  if(zoomBtn){
-    const img = zoomBtn.closest(".cell")?.querySelector("img");
-    if(img) openImageLightbox(img.src, zoomBtn.dataset.title || "");
     return;
   }
 
@@ -5043,13 +5208,13 @@ document.addEventListener("drop", async e => {
   if(!guard()) return;
   const f = e.dataTransfer.files && e.dataTransfer.files[0];
   if(!f) return;
-  const {coll, id, field:fld} = box.dataset;
+  const {coll, id, field:fld, kind} = box.dataset;
   // el permiso de Drive se pide de una vez: soltar el archivo es el gesto del usuario
   const auth = await requestDriveAuth();
-  const data = await fileToImageUrl(f, auth);
+  const data = await fileToMediaUrl(f, auth, kind || "image");
   if(!data) return;
   applyUploadedImage(coll, id, fld, data);
-  touch(); render(); toast("Imagen adjuntada", "img");
+  touch(); render(); toast(kind === "video" ? "Video adjuntado" : "Imagen adjuntada", "img");
 });
 
 document.addEventListener("dragstart", e => {
