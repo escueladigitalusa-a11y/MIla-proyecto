@@ -422,12 +422,15 @@ body::before{
 .media .ph.video-loaded{color:var(--gold-deep)}
 
 /* Botón de ampliar de cualquier archivo multimedia */
-.media-zoom{position:absolute;right:8px;bottom:8px;width:32px;height:32px;border-radius:50%;
+.media-zoom,.media-dl{position:absolute;bottom:8px;width:32px;height:32px;border-radius:50%;
   background:rgba(26,30,57,.72);color:#fff;display:grid;place-items:center;opacity:0;transition:.15s;z-index:3}
-.media-zoom svg{width:15px;height:15px}
-.media:hover .media-zoom,.media-zoom:focus-visible{opacity:1}
-.media-zoom:hover{background:var(--navy)}
-@media (hover:none){.media-zoom{opacity:1}}
+.media-zoom{right:8px}
+.media-dl{right:46px}
+.media-zoom svg,.media-dl svg{width:15px;height:15px}
+.media:hover .media-zoom,.media:hover .media-dl,
+.media-zoom:focus-visible,.media-dl:focus-visible{opacity:1}
+.media-zoom:hover,.media-dl:hover{background:var(--navy)}
+@media (hover:none){.media-zoom,.media-dl{opacity:1}}
 
 /* Lightbox en modo video */
 .lightbox.is-video{width:min(1100px,92vw)}
@@ -2817,6 +2820,29 @@ function confirmDialog(title, text, onYes, yesLabel="Eliminar"){
 /* Vista previa ampliada de una imagen ya colocada en el Feed Preview o el Stories
    Preview — clic en el fondo o en la "×" cierra, clic en la imagen no hace nada (para
    no cerrarla por accidente). */
+/* Descarga el archivo multimedia de una pieza.
+   Lo guardado en este dispositivo es un data: URL y se baja directo. Lo que vive en
+   Google Drive es de otro dominio: el navegador ignora "download" en ese caso y CORS
+   impide traerlo con fetch, así que se abre el enlace de descarga propio de Drive. */
+function downloadMedia(src, name){
+  if(!src){ toast("No hay nada que descargar todavía.", "alert", true); return; }
+  if(src.startsWith("data:")){
+    const ext = (src.slice(5, src.indexOf(";")).split("/")[1] || "jpg").replace("jpeg","jpg");
+    const a = document.createElement("a");
+    a.href = src; a.download = `${sanitizeDriveName(name)}.${ext}`;
+    document.body.appendChild(a); a.click(); a.remove();
+    toast("Descargando…", "down");
+    return;
+  }
+  const id = extractDriveFileId(src);
+  if(id){
+    window.open(`https://drive.google.com/uc?export=download&id=${id}`, "_blank", "noopener");
+    toast("Descargando desde Google Drive…", "down");
+    return;
+  }
+  window.open(src, "_blank", "noopener");
+}
+
 function openImageLightbox(src, title, kind){
   if(!src) return;
   const host = $("#modalHost");
@@ -3091,7 +3117,8 @@ function mediaBox({coll, id, field, src, ratio="ratio-45", title="Subir imagen",
   }
   return `<div class="media ${ratio} ${src ? "has-img" : ""} ${isVideo ? "is-video" : ""}" data-upload data-kind="${kind}" data-coll="${coll}" data-id="${id}" data-field="${field}" title="Clic para ${src?"reemplazar":"subir"}">
     ${inner}
-    ${src ? `<button type="button" class="media-zoom" data-zoom data-src="${esc(src)}" data-mkind="${kind}" data-title="${zoomTitle}" title="Ver en pantalla completa"><svg><use href="#i-expand"/></svg></button>` : ""}
+    ${src ? `<button type="button" class="media-dl" data-media-dl data-src="${esc(src)}" title="Descargar archivo"><svg><use href="#i-down"/></svg></button>
+    <button type="button" class="media-zoom" data-zoom data-src="${esc(src)}" data-mkind="${kind}" data-title="${zoomTitle}" title="Ver en pantalla completa"><svg><use href="#i-expand"/></svg></button>` : ""}
   </div>`;
 }
 function field(labelText, icon, inner, timing=""){
@@ -4112,7 +4139,8 @@ function feedMonthsTabsHTML(){
    viejo (uc?export=view), que migrateDriveUrls debería haber reemplazado ya. */
 function extractDriveFileId(url){
   if(typeof url !== "string") return null;
-  const m = url.match(/[?&]id=([^&]+)/);
+  // imágenes: ...thumbnail?id=XXX   ·   videos: ...file/d/XXX/preview
+  const m = url.match(/[?&]id=([^&]+)/) || url.match(/\/file\/d\/([^/?#]+)/);
   return m ? m[1] : null;
 }
 
@@ -4994,6 +5022,26 @@ document.addEventListener("click", async e => {
   // observación del Dashboard → abrir esa pieza exacta en su sección
   const obs = t.closest("[data-obs-jump]");
   if(obs){ pendingFocus = obs.dataset.id; S.ui.view = obs.dataset.coll; render(); return; }
+
+  // descargar el archivo de un recuadro multimedia
+  const dlBtn = t.closest("[data-media-dl]");
+  if(dlBtn){
+    const box = dlBtn.closest("[data-upload]");
+    const {coll, id, field:fld} = box ? box.dataset : {};
+    let name = "archivo";
+    if(coll === "profile") name = "foto-de-perfil";
+    else if(fld === "slide"){
+      const [carId, slideId] = (id || "").split("::");
+      const c = find("carousels", carId);
+      const idx = c ? c.slides.findIndex(x => x.id === slideId) : -1;
+      name = `${c ? c.title : "Carrusel"} - slide ${idx + 1}`;
+    }else if(coll){
+      const it = find(coll, id);
+      name = `${it ? (it.title || it.idea || "Pieza") : "Pieza"}${fld === "video" ? " - video" : fld === "cover" ? " - portada" : ""}`;
+    }
+    downloadMedia(dlBtn.dataset.src, name);
+    return;
+  }
 
   const zoomBtn = t.closest("[data-zoom]");
   if(zoomBtn){
