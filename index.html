@@ -4105,9 +4105,7 @@ function dashboardJumpTo(coll, metricKey){
   const metric = DASH_METRICS.find(m => m.key === metricKey);
   const items = dashboardItemsFor(coll).filter(it => metric.check(it, coll));
   if(!items.length){ toast("Nada pendiente en esta categoría — ¡al día! 🎉", "check"); return; }
-  pendingFocus = items[0].id;
-  S.ui.view = coll;
-  render();
+  goToItem(coll, items[0].id);
 }
 function dashboardMatrixHTML(){
   const isQuarter = S.ui.dashboardScope === "quarter";
@@ -5423,6 +5421,23 @@ function autosize(t){
 
 function go(view){ S.ui.view = view; touch(); render(); }
 
+/* Lleva a una pieza concreta y se asegura de que quede visible al llegar.
+   No basta con cambiar de sección: la pieza puede pertenecer a otro mes de contenido,
+   o quedar fuera por lo que haya escrito en el buscador. En cualquiera de esos casos la
+   lista no la incluye, no hay nada que resaltar y el salto parece no hacer nada. */
+function goToItem(coll, id){
+  const it = find(coll, id);
+  if(it && CONTENT_QUOTA[coll]){
+    const idx = S.contentMonths.findIndex(m => m.id === it.monthId);
+    if(idx >= 0) S.ui.contentMonth = idx;
+  }
+  const buscador = $("#search");
+  if(buscador && buscador.value) buscador.value = "";
+  pendingFocus = id;
+  S.ui.view = coll;
+  render();
+}
+
 /* Cambia la marca que se está viendo. Lo que hay en pantalla se guarda primero, para
    que nada quede a medias, y la elección se recuerda solo en este navegador. */
 function switchBrand(id){
@@ -5663,7 +5678,7 @@ document.addEventListener("click", async e => {
    // manejador de subir, porque el botón vive dentro del propio recuadro [data-upload].
   // observación del Dashboard → abrir esa pieza exacta en su sección
   const obs = t.closest("[data-obs-jump]");
-  if(obs){ pendingFocus = obs.dataset.id; S.ui.view = obs.dataset.coll; render(); return; }
+  if(obs){ goToItem(obs.dataset.coll, obs.dataset.id); return; }
 
   // descargar el archivo de un recuadro multimedia
   const dlBtn = t.closest("[data-media-dl]");
@@ -5766,7 +5781,8 @@ document.addEventListener("click", async e => {
 
   // celda del feed / stories preview ya ocupada → ir a editar ese formato exacto
   const cell = t.closest("[data-cell]");
-  if(cell){ pendingFocus = cell.dataset.id; S.ui.view = cell.dataset.coll; render(); return; }
+  // el id de la pieza va en data-cell, no en data-id (data-id no existe en la celda)
+  if(cell){ goToItem(cell.dataset.coll, cell.dataset.cell); return; }
 
   // saltar del formato a su posición exacta en el Feed Preview (cambia de mes si hace falta)
   const jump = t.closest("[data-feed-jump]");
