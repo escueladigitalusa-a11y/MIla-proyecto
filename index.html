@@ -149,6 +149,7 @@ body::before{
 }
 .icon-btn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#57697E;transition:.15s;position:relative}
 .icon-btn:hover{background:#fff;box-shadow:var(--shadow-sm)}
+.icon-btn[disabled]{opacity:.3;cursor:default;pointer-events:none}
 .icon-btn svg{width:20px;height:20px}
 .icon-btn .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--gold)}
 .role-select{
@@ -890,6 +891,8 @@ body.needs-auth .app{display:none}
   <symbol id="i-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H4v5M15 4h5v5M4 15v5h5M20 15v5h-5"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
   <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9a6 6 0 1 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6z"/><path d="M10 19a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7H15.5a4.5 4.5 0 0 1 0 9H8"/><path d="M12 4L9 7l3 3"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7H8.5a4.5 4.5 0 0 0 0 9H16"/><path d="M12 4l3 3-3 3"/></symbol>
   <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4.5V9H8"/><path d="M12 7.5V12l3 2"/></symbol>
   <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3.2"/><path d="M5.8 19a6.5 6.5 0 0 1 12.4 0"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></symbol>
@@ -1007,6 +1010,9 @@ body.needs-auth .app{display:none}
           <option value="editor">Rol: Editor</option>
           <option value="viewer">Rol: Viewer</option>
         </select>
+        <div class="divider-v"></div>
+        <button class="icon-btn lock-viewer" id="btnUndo" data-action="undo" title="Deshacer (Ctrl+Z)"><svg><use href="#i-undo"/></svg></button>
+        <button class="icon-btn lock-viewer" id="btnRedo" data-action="redo" title="Rehacer (Ctrl+Shift+Z)"><svg><use href="#i-redo"/></svg></button>
         <div class="divider-v"></div>
         <button class="icon-btn" data-action="notifications" title="Notificaciones">
           <svg><use href="#i-bell"/></svg><span class="dot" id="notifDot"></span>
@@ -3316,8 +3322,81 @@ function persist(silent=false){
   }
   return true;
 }
+/* ---------- Deshacer / rehacer ----------
+   Se guarda una instantánea del workspace por TANDA de cambios, no por cambio suelto:
+   la tanda se cierra cuando pasan 700 ms sin tocar nada. Así escribir una frase entera
+   cuenta como un solo paso para deshacer, y no una letra por paso. */
+const HISTORY_MAX = 30;
+let undoStack = [], redoStack = [], lastSnapshot = null, historyTimer = null;
+const snapshot = () => JSON.stringify(S);
+
+/* Se llama cada vez que S se reemplaza entero (carga, nube, cambio de marca, importar,
+   restablecer): el historial anterior ya no aplica a este contenido. */
+function historyReset(){
+  undoStack = []; redoStack = [];
+  clearTimeout(historyTimer); historyTimer = null;
+  lastSnapshot = snapshot();
+  updateHistoryButtons();
+}
+function historySchedule(){
+  clearTimeout(historyTimer);
+  historyTimer = setTimeout(() => {
+    historyTimer = null;
+    const ahora = snapshot();
+    if(ahora === lastSnapshot) return;
+    undoStack.push(lastSnapshot);
+    if(undoStack.length > HISTORY_MAX) undoStack.shift();
+    redoStack = [];
+    lastSnapshot = ahora;
+    updateHistoryButtons();
+  }, 700);
+}
+/* Restaura una instantánea sin mover a nadie de donde está: la vista, el rol, los
+   filtros y el mes que se está viendo son preferencias de este navegador, no contenido,
+   así que se conservan tal cual. */
+function historyRestore(json){
+  const ui = S.ui;
+  S = JSON.parse(json);
+  S.ui = ui;
+  if(S.ui.contentMonth >= (S.contentMonths || []).length) S.ui.contentMonth = 0;
+  if(S.ui.feedMonth >= (S.feedMonths || []).length) S.ui.feedMonth = 0;
+}
+/* El paso restaurado se guarda como cualquier otro cambio, pero SIN pasar por touch(),
+   para que deshacer no genere a su vez un nuevo punto de historial. */
+function historyApply(json, mensaje){
+  historyRestore(json);
+  dirty = true; updateSaveState();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => persist(true), 1200);
+  render();
+  updateHistoryButtons();
+  toast(mensaje, "history");
+}
+function undo(){
+  if(!guard()) return;
+  clearTimeout(historyTimer); historyTimer = null;
+  if(!undoStack.length){ toast("No hay nada que deshacer", "alert", true); return; }
+  redoStack.push(lastSnapshot);
+  lastSnapshot = undoStack.pop();
+  historyApply(lastSnapshot, "Cambio deshecho");
+}
+function redo(){
+  if(!guard()) return;
+  clearTimeout(historyTimer); historyTimer = null;
+  if(!redoStack.length){ toast("No hay nada que rehacer", "alert", true); return; }
+  undoStack.push(lastSnapshot);
+  lastSnapshot = redoStack.pop();
+  historyApply(lastSnapshot, "Cambio rehecho");
+}
+function updateHistoryButtons(){
+  const u = $("#btnUndo"), r = $("#btnRedo");
+  if(u) u.disabled = !undoStack.length || !canEdit();
+  if(r) r.disabled = !redoStack.length || !canEdit();
+}
+
 function touch(){
   dirty = true; updateSaveState();
+  historySchedule();
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => persist(true), 1200); // autoguardado
 }
@@ -3339,16 +3418,18 @@ function updateCloudStatus(){
 }
 
 async function loadFromCloud(){
-  if(!sbClient){ S = load(); cloudSyncOK = false; return; }
+  if(!sbClient){ S = load(); historyReset(); cloudSyncOK = false; return; }
   try{
     const { data, error } = await sbClient.from("workspace_state").select("data").eq("id", WORKSPACE_ID).maybeSingle();
     if(error) throw error;
     if(data && data.data){
       S = unpackWorkspace(data.data);
+      historyReset();
       localStorage.setItem(KEY, JSON.stringify(packWorkspace()));
     }else{
       // primera vez: no existe fila todavía en Supabase, se siembra con lo local (o contenido de ejemplo)
       S = load();
+      historyReset();
       await sbClient.from("workspace_state").upsert({
         id: WORKSPACE_ID, data: packWorkspace(), updated_at: new Date().toISOString(), updated_by: currentUser?.id || null
       });
@@ -3357,6 +3438,7 @@ async function loadFromCloud(){
   }catch(e){
     console.warn("No se pudo cargar desde Supabase, usando copia local", e);
     S = load();
+    historyReset();
     cloudSyncOK = false;
     toast("Sin conexión con la nube: se muestra la última copia guardada en este navegador.", "alert", true);
   }
@@ -3389,6 +3471,7 @@ function subscribeRealtime(){
       if(incoming.updated_by === currentUser?.id) return; // fue nuestro propio cambio
       if(dirty || cloudSaveInFlight) return; // hay ediciones locales sin guardar: no se pisan
       S = unpackWorkspace(incoming.data);
+      historyReset();
       localStorage.setItem(KEY, JSON.stringify(packWorkspace()));
       render();
       toast("El workspace se actualizó con cambios de otra persona", "history");
@@ -3410,7 +3493,7 @@ async function boot(){
   initGoogleDrive();
   if(!sbClient){
     // sin librería de Supabase disponible (p.ej. sin conexión): sigue funcionando solo local
-    S = load(); cloudSyncOK = false; render();
+    S = load(); historyReset(); cloudSyncOK = false; render();
     toast("No se pudo cargar Supabase: trabajando solo con la copia local de este navegador.", "alert", true);
     return;
   }
@@ -5385,6 +5468,7 @@ function render(){
   if(fm){ const fsrc = B.seeded ? LOGO_WHITE : B.logo; if(fm.getAttribute("src") !== fsrc) fm.src = fsrc; }
 
   renderNav();
+  updateHistoryButtons();
   const v = S.ui.view;
   const html =
     v === "posts"     ? viewPosts(q) :
@@ -5448,6 +5532,7 @@ function switchBrand(id){
   saveLocalBrand(id);
   const data = BRANDS_DATA[id];
   S = data ? mergeIntoSeed(data, id) : seed(id);
+  historyReset();
   render();
   toast(`Ahora estás en ${brandById(id).label}`, "grid");
 }
@@ -5537,6 +5622,7 @@ function importJSON(){
         const data = JSON.parse(fr.result);
         if(!data || typeof data !== "object") throw new Error("bad");
         S = unpackWorkspace(data);
+        historyReset();
         persist(); render(); toast("Workspace importado", "check");
       }catch(e){ toast("Archivo inválido", "alert", true); }
     };
@@ -5571,6 +5657,8 @@ document.addEventListener("click", async e => {
   if(act){
     const a = act.dataset.action;
     if(a === "save"){ persist(); return; }
+    if(a === "undo"){ undo(); return; }
+    if(a === "redo"){ redo(); return; }
     if(a === "new"){ createItem(act.dataset.coll); return; }
     if(a === "create-menu"){ openCreateMenu(); return; }
     if(a === "export"){ exportJSON(); return; }
@@ -5580,6 +5668,7 @@ document.addEventListener("click", async e => {
       confirmDialog(`¿Restablecer "${esc(bLabel)}"?`, `Esto borra en la nube todo el contenido de ${bLabel} para TODOS (tu equipo y tu clienta) y lo deja como empieza esa marca. Las demás marcas no se tocan.`, () => {
         delete BRANDS_DATA[activeBrandId];
         S = seed(activeBrandId);
+        historyReset();
         persist(); render(); toast(`${bLabel} restablecido`, "history");
       }, "Restablecer");
       return;
@@ -6072,6 +6161,14 @@ document.addEventListener("drop", e => {
 document.addEventListener("keydown", e => {
   if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s"){ e.preventDefault(); persist(); }
   if(e.key === "Escape") $("#modalHost").innerHTML = "";
+  // Ctrl/Cmd+Z deshace · Ctrl/Cmd+Shift+Z o Ctrl+Y rehace. Se ignora mientras se
+  // escribe en un campo, para no pisar el deshacer propio del navegador dentro del texto.
+  const enCampo = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || "")) || e.target.isContentEditable;
+  if(!enCampo && (e.ctrlKey || e.metaKey)){
+    const k = e.key.toLowerCase();
+    if(k === "z" && !e.shiftKey){ e.preventDefault(); undo(); return; }
+    if((k === "z" && e.shiftKey) || k === "y"){ e.preventDefault(); redo(); return; }
+  }
 });
 window.addEventListener("beforeunload", e => { if(dirty){ persist(true); } });
 
