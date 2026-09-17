@@ -1382,7 +1382,7 @@ function seed(brandId = activeBrandId){
     /* Urgente: piezas sueltas que hay que sacar ya. No entran en el calendario de meses
        ni tienen cupo mensual — por eso no están en CONTENT_QUOTA. */
     urgente: only("urgente").map((u, i) => Object.assign({
-      id:uid("urg"), order:i, collapsed:false, copy:"", note:"", reviewed:false,
+      id:uid("urg"), order:i, collapsed:false, ciudad:"", copy:"", note:"", reviewed:false,
       designApproved:null, designNote:""
     }, u, {createdAt: at(u.days), published: u.status === "published"})),
 
@@ -2789,6 +2789,7 @@ function viewUrgente(q=""){
               <div class="grip" title="Arrastra para reordenar"><svg><use href="#i-grip"/></svg></div>
             </div>`).join("")}
         </div>
+        ${field("Ciudad","build", input("urgente", u.id, "ciudad", u.ciudad, "¿De qué ciudad es esta publicación?"))}
         ${field("Copy (texto final)","pen", textarea("urgente", u.id, "copy", u.copy, "El texto que acompaña la publicación...", "soft", 3))}
         ${starsHTML("urgente", u.id, u.rating)}
       </div>
@@ -3584,7 +3585,7 @@ const CLEAN_TEXT = {
   youtube:["desarrollo"],
   carousels:["hook","cta"],
   stories:["idea"],
-  urgente:["note"]
+  urgente:["note","ciudad"]
 };
 /* Campos de imagen / portada. Los carruseles se tratan aparte (van por slide). */
 const CLEAN_MEDIA = {posts:["image"], reels:["cover","video"], youtube:["cover","video"], carousels:[], stories:["media"], urgente:[]};
@@ -3811,7 +3812,7 @@ function createItem(coll){
     ]});
     label = "Carrusel";
   }else if(coll === "urgente"){
-    item = Object.assign(base, {title:`Urgente ${S.urgente.length+1}`, pillar:"educacion", copy:"", note:"", slides:[
+    item = Object.assign(base, {title:`Urgente ${S.urgente.length+1}`, pillar:"educacion", ciudad:"", copy:"", note:"", slides:[
       {id:uid("sl"), image:"", title:"", caption:""}
     ]});
     label = "Urgente";
