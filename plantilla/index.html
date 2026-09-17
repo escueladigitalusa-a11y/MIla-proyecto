@@ -103,13 +103,11 @@ body::before{
 }
 .btn-create:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(180,137,74,.38)}
 
-/* Módulo Urgente: se distingue del resto con el acento rojo de la app */
-.urgente-strip{color:var(--danger);border-color:#F0CFCA}
-.urgente-num{display:inline-flex;align-items:center;gap:5px;color:var(--danger)!important;
-  background:#FBEBE9!important;border-color:#F0CFCA!important}
-.urgente-card{border-left:3px solid var(--danger)}
+/* Módulo Fin de mes: mismo lenguaje visual que el resto, con un acento dorado */
+.urgente-strip{color:var(--gold-deep);border-color:var(--gold-soft)}
+.urgente-num{display:inline-flex;align-items:center;gap:5px}
+.urgente-card{border-left:3px solid var(--gold-soft)}
 .slide .slide-title{margin-bottom:9px;font-size:13px;font-weight:500}
-.nav button .count.urgente-count{color:var(--danger);background:#FBEBE9;border-color:#F0CFCA}
 
 /* Tarjeta de limpieza masiva por mes (Settings) */
 .clean-row{padding:13px 0;border-top:1px solid var(--line-2)}
@@ -1083,6 +1081,12 @@ const CLIENTE_BAJADA = "RUBRO O ESLOGAN";
    contadores del menú y de cada pestaña de mes, pero no impide crear de más. */
 const CONTENT_QUOTA = { posts:8, reels:12, carousels:4, stories:30, youtube:4 };
 
+/* Secciones que viven en el calendario de meses de contenido. Tener cupo mensual es
+   aparte: "Fin de mes" usa los meses pero no tiene un número fijo de piezas, así que su
+   pestaña muestra cuántas lleva y no un x/y. */
+const MONTHLY_COLLS = ["posts","reels","carousels","stories","youtube","urgente"];
+const usaMeses = coll => MONTHLY_COLLS.includes(coll);
+
 /* Hashtags base de la marca. Déjalo vacío si no aplica. */
 const HASHTAGS_BASE = "";
 
@@ -1270,7 +1274,7 @@ const NAV = [
   {id:"carousels", label:"Carruseles",    icon:"i-book",   coll:"carousels"},
   {id:"posts",     label:"Posts",         icon:"i-post",   coll:"posts"},
   {id:"stories",   label:"Historias",     icon:"i-story",  coll:"stories"},
-  {id:"urgente",   label:"Urgente",       icon:"i-alert",  coll:"urgente", urgente:true},
+  {id:"urgente",   label:"Fin de mes",    icon:"i-cal",    coll:"urgente"},
   {id:"feed",      label:"Feed Preview",  icon:"i-feed"},
 ];
 
@@ -1379,8 +1383,9 @@ function seed(brandId = activeBrandId){
       monthId: monthForIndex(i, CONTENT_QUOTA.stories)
     }, s, {createdAt: at(s.days), published: s.status === "published"})),
 
-    /* Urgente: piezas sueltas que hay que sacar ya. No entran en el calendario de meses
-       ni tienen cupo mensual — por eso no están en CONTENT_QUOTA. */
+    /* Fin de mes: las piezas del cierre de cada mes. Usan el calendario de meses como
+       el resto del contenido, pero sin cupo fijo — por eso están en MONTHLY_COLLS y no
+       en CONTENT_QUOTA. La clave interna se mantiene como "urgente". */
     urgente: only("urgente").map((u, i) => Object.assign({
       id:uid("urg"), order:i, collapsed:false, ciudad:"", copy:"", note:"", reviewed:false,
       designApproved:null, designNote:""
@@ -1437,7 +1442,7 @@ function migrateContentMonths(state){
     state.contentMonths = [{id:uid("cmonth"), label:"Mes 1"}];
   }
   const validIds = new Set(state.contentMonths.map(m => m.id));
-  ["posts","reels","carousels","stories","youtube"].forEach(coll => {
+  MONTHLY_COLLS.forEach(coll => {
     const quota = CONTENT_QUOTA[coll] || 10;
     (state[coll] || []).forEach((it, i) => {
       if(!it.monthId || !validIds.has(it.monthId)){
@@ -2212,7 +2217,7 @@ function applyFilter(coll, list){
   const f = ensureFilter(coll);
   let out = list;
   if(f.month && f.month !== "all") out = out.filter(x => monthKey(x.createdAt || 0) === f.month);
-  if(CONTENT_QUOTA[coll]) out = out.filter(x => x.monthId === activeContentMonth().id);
+  if(usaMeses(coll)) out = out.filter(x => x.monthId === activeContentMonth().id);
   out = [...out].sort((a,b) => {
     // Orden de publicación: el que se publica primero va primero en la lista, en el
     // mismo orden exacto en el que están los espacios en el Feed Preview. Lo que aún
@@ -2235,7 +2240,7 @@ function filterBarHTML(coll, totalCount, shownCount){
   // Posts/Reels/Carruseles/Historias ya se filtran por el mes de contenido (pestañas
   // arriba); el filtro viejo de "tanda" por fecha de creación queda solo para
   // Projects, que no tiene meses de contenido.
-  const showTandaFilter = !CONTENT_QUOTA[coll];
+  const showTandaFilter = !usaMeses(coll);
   return `<div class="filter-bar">
     <svg width="15" height="15" style="color:var(--gold-deep)"><use href="#i-filter"/></svg>
     <select class="fsel" data-filter-sort data-coll="${coll}">
@@ -2271,7 +2276,7 @@ function contentMonthsTabsHTML(coll){
       const count = contentMonthCount(coll, m.id);
       return `<div class="month-tab ${active ? "active" : ""}" data-content-month-tab="${mi}">
         <input class="month-label" data-content-month-label="${mi}" value="${esc(m.label)}" ${canEdit() ? "" : "disabled"} title="Renombrar mes">
-        <span class="month-count">${count}/${quota}</span>
+        <span class="month-count">${quota ? `${count}/${quota}` : count}</span>
         ${S.contentMonths.length > 1 ? `<button type="button" class="month-del lock-viewer lock-editor" data-content-month-del="${mi}" title="Eliminar este mes"><svg width="12" height="12"><use href="#i-trash"/></svg></button>` : ""}
       </div>`;
     }).join("")}
@@ -2289,13 +2294,13 @@ function deleteContentMonth(index){
   if(!guard()) return;
   if(S.contentMonths.length <= 1){ toast("Debe quedar al menos un mes.", "alert", true); return; }
   const month = S.contentMonths[index]; if(!month) return;
-  const used = ["posts","reels","carousels","stories","youtube"].reduce((n,c) => n + contentMonthCount(c, month.id), 0);
+  const used = MONTHLY_COLLS.reduce((n,c) => n + contentMonthCount(c, month.id), 0);
   confirmDialog(`¿Eliminar "${esc(month.label)}"?`,
     used ? `Ese mes tiene ${used} pieza(s) asignada(s). No se borra ninguna pieza: pasan al primer mes que quede.` : "Este mes está vacío.",
     () => {
       S.contentMonths.splice(index, 1);
       const fallbackId = S.contentMonths[0].id;
-      ["posts","reels","carousels","stories","youtube"].forEach(c => {
+      MONTHLY_COLLS.forEach(c => {
         (S[c] || []).forEach(x => { if(x.monthId === month.id) x.monthId = fallbackId; });
       });
       if(S.ui.contentMonth >= S.contentMonths.length) S.ui.contentMonth = S.contentMonths.length - 1;
@@ -2379,8 +2384,8 @@ function dashboardCount(coll, metricKey){
    quedó desaprobado o que tiene una nota de la clienta, de cualquier sección. Es la
    fuente de la tarjeta "Por revisar" del Dashboard. */
 function observationItems(){
-  const label = c => (DASH_COLLS.find(d => d.coll === c) || {}).label || (c === "urgente" ? "Urgente" : c);
-  const icon  = c => (DASH_COLLS.find(d => d.coll === c) || {}).icon || (c === "urgente" ? "i-alert" : "i-post");
+  const label = c => (DASH_COLLS.find(d => d.coll === c) || {}).label || (c === "urgente" ? "Fin de mes" : c);
+  const icon  = c => (DASH_COLLS.find(d => d.coll === c) || {}).icon || (c === "urgente" ? "i-cal" : "i-post");
   return COLL.flatMap(c => (S[c] || [])
     .filter(it => (it.designNote || "").trim() || it.designApproved === false)
     .map(it => ({
@@ -2740,34 +2745,37 @@ function viewYoutube(q=""){
       </div>`).join("") : emptyState("Sin videos para esta tanda", "Ajusta el filtro o planifica un nuevo video.", "youtube")}`;
 }
 
-/* ---------- URGENTE ----------
-   Piezas sueltas que hay que sacar ya: una tarjeta con varias imágenes, cada una con su
-   propio título. Misma mecánica que los carruseles (agregar, eliminar y reordenar
-   arrastrando), pero sin calendario ni cupo mensual, porque lo urgente no se planifica
-   por mes. */
+/* ---------- FIN DE MES ----------
+   Una tarjeta con varias imágenes, cada una con su propio título. Misma mecánica que los
+   carruseles (agregar, eliminar y reordenar arrastrando) y, como el resto del contenido,
+   organizada por meses. No tiene cupo mensual fijo: la pestaña de cada mes muestra
+   cuántas piezas lleva. La clave interna sigue siendo "urgente" para no romper lo que ya
+   estuviera guardado con ese nombre. */
 function viewUrgente(q=""){
   const all = sorted("urgente").filter(u => matches(u, q));
   const list = applyFilter("urgente", all);
   return `
   <div class="page-head">
     <div>
-      <div class="mono-strip urgente-strip" style="margin-bottom:8px"><svg width="13" height="13"><use href="#i-alert"/></svg> SALE YA</div>
-      <h1>Urgente</h1><p>Lo que hay que publicar ahora y no entra en el plan del mes. Carga las imágenes y ponle título a cada una.</p>
+      <div class="mono-strip urgente-strip" style="margin-bottom:8px"><svg width="13" height="13"><use href="#i-cal"/></svg> CIERRE DE MES</div>
+      <h1>Fin de mes</h1><p>Las piezas del cierre de cada mes. Carga las imágenes y ponle título a cada una.</p>
     </div>
     <div class="actions">
-      <button class="btn btn-ghost lock-viewer" data-action="new" data-coll="urgente"><svg><use href="#i-plus"/></svg> Nuevo urgente</button>
+      <button class="btn btn-ghost lock-viewer" data-action="new" data-coll="urgente"><svg><use href="#i-plus"/></svg> Nueva pieza</button>
       <button class="btn btn-gold lock-viewer" data-action="save"><svg><use href="#i-save"/></svg> Guardar Cambios</button>
     </div>
   </div>
   <div class="readonly-note"><svg width="16" height="16"><use href="#i-alert"/></svg> Modo <b>Viewer</b>: la edición está bloqueada.</div>
+  ${contentMonthsTabsHTML("urgente")}
   ${filterBarHTML("urgente", all.length, list.length)}
   ${list.length ? list.map((u,i) => `
     <div class="card urgente-card ${u.collapsed?"collapsed item":"item"} ${u.published ? "published-item" : ""}" data-item="${u.id}">
       <div class="item-head">
-        ${itemThumbHTML((u.slides.find(s=>s.image)||{}).image, "i-alert")}
-        <span class="num urgente-num"><svg width="12" height="12"><use href="#i-alert"/></svg> Urgente ${i+1}</span>
+        ${itemThumbHTML((u.slides.find(s=>s.image)||{}).image, "i-cal")}
+        <span class="num urgente-num"><svg width="12" height="12"><use href="#i-cal"/></svg> Fin de mes ${i+1}</span>
         <input class="title-input" data-field data-coll="urgente" data-id="${u.id}" data-key="title" value="${esc(u.title)}" placeholder="¿De qué se trata?">
         ${statusSelect("urgente", u.id, u.status)}
+        ${contentMonthSelectHTML("urgente", u.id, u.monthId)}
         ${itemTools("urgente", u.id, `<button class="btn btn-ghost btn-sm lock-viewer" data-add-slide data-coll="urgente" data-id="${u.id}"><svg><use href="#i-plus"/></svg> Agregar imagen</button>`)}
         ${metaRowHTML("urgente", u, {feed:false})}
       </div>
@@ -2793,7 +2801,7 @@ function viewUrgente(q=""){
         ${field("Copy (texto final)","pen", textarea("urgente", u.id, "copy", u.copy, "El texto que acompaña la publicación...", "soft", 3))}
         ${starsHTML("urgente", u.id, u.rating)}
       </div>
-    </div>`).join("") : emptyState("Nada urgente por ahora", "Cuando algo tenga que salir ya, créalo aquí.", "urgente")}`;
+    </div>`).join("") : emptyState("Sin piezas en este mes", "Crea la primera pieza del cierre de mes.", "urgente")}`;
 }
 
 function viewCarousels(q=""){
@@ -3558,10 +3566,12 @@ function matches(x, q){
    que existen, sino el avance real del mes que se está viendo. */
 function navReadyLabel(coll){
   const quota = CONTENT_QUOTA[coll];
-  if(!quota) return String(S[coll].length);
+  if(!quota && !usaMeses(coll)) return String(S[coll].length);
   const monthId = activeContentMonth()?.id;
-  const ready = (S[coll] || []).filter(it => it.monthId === monthId && it.reviewed).length;
-  return `${ready}/${quota}`;
+  const delMes = (S[coll] || []).filter(it => it.monthId === monthId);
+  // sin cupo definido se muestra cuántas piezas lleva el mes; con cupo, el avance
+  if(!quota) return String(delMes.length);
+  return `${delMes.filter(it => it.reviewed).length}/${quota}`;
 }
 /* ---------- Limpieza masiva por mes (Settings) ----------
    Cada acción trabaja sobre un solo mes de contenido o sobre todos, según lo que se
@@ -3574,7 +3584,7 @@ const CLEAN_COLLS = [
   {coll:"youtube",   label:"YouTube"},
   {coll:"carousels", label:"Carruseles"},
   {coll:"stories",   label:"Historias"},
-  {coll:"urgente",   label:"Urgente"}
+  {coll:"urgente",   label:"Fin de mes"}
 ];
 /* Campos de texto "copy" (el caption que acompaña la publicación). */
 const CLEAN_COPY = {posts:["copy"], reels:["copy"], youtube:["copy"], carousels:["copy"], stories:[], urgente:["copy"]};
@@ -3690,7 +3700,7 @@ function renderNav(){
   $("#nav").innerHTML = NAV.map(n => `
     <button class="${S.ui.view === n.id ? "active" : ""}" data-nav="${n.id}">
       <svg><use href="#${n.icon}"/></svg>${n.label}
-      ${n.coll ? `<span class="count ${n.urgente ? "urgente-count" : ""}">${navReadyLabel(n.coll)}</span>` : ""}
+      ${n.coll ? `<span class="count">${navReadyLabel(n.coll)}</span>` : ""}
     </button>`).join("");
 }
 
@@ -3760,7 +3770,7 @@ function go(view){ S.ui.view = view; touch(); render(); }
    lista no la incluye, no hay nada que resaltar y el salto parece no hacer nada. */
 function goToItem(coll, id){
   const it = find(coll, id);
-  if(it && CONTENT_QUOTA[coll]){
+  if(it && usaMeses(coll)){
     const idx = S.contentMonths.findIndex(m => m.id === it.monthId);
     if(idx >= 0) S.ui.contentMonth = idx;
   }
@@ -3795,7 +3805,7 @@ function createItem(coll){
   const base = {id:uid(coll), createdAt:t, order:-1, rating:0, status:"draft", reviewed:false, published:false, collapsed:false, designApproved:null, designNote:""};
   // Posts/Reels/Carruseles/Historias: la pieza nueva se crea en el mes de contenido
   // que se esté viendo, para que aparezca directo en esa pestaña.
-  if(CONTENT_QUOTA[coll]) base.monthId = activeContentMonth().id;
+  if(usaMeses(coll)) base.monthId = activeContentMonth().id;
   let item, label;
   if(coll === "posts"){
     item = Object.assign(base, {title:`Post ${S.posts.length+1}`, pillar:"educacion", designText:"", desarrollo:"", copy:"", cta:"", extras:"", hashtags:"", note:"", links:"", image:"", ratio:"4:5", date:""});
@@ -3812,10 +3822,10 @@ function createItem(coll){
     ]});
     label = "Carrusel";
   }else if(coll === "urgente"){
-    item = Object.assign(base, {title:`Urgente ${S.urgente.length+1}`, pillar:"educacion", ciudad:"", copy:"", note:"", slides:[
+    item = Object.assign(base, {title:`Fin de mes ${S.urgente.length+1}`, pillar:"educacion", ciudad:"", copy:"", note:"", slides:[
       {id:uid("sl"), image:"", title:"", caption:""}
     ]});
-    label = "Urgente";
+    label = "Fin de mes";
   }else if(coll === "stories"){
     item = Object.assign(base, {pillar:"educacion", format:"Pregunta", idea:"", content:"", followup:"", note:"", media:""});
     label = "Historia";
@@ -4229,7 +4239,7 @@ document.addEventListener("input", e => {
     if(el.classList.contains("textarea")) autosize(el);
     return;
   }
-  // título propio de cada imagen (lo usa el módulo Urgente)
+  // título propio de cada imagen (lo usa el módulo Fin de mes)
   const sti = el.closest("[data-slide-title]");
   if(sti){
     const c = find(sti.dataset.coll || "carousels", sti.dataset.car);
