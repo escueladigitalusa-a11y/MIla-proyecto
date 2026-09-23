@@ -103,6 +103,37 @@ body::before{
 }
 .btn-create:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(180,137,74,.38)}
 
+/* Programar en Metricool: chip en la tarjeta y su diálogo */
+.prog-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;
+  border-radius:20px;padding:5px 11px;font-size:11.5px;color:#43566C;transition:.15s;white-space:nowrap}
+.prog-chip svg{width:14px;height:14px;color:var(--gold-deep);flex:none}
+.prog-chip:hover{border-color:var(--gold-soft);background:var(--gold-pale);color:var(--navy)}
+.prog-chip.on{background:#EAF6EF;border-color:#CFE8DA;color:var(--ok)}
+.prog-chip.on svg{color:var(--ok)}
+.prog-modal{max-width:520px;text-align:left}
+.prog-titulo{font-size:13px;color:var(--navy);font-weight:600;margin:-6px 0 14px}
+.prog-aviso{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#43566C;line-height:1.5;
+  background:var(--cream-2);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.prog-aviso svg{width:15px;height:15px;color:var(--gold-deep);flex:none;margin-top:1px}
+.prog-aviso.warn{background:#FBF1E8;color:#8A5A25}
+.prog-aviso.warn svg{color:#C9821F}
+.prog-fila{display:flex;gap:12px;margin-top:14px}
+.prog-campo{flex:1;display:flex;flex-direction:column;gap:5px}
+.prog-campo span{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.prog-campo input{font-family:inherit;font-size:13.5px;color:var(--navy);background:var(--cream);
+  border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%}
+.prog-zona{font-size:11px;color:var(--muted);margin-top:7px}
+.prog-redes-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
+.prog-redes{display:flex;flex-wrap:wrap;gap:7px}
+.prog-red{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;
+  border-radius:20px;padding:6px 12px;font-size:12.5px;color:#43566C;cursor:pointer;transition:.15s}
+.prog-red:hover{border-color:var(--gold-soft)}
+.prog-red.on{background:var(--gold-pale);border-color:var(--gold-soft);color:var(--navy);font-weight:500}
+.prog-red input{accent-color:var(--gold-deep)}
+.prog-borrador{display:flex;align-items:center;gap:8px;font-size:12px;color:#43566C;margin-top:16px;cursor:pointer}
+.prog-borrador input{accent-color:var(--gold-deep)}
+.prog-modal .row{margin-top:20px}
+
 /* Módulo Fin de mes: mismo lenguaje visual que el resto, con un acento dorado */
 .urgente-strip{color:var(--gold-deep);border-color:var(--gold-soft)}
 .urgente-num{display:inline-flex;align-items:center;gap:5px}
@@ -1110,6 +1141,14 @@ const GOOGLE_DRIVE_FOLDER_ID = "1yIvPZUXPqalYyovKbG3egHVz7WfJ4iqc";
 const GOOGLE_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 const driveEnabled = () => !!(GOOGLE_CLIENT_ID && GOOGLE_DRIVE_FOLDER_ID);
 
+/* ---------- Metricool: programar publicaciones ----------
+   El token de Metricool NO va aquí: vive en los secretos de Supabase, detrás de la
+   Edge Function. Esto es solo la dirección de esa función. Ver
+   supabase/functions/programar/INSTRUCCIONES.md. */
+const METRICOOL_FN_URL = "";  // ← pegar la URL de la Edge Function "programar"
+const METRICOOL_TZ = "America/New_York";
+const metricoolEnabled = () => !!METRICOOL_FN_URL;
+
 let gDriveTokenClient = null;
 let gDriveAccessToken = null;
 let gDriveTokenExpiry = 0;
@@ -1220,13 +1259,13 @@ async function uploadBlobToDrive(token, blob, filename, asVideo){
    workspace compartido. */
 const BRANDS = [
   {id:"realestate", label:"Real Estate", name:"MILA MEEKINS", sub:"Real Estate",
-   logo:LOGO_GOLD, seeded:true,
+   logo:LOGO_GOLD, seeded:true, metricoolBlogId:"",   // ← blogId de esta marca en Metricool
    profile:{brand:"Mila Meekins", role:"Real Estate Workspace", handle:"milameekins_realestate",
             displayName:"Mila Meekins | Luxury Real Estate", bio:"Propiedades. Propósito. Prosperidad.",
             link:"linktr.ee/milameekins", followers:"12.5K", following:"415",
             tagline:"Plan. Create. Captivate."}},
   {id:"finanzas", label:"Finanzas con Propósito", name:"FINANZAS CON PROPÓSITO", sub:"Base bíblica",
-   logo:LOGO_FINANZAS, seeded:false,
+   logo:LOGO_FINANZAS, seeded:false, metricoolBlogId:"",   // ← blogId de esta marca en Metricool
    profile:{brand:"Finanzas con Propósito", role:"Workspace de contenido", handle:"finanzasconproposito",
             displayName:"Finanzas con Propósito", bio:"Base bíblica · Impacto eterno.",
             link:"", followers:"0", following:"0",
@@ -3590,6 +3629,165 @@ function downloadMedia(src, name){
   window.open(src, "_blank", "noopener");
 }
 
+/* ============================================================
+   PROGRAMAR EN METRICOOL
+   La app nunca habla con Metricool directamente: le pide a una Edge Function de
+   Supabase, que es la que guarda el token. Ver supabase/functions/programar/.
+   ============================================================ */
+
+/* Qué se manda de cada sección: el texto, las imágenes y cómo lo interpreta Instagram. */
+const PROG_MEDIA = {
+  posts:     it => [it.image],
+  reels:     it => [it.cover],
+  youtube:   it => [it.cover],
+  carousels: it => (it.slides || []).map(sl => sl.image),
+  urgente:   it => (it.slides || []).map(sl => sl.image),
+  stories:   it => [it.media]
+};
+const PROG_IG_TYPE = { posts:"POST", carousels:"POST", urgente:"POST", reels:"REEL", stories:"STORY" };
+const PROG_REDES = [
+  {id:"instagram", label:"Instagram"}, {id:"facebook", label:"Facebook"},
+  {id:"tiktok",    label:"TikTok"},    {id:"youtube",  label:"YouTube"},
+  {id:"linkedin",  label:"LinkedIn"},  {id:"twitter",  label:"X / Twitter"},
+  {id:"threads",   label:"Threads"},   {id:"pinterest",label:"Pinterest"}
+];
+const progPuede = coll => !!PROG_MEDIA[coll];
+
+/* Chip con lo ya programado, o el botón para programarlo. */
+function scheduleBtnHTML(coll, id){
+  if(!progPuede(coll)) return "";
+  const it = find(coll, id);
+  const p = it && it.programado;
+  if(p && p.fecha){
+    const cuando = String(p.fecha).replace("T", " ").slice(0, 16);
+    return `<button type="button" class="prog-chip on" data-schedule data-coll="${coll}" data-id="${id}" title="Ver o reprogramar">
+      <svg><use href="#i-clock"/></svg>${esc(cuando)} · ${esc((p.redes||[]).join(", "))}</button>`;
+  }
+  return `<button type="button" class="prog-chip lock-viewer" data-schedule data-coll="${coll}" data-id="${id}" title="Programar en Metricool">
+    <svg><use href="#i-cal"/></svg>Programar</button>`;
+}
+
+/* Fecha por defecto: mañana a las 9:00, que es un horario razonable y evita
+   proponer una hora que ya pasó. */
+function progFechaPorDefecto(){
+  const d = new Date(Date.now() + 86400000);
+  const dosDig = n => String(n).padStart(2, "0");
+  return { fecha: `${d.getFullYear()}-${dosDig(d.getMonth()+1)}-${dosDig(d.getDate())}`, hora: "09:00" };
+}
+
+function openScheduleModal(coll, id){
+  if(!guard()) return;
+  const it = find(coll, id); if(!it) return;
+
+  if(!metricoolEnabled()){
+    toast("Metricool todavía no está conectado. Falta pegar la URL de la Edge Function en METRICOOL_FN_URL.", "alert", true);
+    return;
+  }
+  const marca = brandById(activeBrandId);
+  if(!marca.metricoolBlogId){
+    toast(`Falta el blogId de Metricool para ${marca.label}. Se configura en BRANDS.`, "alert", true);
+    return;
+  }
+
+  const imagenes = (PROG_MEDIA[coll](it) || []).filter(Boolean);
+  const copy = (it.copy || "").trim();
+  const previo = it.programado || {};
+  const def = progFechaPorDefecto();
+  const marcadas = new Set(previo.redes || ["instagram"]);
+
+  const host = $("#modalHost");
+  host.innerHTML = `
+    <div class="modal-bg" data-close>
+      <div class="modal prog-modal" role="dialog" aria-modal="true">
+        <h3>Programar publicación</h3>
+        <p class="prog-titulo">${esc(it.title || "Sin título")}</p>
+
+        <div class="prog-aviso ${imagenes.length ? "" : "warn"}">
+          ${imagenes.length
+            ? `<svg><use href="#i-img"/></svg>${imagenes.length} imagen(es) · ${copy.length} caracteres de copy`
+            : `<svg><use href="#i-alert"/></svg>Esta pieza todavía no tiene imagen. Puedes programarla igual, pero saldrá sin media.`}
+        </div>
+        ${!copy ? `<div class="prog-aviso warn"><svg><use href="#i-alert"/></svg>No hay copy escrito: la publicación saldría sin texto.</div>` : ""}
+
+        <div class="prog-fila">
+          <label class="prog-campo"><span>Fecha</span>
+            <input type="date" id="progFecha" value="${esc(previo.fechaSolo || def.fecha)}"></label>
+          <label class="prog-campo"><span>Hora</span>
+            <input type="time" id="progHora" value="${esc(previo.horaSolo || def.hora)}"></label>
+        </div>
+        <div class="prog-zona">Zona horaria: ${esc(METRICOOL_TZ)}</div>
+
+        <div class="prog-redes-label">Dónde se publica</div>
+        <div class="prog-redes">
+          ${PROG_REDES.map(r => `<label class="prog-red ${marcadas.has(r.id) ? "on" : ""}">
+            <input type="checkbox" value="${r.id}" ${marcadas.has(r.id) ? "checked" : ""}>${esc(r.label)}</label>`).join("")}
+        </div>
+
+        <label class="prog-borrador"><input type="checkbox" id="progBorrador">
+          Dejarla como borrador en Metricool (no se publica sola)</label>
+
+        <div class="row">
+          <button class="btn btn-ghost" data-close>Cancelar</button>
+          <button class="btn btn-gold" id="progEnviar"><svg><use href="#i-cal"/></svg> Programar</button>
+        </div>
+      </div>
+    </div>`;
+  /* El fondo lleva data-close para poder cerrar al hacer clic fuera. Pero este diálogo
+     sí tiene controles dentro (fechas, casillas), y con closest() cualquier clic en
+     ellos encontraría el fondo al subir y cerraría el diálogo. Por eso se cierra solo
+     con un clic en el fondo mismo o en un botón marcado para cerrar. */
+  host.onclick = e => {
+    if(e.target.hasAttribute("data-close") || e.target.closest("button[data-close]")) host.innerHTML = "";
+  };
+  $$(".prog-red input").forEach(chk => {
+    chk.onchange = () => chk.closest(".prog-red").classList.toggle("on", chk.checked);
+  });
+
+  $("#progEnviar").onclick = async () => {
+    const fechaSolo = $("#progFecha").value, horaSolo = $("#progHora").value;
+    const redes = $$(".prog-red input:checked").map(c => c.value);
+    if(!fechaSolo || !horaSolo){ toast("Falta la fecha o la hora.", "alert", true); return; }
+    if(!redes.length){ toast("Elige al menos una red.", "alert", true); return; }
+
+    const btn = $("#progEnviar");
+    btn.disabled = true; btn.innerHTML = "Programando…";
+    try{
+      // La función solo atiende a quien tiene sesión: sin nube no hay a quién pedirle
+      // el permiso, y conviene decirlo claro en vez de fallar con un error técnico.
+      if(!sbClient) throw new Error("no hay conexión con la nube; inicia sesión para programar");
+      const { data: { session } } = await sbClient.auth.getSession();
+      if(!session) throw new Error("tu sesión expiró; vuelve a iniciar sesión");
+      const r = await fetch(METRICOOL_FN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` },
+        body: JSON.stringify({
+          blogId: marca.metricoolBlogId,
+          texto: copy,
+          media: imagenes,
+          redes,
+          fecha: `${fechaSolo}T${horaSolo}:00`,
+          zona: METRICOOL_TZ,
+          borrador: $("#progBorrador").checked,
+          tipoInstagram: PROG_IG_TYPE[coll]
+        })
+      });
+      const res = await r.json();
+      if(!r.ok || res.error) throw new Error(res.error || `Error ${r.status}`);
+
+      it.programado = { fecha:`${fechaSolo}T${horaSolo}`, fechaSolo, horaSolo, redes, id:res.id || null,
+                        borrador: $("#progBorrador").checked };
+      logActivity("cal", `<b>Programado:</b> ${esc(it.title || "Pieza")} para el ${esc(fechaSolo)} a las ${esc(horaSolo)} en ${esc(redes.join(", "))}.`);
+      host.innerHTML = "";
+      touch(); render();
+      toast($("#progBorrador")?.checked ? "Guardado como borrador en Metricool" : "Programado en Metricool ✓", "check");
+    }catch(e){
+      console.warn("No se pudo programar", e);
+      btn.disabled = false; btn.innerHTML = `<svg><use href="#i-cal"/></svg> Programar`;
+      toast(`No se pudo programar: ${e.message}`, "alert", true);
+    }
+  };
+}
+
 function openImageLightbox(src, title, kind){
   if(!src) return;
   const host = $("#modalHost");
@@ -3968,6 +4166,7 @@ function metaRowHTML(coll, item, {feed=true} = {}){
       ${pillar}${kind}
     </div>
     <div class="meta-checks">
+      ${scheduleBtnHTML(coll, item.id)}
       ${reviewCheckHTML(coll, item.id, !!item.reviewed)}
       ${publishCheckHTML(coll, item.id, !!item.published)}
       ${designApprovalHTML(coll, item.id, item.designApproved, item.designNote)}
@@ -4511,6 +4710,7 @@ function viewReels(q=""){
           <div class="reel-checklist">
             ${reviewCheckHTML("reels", r.id, !!r.reviewed, "Aprobado para publicar")}
             ${publishCheckHTML("reels", r.id, !!r.published, "Publicado")}
+            ${scheduleBtnHTML("reels", r.id)}
           </div>
           ${starsHTML("reels", r.id, r.rating, "Valoración (1 a 10)")}
         </div>
@@ -4566,6 +4766,7 @@ function viewYoutube(q=""){
           <div class="reel-checklist">
             ${reviewCheckHTML("youtube", r.id, !!r.reviewed, "Aprobado para publicar")}
             ${publishCheckHTML("youtube", r.id, !!r.published, "Publicado")}
+            ${scheduleBtnHTML("youtube", r.id)}
           </div>
           ${starsHTML("youtube", r.id, r.rating, "Valoración (1 a 10)")}
         </div>
@@ -5881,6 +6082,9 @@ document.addEventListener("click", async e => {
     downloadMedia(dlBtn.dataset.src, name);
     return;
   }
+
+  const prog = t.closest("[data-schedule]");
+  if(prog){ openScheduleModal(prog.dataset.coll, prog.dataset.id); return; }
 
   const zoomBtn = t.closest("[data-zoom]");
   if(zoomBtn){
