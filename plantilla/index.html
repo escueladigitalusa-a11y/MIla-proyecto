@@ -149,15 +149,36 @@ body::before{
 
 .nav{margin-top:22px;display:flex;flex-direction:column;gap:3px}
 .nav button{
-  display:flex;align-items:center;gap:13px;padding:11px 13px;border-radius:12px;
-  color:#43566C;font-size:14px;transition:.15s;text-align:left;width:100%
+  display:flex;align-items:center;gap:9px;padding:11px 13px;border-radius:12px;
+  color:#43566C;font-size:14px;transition:.15s;text-align:left;width:100%;min-width:0
 }
+.nav button > svg:first-child{margin-right:3px}
 .nav button:hover{background:#fff;color:var(--navy)}
 .nav button.active{background:linear-gradient(90deg,var(--gold-pale),#F7EEDC);color:var(--navy);font-weight:500}
 .nav button.active svg{color:var(--gold)}
 .nav svg{width:19px;height:19px;flex:none;color:#7D8FA3}
-.nav .count{margin-left:auto;font-size:11px;color:var(--muted);background:#fff;border:1px solid var(--line);
+.nav .count{margin-left:auto;flex:none;font-size:11px;color:var(--muted);background:#fff;border:1px solid var(--line);
   border-radius:20px;padding:1px 8px}
+
+/* Avisos del menú: textos por llenar y piezas sin imagen */
+.nav .flags{margin-left:auto;display:flex;align-items:center;gap:5px}
+.nav .flags + .count{margin-left:6px}
+.nav .flag{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:600;
+  border-radius:20px;padding:1px 6px;line-height:1.5;border:1px solid transparent}
+.nav .flag svg{width:12px;height:12px;flex:none}
+.nav .flag-text{color:#8A6A12;background:#FDF3DA;border-color:#F0DFAE}
+.nav .flag-img{color:var(--danger);background:#FDEDED;border-color:#F5CFCF}
+.nav .flag-img svg{color:var(--danger)}
+
+/* Mes activo, arriba de las secciones de contenido */
+.nav-month{display:flex;align-items:center;gap:6px;margin:14px 2px 5px;padding:0 4px}
+.nav-month .lbl{flex:1;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold);font-weight:600}
+.nav-month button{width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center;
+  border-radius:7px;border:1px solid var(--line);background:#fff;color:#7D8FA3}
+.nav-month button:hover:not(:disabled){border-color:var(--gold-soft);background:var(--gold-pale);color:var(--navy)}
+.nav-month button:disabled{opacity:.35;cursor:default}
+.nav-month button svg{width:13px;height:13px}
 
 .side-foot{margin-top:auto;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
 .side-foot button{display:flex;align-items:center;gap:12px;padding:9px 13px;border-radius:10px;font-size:13.5px;color:#4E6076}
@@ -936,6 +957,7 @@ body.needs-auth .app{display:none}
   <symbol id="i-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h8V3M8 21v-6h8v6"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
   <symbol id="i-img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.8"/><path d="M4 17l5-4 4 3 3-2.5 4 3.5"/></symbol>
+  <symbol id="i-img-broken" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 8.5V6.5a2.5 2.5 0 0 1 2.5-2.5H12"/><path d="M21 10v7.5a2.5 2.5 0 0 1-2.5 2.5H9"/><path d="M3 13v4.5A2.5 2.5 0 0 0 5.5 20h1"/><path d="M14.5 4h4A2.5 2.5 0 0 1 21 6.5"/><path d="M3.5 17l4-3.5 2.5 1.8"/><path d="M2.5 2.5l19 19"/></symbol>
   <symbol id="i-img-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="14" height="14" rx="2.5"/><path d="M3.5 15l4-3.5 3.5 2.5L14 12"/><path d="M19 14v6M22 17h-6"/></symbol>
   <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V5M8 9l4-4 4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></symbol>
   <symbol id="i-dots" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></symbol>
@@ -3909,12 +3931,88 @@ function cleanMonthIdx(){
   return Number(el.value);
 }
 
+/* Qué cuenta como "texto por llenar" en cada sección. Son los campos que de verdad
+   se escriben a mano en la tarjeta; si mañana se agrega uno, hay que sumarlo acá. */
+const NAV_TEXTO = {
+  reels:     it => [it.title, it.desarrollo, it.copy],
+  youtube:   it => [it.title, it.desarrollo, it.copy],
+  carousels: it => [it.title, it.copy].concat((it.slides || []).map(sl => sl.caption)),
+  posts:     it => [it.title, it.designText, it.copy],
+  stories:   it => [it.idea],
+  urgente:   it => [it.title, it.copy].concat((it.slides || []).map(sl => sl.caption))
+};
+/* Y cuál es "la imagen" de cada pieza. En carruseles y en Fin de mes se mira solo la
+   lámina 1, que es la portada: las demás se cargan después. */
+const NAV_IMAGEN = {
+  reels:     it => it.cover,
+  youtube:   it => it.cover,
+  carousels: it => ((it.slides || [])[0] || {}).image,
+  posts:     it => it.image,
+  stories:   it => it.media,
+  urgente:   it => ((it.slides || [])[0] || {}).image
+};
+
+/* Cuántos huecos tiene una sección EN EL MES QUE SE ESTÁ VIENDO.
+   textos  = campos vacíos, contados uno por uno.
+   sinImg  = piezas que todavía no tienen su imagen. */
+function navPendientes(coll){
+  const monthId = activeContentMonth()?.id;
+  const items = (S[coll] || []).filter(it => !usaMeses(coll) || it.monthId === monthId);
+  const vacio = v => !String(v == null ? "" : v).trim();
+  const campos = NAV_TEXTO[coll], imagen = NAV_IMAGEN[coll];
+  let textos = 0, sinImg = 0;
+  items.forEach(it => {
+    if(campos) textos += campos(it).filter(vacio).length;
+    if(imagen && vacio(imagen(it))) sinImg++;
+  });
+  return {textos, sinImg};
+}
+
+function navFlagsHTML(coll){
+  const {textos, sinImg} = navPendientes(coll);
+  let html = "";
+  if(textos) html += `<span class="flag flag-text" title="${textos} campo(s) de texto por llenar en este mes"><svg><use href="#i-alert"/></svg>${textos}</span>`;
+  if(sinImg) html += `<span class="flag flag-img" title="${sinImg} pieza(s) sin imagen en este mes"><svg><use href="#i-img-broken"/></svg>${sinImg}</span>`;
+  return html ? `<span class="flags">${html}</span>` : "";
+}
+
+/* Cabecera con el mes que se está viendo. Cambiarlo aquí lo cambia en todas las
+   secciones a la vez, que es como ya funcionaban los contadores. */
+function navMonthHTML(){
+  const meses = S.contentMonths || [];
+  if(meses.length < 1) return "";
+  const i = S.ui.contentMonth || 0;
+  const m = meses[i];
+  if(!m) return "";
+  return `<div class="nav-month">
+    <button type="button" data-nav-month="prev" ${i <= 0 ? "disabled" : ""} title="Mes anterior"><svg style="transform:rotate(180deg)"><use href="#i-right"/></svg></button>
+    <span class="lbl">${esc(m.label)}</span>
+    <button type="button" data-nav-month="next" ${i >= meses.length - 1 ? "disabled" : ""} title="Mes siguiente"><svg><use href="#i-right"/></svg></button>
+  </div>`;
+}
+
 function renderNav(){
-  $("#nav").innerHTML = NAV.map(n => `
+  // el bloque de mes se inserta justo antes de la primera sección con contenido
+  let puestoElMes = false;
+  $("#nav").innerHTML = NAV.map(n => {
+    let antes = "";
+    if(n.coll && !puestoElMes){ antes = navMonthHTML(); puestoElMes = true; }
+    return antes + `
     <button class="${S.ui.view === n.id ? "active" : ""}" data-nav="${n.id}">
       <svg><use href="#${n.icon}"/></svg>${n.label}
+      ${n.coll ? navFlagsHTML(n.coll) : ""}
       ${n.coll ? `<span class="count">${navReadyLabel(n.coll)}</span>` : ""}
-    </button>`).join("");
+    </button>`;
+  }).join("");
+}
+
+/* Mover el mes desde el menú. */
+function navMonthMove(dir){
+  const meses = S.contentMonths || [];
+  const i = (S.ui.contentMonth || 0) + (dir === "next" ? 1 : -1);
+  if(i < 0 || i >= meses.length) return;
+  S.ui.contentMonth = i;
+  render();
 }
 
 function render(){
@@ -4115,6 +4213,10 @@ document.addEventListener("click", async e => {
   const t = e.target;
 
   // navegación
+  // mes activo desde el menú lateral
+  const navMes = t.closest("[data-nav-month]");
+  if(navMes){ e.preventDefault(); navMonthMove(navMes.dataset.navMonth); return; }
+
   const nav = t.closest("[data-nav]");
   if(nav){ e.preventDefault(); go(nav.dataset.nav); return; }
 
