@@ -1112,6 +1112,15 @@ const CLIENTE_BAJADA = "RUBRO O ESLOGAN";
    contadores del menú y de cada pestaña de mes, pero no impide crear de más. */
 const CONTENT_QUOTA = { posts:8, reels:12, carousels:4, stories:30, youtube:4 };
 
+/* Cupo mensual de la marca que se está viendo. Cada marca puede traer el suyo en
+   BRANDS (campo quota); si no lo trae, vale el general de arriba. Así conviven marcas
+   con ritmos distintos dentro de la misma app. */
+function cuotaDe(coll, brandId){
+  const b = brandById(brandId || activeBrandId);
+  return (b.quota && b.quota[coll] !== undefined) ? b.quota[coll] : CONTENT_QUOTA[coll];
+}
+
+
 /* Secciones que viven en el calendario de meses de contenido. Tener cupo mensual es
    aparte: "Fin de mes" usa los meses pero no tiene un número fijo de piezas, así que su
    pestaña muestra cuántas lleva y no un x/y. */
@@ -1279,6 +1288,8 @@ async function uploadBlobToDrive(token, blob, filename, asVideo){
 const BRANDS = [
   {id:"principal", label:"Marca principal", name:"NOMBRE DEL CLIENTE", sub:"Rubro o eslogan",
    logo:LOGO_GOLD, seeded:true, metricoolBlogId:"",   // ← blogId de esta marca en Metricool
+   /* Cupo propio de esta marca. Si se quita, vale el general de CONTENT_QUOTA. */
+   quota:{posts:8, reels:12, carousels:4, stories:30, youtube:4},
    profile:{brand:"Nombre del cliente", role:"Workspace de contenido", handle:"usuario",
             displayName:"Nombre visible", bio:"", link:"", followers:"0", following:"0",
             tagline:"Plan. Create. Captivate."}}
@@ -1374,6 +1385,7 @@ function seed(brandId = activeBrandId){
     {id:uid("cmonth"), label:"Mes 3"}
   ];
   const monthForIndex = (i, quota) => cMonths[Math.min(Math.floor(i / quota), cMonths.length - 1)].id;
+  const Q = coll => cuotaDe(coll, B.id);
 
   /* Cada marca arranca con su propio contenido ya desarrollado (ver BRAND_CONTENT);
      una marca sin contenido definido nace limpia, con las mismas secciones vacías. */
@@ -1391,25 +1403,25 @@ function seed(brandId = activeBrandId){
     posts: only("posts").map((p, i) => Object.assign({
       id:uid("post"), order:i, image:"", ratio:"4:5", date:"", links:"", collapsed:false,
       cta:"", extras:"", hashtags:"", note:"", reviewed:false, designApproved:null, designNote:"",
-      monthId: monthForIndex(i, CONTENT_QUOTA.posts)
+      monthId: monthForIndex(i, Q("posts"))
     }, p, {createdAt: at(p.days), published: p.status === "published"})),
 
     reels: only("reels").map((r, i) => Object.assign({
       id:uid("reel"), order:i, cover:"", video:"", collapsed:false,
       notes:"", hashtags:"", note:"", reviewed:false,
-      monthId: monthForIndex(i, CONTENT_QUOTA.reels)
+      monthId: monthForIndex(i, Q("reels"))
     }, r, {createdAt: at(r.days), published: r.status === "published"})),
 
     youtube: only("youtube").map((r, i) => Object.assign({
       id:uid("yt"), order:i, cover:"", video:"", collapsed:false,
       notes:"", hashtags:"", note:"", reviewed:false,
-      monthId: monthForIndex(i, CONTENT_QUOTA.youtube)
+      monthId: monthForIndex(i, Q("youtube"))
     }, r, {createdAt: at(r.days), published: r.status === "published"})),
 
     carousels: only("carousels").map((c, i) => Object.assign({
       id:uid("car"), order:i, collapsed:false, copy:"", hashtags:"", note:"", reviewed:false,
       designApproved:null, designNote:"",
-      monthId: monthForIndex(i, CONTENT_QUOTA.carousels)
+      monthId: monthForIndex(i, Q("carousels"))
     }, c, {
       createdAt: at(c.days),
       published: c.status === "published",
@@ -1419,7 +1431,7 @@ function seed(brandId = activeBrandId){
     stories: only("stories").map((s, i) => Object.assign({
       id:uid("story"), order:i, media:"", rating:0, idea:"", followup:"", note:"", reviewed:false,
       designApproved:null, designNote:"",
-      monthId: monthForIndex(i, CONTENT_QUOTA.stories)
+      monthId: monthForIndex(i, Q("stories"))
     }, s, {createdAt: at(s.days), published: s.status === "published"})),
 
     /* Fin de mes: las piezas del cierre de cada mes. Usan el calendario de meses como
@@ -1461,7 +1473,7 @@ function mergeIntoSeed(data, brandId = activeBrandId){
   });
 
   migrateFeedMonths(merged);
-  migrateContentMonths(merged);
+  migrateContentMonths(merged, brandId);
   migrateDriveUrls(merged);
   migratePubSort(merged);
   // el rol que haya traído el dato guardado/de la nube no manda: siempre gana el rol
@@ -1476,13 +1488,13 @@ function mergeIntoSeed(data, brandId = activeBrandId){
    guardó antes de que existiera esta función, o porque su mes fue borrado) quede
    asignada — en el mismo orden en que ya estaba, repartida según el cupo mensual real —
    sin tocar el monthId de ninguna pieza que ya tenga uno válido. */
-function migrateContentMonths(state){
+function migrateContentMonths(state, brandId){
   if(!Array.isArray(state.contentMonths) || !state.contentMonths.length){
     state.contentMonths = [{id:uid("cmonth"), label:"Mes 1"}];
   }
   const validIds = new Set(state.contentMonths.map(m => m.id));
   MONTHLY_COLLS.forEach(coll => {
-    const quota = CONTENT_QUOTA[coll] || 10;
+    const quota = cuotaDe(coll, brandId || state.brandId) || 10;
     (state[coll] || []).forEach((it, i) => {
       if(!it.monthId || !validIds.has(it.monthId)){
         const idx = Math.min(Math.floor(i / quota), state.contentMonths.length - 1);
@@ -2468,7 +2480,7 @@ function contentMonthCount(coll, monthId){
   return (S[coll] || []).filter(x => x.monthId === monthId).length;
 }
 function contentMonthsTabsHTML(coll){
-  const quota = CONTENT_QUOTA[coll];
+  const quota = cuotaDe(coll);
   return `<div class="feed-months">
     ${S.contentMonths.map((m, mi) => {
       const active = mi === S.ui.contentMonth;
@@ -3766,7 +3778,7 @@ function matches(x, q){
    mensual real de ese formato — ej. "3/30" en Historias. Ya no es el total de piezas
    que existen, sino el avance real del mes que se está viendo. */
 function navReadyLabel(coll){
-  const quota = CONTENT_QUOTA[coll];
+  const quota = cuotaDe(coll);
   if(!quota && !usaMeses(coll)) return String(S[coll].length);
   const monthId = activeContentMonth()?.id;
   const delMes = (S[coll] || []).filter(it => it.monthId === monthId);
