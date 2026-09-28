@@ -5305,7 +5305,7 @@ function mergeIntoSeed(data, brandId = activeBrandId){
      existiera: se carga UNA sola vez y solo si no hay ninguna pieza, así que nunca
      pisa trabajo hecho. La marca queda marcada para no volver a hacerlo si algún día
      se vacía a propósito. */
-  const CONTENT_STAMP = { finanzas: "bloque-01-tomas", realestate: "copys-m1",
+  const CONTENT_STAMP = { finanzas: "bloque-01-tomas", realestate: "copys-m1-b",
                           escapadita: "mes-01-v2" };
   const stamp = CONTENT_STAMP[brandId];
   if(stamp && merged.contentStamp !== stamp){
@@ -5322,13 +5322,25 @@ function mergeIntoSeed(data, brandId = activeBrandId){
          Si la clienta escribió algo suyo, no se toca. */
       const fuente = {posts: fresh.posts, reels: fresh.reels, carousels: fresh.carousels,
                       youtube: fresh.youtube};
+      /* Se reconoce la pieza por su número; y si perdió el número en el camino, por
+         su título, que es lo único que queda para identificarla. */
+      const clave = t => (t || "").trim().toLowerCase();
       const refrescar = (coll, campo, previos) => {
-        const nuevos = new Map(fuente[coll].map(x => [x.num, x[campo]]));
+        const porNum = new Map(fuente[coll].map(x => [String(x.num), x[campo]]));
+        const porTitulo = new Map(fuente[coll].filter(x => x.title)
+                                              .map(x => [clave(x.title), x[campo]]));
+        const previoDe = it => {
+          if(previos[it.num] !== undefined) return previos[it.num];
+          const gemela = fuente[coll].find(x => clave(x.title) === clave(it.title));
+          return gemela && previos[gemela.num] !== undefined ? previos[gemela.num] : "";
+        };
         (merged[coll] || []).forEach(it => {
-          if(!nuevos.has(it.num)) return;
+          const nuevo = porNum.has(String(it.num)) ? porNum.get(String(it.num))
+                                                   : porTitulo.get(clave(it.title));
+          if(nuevo === undefined) return;
           const actual = (it[campo] || "").trim();
-          const entregado = (previos[it.num] || "").trim();
-          if(!actual || actual === entregado) it[campo] = nuevos.get(it.num);
+          const entregado = (previoDe(it) || "").trim();
+          if(!actual || actual === entregado) it[campo] = nuevo;
         });
       };
       Object.keys(fuente).forEach(coll => refrescar(coll, "copy",
