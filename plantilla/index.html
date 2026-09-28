@@ -3719,6 +3719,16 @@ function viewSettings(){
       </div>
 
       <div class="card">
+        <div class="card-head"><h3>Textos del contenido</h3></div>
+        <div class="card-body">
+          <div class="kv"><div><b>Rellenar lo que falte</b>
+            <small>Llena con el contenido que trae la app cualquier campo que esté vacío:
+            guiones, copys, textos del arte y láminas. Lo que ya tiene texto no se toca.</small></div>
+            <button class="btn btn-gold btn-sm lock-viewer" data-action="rellenar">Rellenar</button></div>
+        </div>
+      </div>
+
+      <div class="card">
         <div class="card-head"><h3>Limpieza por mes</h3></div>
         <div class="card-body">
           <div class="kv"><div><b>Mes sobre el que se trabaja</b><small>Todo lo de abajo se aplica solo a lo que elijas acá.</small></div>
@@ -3808,6 +3818,67 @@ function navReadyLabel(coll){
   if(!quota) return String(delMes.length);
   return `${delMes.filter(it => it.reviewed).length}/${quota}`;
 }
+/* ============================================================
+   RELLENAR LO QUE FALTE
+   La app trae contenido desarrollado, pero solo llega a una pieza cuando esa pieza
+   está vacía o sigue igual a como se entregó, y eso se comprueba al abrir la página.
+   Si una pieza perdió su número, o si el navegador seguía con una versión vieja
+   guardada, el hueco se queda. Este botón hace esa misma comprobación a mano, cuando
+   la clienta quiera.
+   Solo LLENA huecos: nunca reemplaza algo que ya tenga texto.
+   ============================================================ */
+const RELLENAR_CAMPOS = {
+  reels:     ["title","desarrollo","cta","copy"],
+  youtube:   ["title","desarrollo","copy"],
+  posts:     ["title","designText","copy"],
+  carousels: ["title","hook","cta","copy"],
+  stories:   ["idea","format"]
+};
+
+function rellenarHuecos(){
+  if(!guard()) return;
+  const base = seed(activeBrandId);
+  const clave = t => (t || "").trim().toLowerCase();
+  const vacio = v => !String(v == null ? "" : v).trim();
+  let campos = 0, laminas = 0, piezas = 0;
+
+  Object.keys(RELLENAR_CAMPOS).forEach(coll => {
+    const origen = base[coll] || [];
+    if(!origen.length) return;
+    const porNum = new Map(origen.filter(x => x.num != null).map(x => [String(x.num), x]));
+    const porTitulo = new Map(origen.filter(x => x.title).map(x => [clave(x.title), x]));
+    (S[coll] || []).forEach(it => {
+      const fuente = porNum.get(String(it.num)) || porTitulo.get(clave(it.title));
+      if(!fuente) return;
+      let tocada = false;
+      RELLENAR_CAMPOS[coll].forEach(c => {
+        if(vacio(it[c]) && !vacio(fuente[c])){ it[c] = fuente[c]; campos++; tocada = true; }
+      });
+      // las láminas se llenan una por una, respetando la imagen que ya tenga cada una
+      if(Array.isArray(it.slides) && Array.isArray(fuente.slides)){
+        fuente.slides.forEach((sl, i) => {
+          const texto = typeof sl === "string" ? sl : (sl && sl.caption) || "";
+          if(it.slides[i] && vacio(it.slides[i].caption) && !vacio(texto)){
+            it.slides[i].caption = texto; laminas++; tocada = true;
+          }
+        });
+      }
+      if(tocada) piezas++;
+    });
+  });
+
+  if(!campos && !laminas){
+    toast("No hay huecos que llenar: todo el contenido de esta marca ya tiene su texto.", "check");
+    return;
+  }
+  const partes = [];
+  if(campos)  partes.push(`${campos} campo(s)`);
+  if(laminas) partes.push(`${laminas} lámina(s)`);
+  logActivity("ok", `<b>Textos rellenados:</b> ${partes.join(" y ")} en ${piezas} pieza(s).`);
+  touch(); persist(true); render();
+  toast(`Listo: ${partes.join(" y ")} en ${piezas} pieza(s)`, "check");
+}
+
 /* ---------- Limpieza masiva por mes (Settings) ----------
    Cada acción trabaja sobre un solo mes de contenido o sobre todos, según lo que se
    elija en el selector de la tarjeta. Los campos de cada sección salen de lo que de
@@ -4213,6 +4284,8 @@ document.addEventListener("click", async e => {
   const t = e.target;
 
   // navegación
+  if(t.closest('[data-action="rellenar"]')){ e.preventDefault(); rellenarHuecos(); return; }
+
   // mes activo desde el menú lateral
   const navMes = t.closest("[data-nav-month]");
   if(navMes){ e.preventDefault(); navMonthMove(navMes.dataset.navMonth); return; }
