@@ -180,6 +180,9 @@ body::before{
 .nav-month button:disabled{opacity:.35;cursor:default}
 .nav-month button svg{width:13px;height:13px}
 
+.auth-offline{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.auth-offline .auth-hint b{color:var(--danger)}
+
 .side-foot{margin-top:auto;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
 .side-foot button{display:flex;align-items:center;gap:12px;padding:9px 13px;border-radius:10px;font-size:13.5px;color:#4E6076}
 .side-foot button:hover{background:#fff}
@@ -1017,6 +1020,19 @@ body.needs-auth .app{display:none}
       algo como revisado o publicado.</p>
     <div class="auth-error" id="authGuestError"></div>
     <p class="auth-hint">¿No tienes cuenta? Pídele a tu administrador que te invite desde Supabase.</p>
+    <!-- Solo aparece cuando la nube no responde: deja entrar con la última copia
+         guardada en este mismo navegador, para no quedarse afuera del trabajo propio. -->
+    <div id="authOffline" class="auth-offline" hidden>
+      <p class="auth-hint"><b>No se pudo contactar con la nube.</b> Puede ser que el proyecto de Supabase
+        esté en pausa, o que no haya conexión. Mientras tanto puedes entrar con la última copia guardada
+        en este navegador.</p>
+      <button type="button" class="auth-guest-btn" id="authLocal">
+        <svg width="17" height="17"><use href="#i-save"/></svg>
+        Entrar con la copia de este navegador
+      </button>
+      <p class="auth-hint">Lo que edites ahí se guarda solo aquí. Cuando la nube vuelva, recarga la
+        página e inicia sesión para sincronizarlo.</p>
+    </div>
   </div>
 </div>
 
@@ -6028,6 +6044,38 @@ async function onAuthed(session){
   subscribeRealtime();
 }
 
+/* ¿Responde el servidor de Supabase? Si no, se ofrece la copia local. Es una llamada
+   suelta y barata: solo sirve para distinguir "tu sesión venció" de "la nube no está". */
+async function comprobarNube(){
+  try{
+    const r = await fetch(SUPABASE_URL + "/auth/v1/health", {
+      headers: { apikey: SUPABASE_ANON_KEY }, cache: "no-store"
+    });
+    if(!r.ok) throw new Error("HTTP " + r.status);
+  }catch(e){
+    console.warn("La nube no responde", e);
+    mostrarEntradaLocal();
+  }
+}
+
+/* Muestra el botón de rescate, solo si de verdad hay algo guardado en este navegador. */
+function mostrarEntradaLocal(){
+  let hayCopia = false;
+  try{ hayCopia = !!localStorage.getItem(KEY); }catch(e){}
+  const caja = $("#authOffline");
+  if(caja && hayCopia) caja.hidden = false;
+}
+
+/* Entrar con la copia local: sin nube, sin sincronización y avisándolo en pantalla. */
+function entrarConCopiaLocal(){
+  S = load();
+  historyReset();
+  cloudSyncOK = false;
+  hideAuthGate();
+  render();
+  toast("Modo sin conexión: estás viendo la última copia guardada en este navegador. Los cambios no se sincronizan.", "alert", true);
+}
+
 async function boot(){
   initGoogleDrive();
   if(!sbClient){
@@ -6036,11 +6084,25 @@ async function boot(){
     toast("No se pudo cargar Supabase: trabajando solo con la copia local de este navegador.", "alert", true);
     return;
   }
-  const { data: { session } } = await sbClient.auth.getSession();
+  /* Si Supabase no contesta —proyecto en pausa, sin internet, dominio bloqueado—
+     antes la página se quedaba muerta en la pantalla de acceso. Ahora se avisa de
+     qué pasó y se ofrece entrar con la copia local. */
+  let session = null;
+  try{
+    ({ data: { session } } = await sbClient.auth.getSession());
+  }catch(e){
+    console.warn("No se pudo contactar con Supabase", e);
+    showAuthGate("No se pudo contactar con la nube. Revisa tu conexión o si el proyecto está en pausa.");
+    mostrarEntradaLocal();
+    return;
+  }
   if(session){
     await onAuthed(session);
   }else{
     showAuthGate();
+    /* Se comprueba aparte si el servidor responde: la sesión puede estar
+       simplemente vencida, y eso no es lo mismo que la nube caída. */
+    comprobarNube();
   }
   sbClient.auth.onAuthStateChange((event, sess) => {
     if(event === "SIGNED_IN" && sess){ onAuthed(sess); }
@@ -8563,6 +8625,7 @@ function importJSON(){
 document.addEventListener("click", async e => {
   const t = e.target;
 
+  if(t.closest("#authLocal")){ e.preventDefault(); entrarConCopiaLocal(); return; }
   if(t.closest('[data-action="rellenar"]')){ e.preventDefault(); rellenarHuecos(); return; }
 
   // mes activo desde el menú lateral
