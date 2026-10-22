@@ -104,14 +104,10 @@ for s_ in sc:
     for k_ in ['tMk','tIn','t8']:
         if k_ in s_:
             for i in range(9): add(s_[k_]-.15+i*.045,tick(1400+(i%4)*220),.35)
-prev=None
-for si,s in enumerate(sc):
-    if s['kind']=='cards':
-        if not(prev and prev['kind']=='cards' and prev['sec']==s['sec']): add(s['start']+.5,boing(),.7)
-    if s['kind']=='break': add(s['start']+.63,boing(),.75)
-    if s['kind'] in('title','final'):
-        for i in range(3): add(s['start']+.5+i*.18,boing(),.4)
-    prev=s
+for s_ in sc:
+    if s_['kind']=='break': add(s_['start']+.55,pop(420),.8); add(s_['tIn']+.25,pop(760),.6)
+    if s_['kind']=='title':
+        for i in range(6): add(s_['tMk']-.05+i*.09,pop(600+i*50),.45)
 kw=TL['kw']+[dict(k=c['k'],t=c['t']) for s in sc for c in s.get('chips',[])]
 for k in kw:
     if all(abs(k['t']-p)>.25 for p in pops): add(k['t']-.05,tick(2400),.55)
