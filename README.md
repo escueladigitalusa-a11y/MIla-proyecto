@@ -1,18 +1,27 @@
-# Mila Meekins Real Estate — Content Studio
+# Content Studio — Mila Meekins
 
-Página HTML **única e interactiva** (`index.html`) para planificar el contenido de la marca:
-Dashboard, Reels, Carruseles, Posts, Historias, **Feed Preview** y **Stories
-Preview** en tiempo real.
-No requiere build ni framework — un solo archivo — pero sí requiere iniciar sesión: el
-workspace vive en **Supabase** (base de datos + autenticación) y se comparte en tiempo real
-entre todo el equipo y la clienta.
+App de **un solo archivo** (`index.html`) para planificar el contenido de redes sociales:
+Dashboard, Reels, YouTube, Carruseles, Posts, Historias, Fin de mes y **Feed Preview**.
+Sin build ni framework. El workspace vive en **Supabase** y se comparte en tiempo real
+entre el equipo y la clienta.
 
-Viene precargada con el **contenido ya desarrollado** de la marca — no solo las ideas, sino
-las piezas listas para producir: 17 reels con guion de producción por tomas, 10 posts con titular y
-caption terminados, 10 carruseles slide-by-slide y 44 historias con el texto exacto del
-sticker. Todo conserva su número original del Banco de Ideas y su pilar de marca
-(Educación, Patrimonio, Servicio, Fe y Relaciones/Hogar), y usa el **logo real** del Brand
-Board (monograma "M" dorado/navy). Solo falta que el equipo cargue las fotos y videos.
+En producción: https://escueladigitalusa-a11y.github.io/MIla-proyecto/
+
+Maneja **tres marcas** desde un selector arriba del menú, cada una con su contenido, su
+logo y su cupo mensual:
+
+| Marca | Contenido cargado |
+|---|---|
+| **Mila Meekins Real Estate** | 3 meses completos · 41 reels · 12 videos · 17 carruseles · 25 posts · 109 historias |
+| **Una escapadita con Mila** | Mes 1 · 4 reels · 4 videos · 8 carruseles · 8 posts · 25 historias |
+| **Finanzas con Propósito** | Mes 1 · 12 reels · 4 carruseles · 8 posts · 30 historias |
+
+Las piezas vienen **listas para producir**: guiones toma por toma, captions terminados,
+carruseles lámina por lámina e historias con su texto. Solo falta cargar fotos y videos.
+
+> **¿Vienes a trabajar en el código?** Lee [`CLAUDE.md`](CLAUDE.md) primero. Explica la
+> arquitectura, las reglas de contenido que no se negocian y —lo más importante— cómo
+> llega el contenido nuevo sin pisar lo que la clienta ya editó.
 
 ## Cómo usarla
 
@@ -219,22 +228,13 @@ autorización.
   para que, ordenados alfabéticamente en Drive, queden listos para publicar en el orden
   correcto de un vistazo.
 - Solo toca la **portada** de cada pieza (la que se ve en el Feed Preview), no cada slide
-  de un carrusel ni las historias del Stories Preview. Las piezas que todavía no están
+  de un carrusel. Las piezas que todavía no están
   colocadas en ningún espacio, o cuya imagen vive solo comprimida en el dato (nunca se
   subió a Drive), no se tocan — el aviso final dice cuántas se organizaron y cuántas se
   saltaron, y por qué.
 - Es una acción manual: se corre cuando la pidas, no automáticamente en cada cambio. Se
   puede correr varias veces sin problema — si un archivo ya está en su carpeta correcta,
   simplemente se vuelve a mover a la misma carpeta y renombrar con el mismo nombre.
-
-### Vista previa ampliada en el Feed Preview y el Stories Preview
-- Cada celda ocupada que tiene imagen trae, al pasar el cursor por encima, un botón
-  redondo de ampliar (⤢) centrado sobre la miniatura. Al hacer clic se abre esa imagen
-  en grande, sobre un fondo oscuro, sin salir de la cuadrícula ni navegar a editar la
-  pieza.
-- Clic en el fondo oscuro o en la "×" cierra la vista previa; clic en la imagen misma no
-  hace nada (para no cerrarla sin querer). El resto de la celda sigue funcionando igual:
-  clic fuera del botón de ampliar todavía lleva a editar esa pieza.
 
 ### Check de "Publicado"
 - Además del check de revisión, todos los formatos (Posts, Reels, Carruseles e Historias)
@@ -263,7 +263,7 @@ autorización.
   Cierra con las cuatro impresiones que se busca dejar en quien descubre el perfil.
 
 ### Reels: tarjeta mínima + checklist + portada
-- Cada uno de los 17 reels se edita con solo 3 campos de texto: **Título**, **Tomas —
+- Cada reel se edita con solo 3 campos de texto: **Título**, **Tomas —
   Desarrollo y acción** (un espacio grande único para el guion completo) y **Copy**.
   Sin miniatura de detalle, sin fecha, sin pilar — el desglose que tenía antes se retiró
   a pedido explícito.
@@ -275,24 +275,7 @@ autorización.
   la app, el texto no cambia según el estado, solo el color) y **Valoración (1 a 10)**
   con el mismo medidor de estrellas que usan Posts y Carruseles.
 
-### Stories Preview: la misma idea del Feed Preview, pero para historias
-- Vive en su propia sección (pestaña **Stories Preview** en el menú, o el botón
-  **Preview** desde Historias) y sigue el mismo patrón que el Feed Preview: **meses en
-  pestañas**, uno visible a la vez, cada uno con **30 espacios fijos** (uno por
-  día aproximado del mes) que arrancan vacíos.
-- Clic en un espacio vacío abre directo la lista de historias (sin paso de "elegir
-  formato", porque aquí solo hay un formato) con su miniatura de media y su texto; al
-  elegir una, su media se coloca sola. Una historia no puede ocupar dos espacios a la
-  vez, ni en el mismo mes ni en otro — el picker avisa dónde ya está colocada.
-- **"Nuevo mes"** crea otra pestaña; cada pestaña es renombrable y, si hay más de una,
-  eliminable (con aviso si tiene espacios ocupados — no se puede eliminar la última).
-- Una historia colocada se puede **mover a otro mes** con "Mover a…", arrastrar para
-  reordenar dentro del mismo mes, o "Vaciar este mes" para dejarlo en blanco de nuevo.
-- Cada tarjeta de Historias muestra el mismo chip clicable **"En Stories Preview · Mes X
-  #N"** que salta directo a esa posición, igual que en Posts/Reels/Carruseles con el
-  Feed Preview.
-
-### 17 reels con guion de producción con avatar
+### Reels con guion de producción toma por toma
 - La sección Reels pasó de 15 a **17 espacios**, para reflejar exactamente el
   documento final de guiones ("Guiones Reels - Avatar Mila"), que organiza 17 piezas
   numeradas — incluye los 7 guiones originales, 8 guiones nuevos y 2 versiones
@@ -321,11 +304,6 @@ autorización.
   (Post 21, Carruseles 30 y 50, Historias 42, 46 y 89), datos que exigen **verificar fuente
   y fecha** (Post 12, Historia 37), el recordatorio de **remitir a un profesional certificado**
   en temas migratorios o legales (Carrusel 3) y el **tono testimonial** en contenido de fe.
-
-### Hashtags
-- Cada formato tiene su campo de hashtags propio, y debajo aparece siempre la **base de
-  marca** como recordatorio (editable desde *Settings*), con la indicación de variar 2–3 por
-  publicación en lugar de repetir siempre los mismos.
 
 ### Medidor de receptividad (1–10 con estrellas)
 - Post, Reel y Carrusel tienen un medidor de **Receptividad del público** de 1 a
