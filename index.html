@@ -559,7 +559,9 @@ body::before{
 .status-review{color:#8C6A34;background-color:#FBF3E4}
 .status-scheduled{color:#2E5E93;background-color:#EEF4FB}
 .status-published{color:#2F7D5B;background-color:#EDF6F1}
-.month-reassign{color:var(--navy);background-color:var(--gold-pale);max-width:110px}
+.month-reassign{color:var(--navy);background-color:var(--gold-pale);max-width:132px;
+  border-color:var(--gold-soft);font-weight:500}
+.month-reassign:hover{background-color:#F7EEDC;border-color:var(--gold)}
 
 /* Dashboard */
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;margin-bottom:26px}
@@ -6826,8 +6828,53 @@ function deleteContentMonth(index){
     }, "Eliminar");
 }
 /* Selector compacto de mes para reasignar una pieza sin salir de su tarjeta. */
+/* Mover una pieza a otro mes.
+   Pasa seguido: algo que estaba planeado para un mes termina publicándose en otro.
+   Mover la pieza tiene que mover TODO lo suyo — también su lugar en el Feed Preview —
+   y decirlo en pantalla, porque si no la tarjeta desaparece de la vista y parece
+   que se borró. */
+function moverPiezaDeMes(coll, id, monthId){
+  const it = find(coll, id);
+  const destino = (S.contentMonths || []).find(m => m.id === monthId);
+  if(!it || !destino || it.monthId === monthId) return;
+  const origen = (S.contentMonths || []).find(m => m.id === it.monthId);
+  it.monthId = monthId;
+
+  /* Su espacio en el Feed Preview se va con ella, al mes equivalente de la grilla.
+     Si ese mes del feed no existe o está lleno, la pieza queda sin ubicación y se
+     avisa: es mejor que dejarla colocada en un mes al que ya no pertenece. */
+  let nota = "";
+  const loc = feedLocationOf(coll, id);
+  if(loc){
+    const idxDestino = S.contentMonths.indexOf(destino);
+    const mesFeed = S.feedMonths[idxDestino];
+    if(!mesFeed){
+      S.feedMonths[loc.month].slots[loc.slot] = null;
+      nota = " · se soltó su espacio del Feed";
+    }else if(mesFeed === S.feedMonths[loc.month]){
+      // ya estaba en el mes correcto del feed: no se toca
+    }else{
+      const libre = mesFeed.slots.findIndex(sl => !sl);
+      if(libre < 0){
+        S.feedMonths[loc.month].slots[loc.slot] = null;
+        nota = ` · "${esc(mesFeed.label)}" está lleno en el Feed, quedó sin espacio`;
+      }else{
+        const pieza = S.feedMonths[loc.month].slots[loc.slot];
+        S.feedMonths[loc.month].slots[loc.slot] = null;
+        mesFeed.slots[libre] = pieza;
+        nota = ` · en el Feed pasó al espacio #${feedPubOrder(libre, monthSlotCount(idxDestino))}`;
+      }
+    }
+  }
+
+  const nombre = it.title || it.name || it.idea || "La pieza";
+  logActivity("cal", `<b>${esc(nombre.slice(0,60))}:</b> movida de ${esc(origen?.label || "su mes")} a ${esc(destino.label)}.${nota}`);
+  touch(); render();
+  toast(`Movido a ${destino.label}${nota}`, "cal");
+}
+
 function contentMonthSelectHTML(coll, id, monthId){
-  return `<select class="status-select month-reassign lock-viewer" title="Mes de contenido" data-content-month-reassign data-coll="${coll}" data-id="${id}">
+  return `<select class="status-select month-reassign lock-viewer" title="Mover esta pieza a otro mes" data-content-month-reassign data-coll="${coll}" data-id="${id}">
     ${S.contentMonths.map(m => `<option value="${m.id}" ${m.id===monthId?"selected":""}>${esc(m.label)}</option>`).join("")}
   </select>`;
 }
@@ -9014,8 +9061,7 @@ document.addEventListener("change", e => {
   const cmr = e.target.closest("[data-content-month-reassign]");
   if(cmr){
     if(!canEdit()){ render(); return; }
-    const it = find(cmr.dataset.coll, cmr.dataset.id);
-    if(it){ it.monthId = e.target.value; touch(); render(); }
+    moverPiezaDeMes(cmr.dataset.coll, cmr.dataset.id, e.target.value);
     return;
   }
   const mv = e.target.closest("[data-move-slot]");
