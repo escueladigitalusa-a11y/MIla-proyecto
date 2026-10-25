@@ -183,6 +183,20 @@ body::before{
 .auth-offline{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
 .auth-offline .auth-hint b{color:var(--danger)}
 
+/* Botón de mover de mes y su lista */
+.mover-chip{border-color:var(--gold-soft);background:var(--gold-pale);color:var(--navy)}
+.mover-chip:hover{background:#F7EEDC;border-color:var(--gold)}
+.mover-modal{max-width:420px;text-align:left}
+.mover-modal > p{color:var(--muted);font-size:13px;margin:-4px 0 14px}
+.mover-lista{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.mover-op{display:flex;align-items:center;gap:9px;width:100%;padding:12px 14px;border-radius:12px;
+  border:1px solid var(--line);background:#fff;font-size:14.5px;color:var(--navy);text-align:left;transition:.15s}
+button.mover-op:hover{border-color:var(--gold);background:var(--gold-pale)}
+.mover-op.actual{background:var(--cream-2);color:var(--muted);border-style:dashed}
+.mover-op.actual svg{width:15px;height:15px;color:var(--ok);flex:none}
+.mover-op span{margin-left:auto;font-size:11.5px;color:var(--muted)}
+.mover-nota{font-size:12px;color:var(--muted);margin:0 0 14px}
+
 .side-foot{margin-top:auto;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
 .side-foot button{display:flex;align-items:center;gap:12px;padding:9px 13px;border-radius:10px;font-size:13.5px;color:#4E6076}
 .side-foot button:hover{background:#fff}
@@ -559,9 +573,6 @@ body::before{
 .status-review{color:#8C6A34;background-color:#FBF3E4}
 .status-scheduled{color:#2E5E93;background-color:#EEF4FB}
 .status-published{color:#2F7D5B;background-color:#EDF6F1}
-.month-reassign{color:var(--navy);background-color:var(--gold-pale);max-width:132px;
-  border-color:var(--gold-soft);font-weight:500}
-.month-reassign:hover{background-color:#F7EEDC;border-color:var(--gold)}
 
 /* Dashboard */
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;margin-bottom:26px}
@@ -2486,6 +2497,7 @@ function metaRowHTML(coll, item, {feed=true} = {}){
       ${pillar}${kind}
     </div>
     <div class="meta-checks">
+      ${moverMesBtnHTML(coll, item.id)}
       ${scheduleBtnHTML(coll, item.id)}
       ${reviewCheckHTML(coll, item.id, !!item.reviewed)}
       ${publishCheckHTML(coll, item.id, !!item.published)}
@@ -2606,6 +2618,48 @@ function deleteContentMonth(index){
     }, "Eliminar");
 }
 /* Selector compacto de mes para reasignar una pieza sin salir de su tarjeta. */
+/* Botón "Mover a otro mes", en la misma fila que Programar y Marcar revisado.
+   Antes esto era un desplegable diminuto que solo decía "Mes 1", pegado al de estado:
+   nadie entendía que servía para mover la pieza. */
+function moverMesBtnHTML(coll, id){
+  const it = find(coll, id);
+  if(!it || !usaMeses(coll) || (S.contentMonths || []).length < 2) return "";
+  const actual = (S.contentMonths || []).find(m => m.id === it.monthId);
+  return `<button type="button" class="prog-chip mover-chip lock-viewer" data-mover-mes data-coll="${coll}" data-id="${id}"
+    title="Mover esta pieza a otro mes">
+    <svg><use href="#i-cal"/></svg>Mover a otro mes${actual ? ` · ${esc(actual.label)}` : ""}</button>`;
+}
+
+/* Al pulsarlo se abre la lista de meses. El mes actual aparece marcado y no se puede
+   elegir: moverla a donde ya está no haría nada. */
+function abrirMoverMes(coll, id){
+  if(!guard()) return;
+  const it = find(coll, id);
+  if(!it) return;
+  const meses = S.contentMonths || [];
+  const nombre = it.title || it.name || it.idea || "esta pieza";
+  const host = $("#modalHost");
+  host.innerHTML = `
+    <div class="modal-bg" data-close>
+      <div class="modal mover-modal" role="dialog" aria-modal="true">
+        <h3>Mover a otro mes</h3>
+        <p>${esc(String(nombre).slice(0, 80))}</p>
+        <div class="mover-lista">
+          ${meses.map(m => m.id === it.monthId
+            ? `<div class="mover-op actual"><svg><use href="#i-check"/></svg>${esc(m.label)}<span>está aquí</span></div>`
+            : `<button type="button" class="mover-op" data-mover-a="${m.id}">${esc(m.label)}</button>`).join("")}
+        </div>
+        <p class="mover-nota">Su espacio en el Feed Preview se mueve con ella.</p>
+        <div class="row"><button class="btn btn-ghost" data-close>Cancelar</button></div>
+      </div>
+    </div>`;
+  host.onclick = e => {
+    if(e.target.hasAttribute("data-close")){ host.innerHTML = ""; return; }
+    const op = e.target.closest("[data-mover-a]");
+    if(op){ host.innerHTML = ""; moverPiezaDeMes(coll, id, op.dataset.moverA); }
+  };
+}
+
 /* Mover una pieza a otro mes.
    Pasa seguido: algo que estaba planeado para un mes termina publicándose en otro.
    Mover la pieza tiene que mover TODO lo suyo — también su lugar en el Feed Preview —
@@ -2651,11 +2705,6 @@ function moverPiezaDeMes(coll, id, monthId){
   toast(`Movido a ${destino.label}${nota}`, "cal");
 }
 
-function contentMonthSelectHTML(coll, id, monthId){
-  return `<select class="status-select month-reassign lock-viewer" title="Mover esta pieza a otro mes" data-content-month-reassign data-coll="${coll}" data-id="${id}">
-    ${S.contentMonths.map(m => `<option value="${m.id}" ${m.id===monthId?"selected":""}>${esc(m.label)}</option>`).join("")}
-  </select>`;
-}
 
 /* ============================================================
    VISTAS
@@ -2942,7 +2991,6 @@ function postCard(p, i){
       <span class="num">${pubOrderLabel("posts", p.id, "# Post")}</span>
       <input class="title-input" data-field data-coll="posts" data-id="${p.id}" data-key="title" value="${esc(p.title)}" placeholder="Título del post">
       ${statusSelect("posts", p.id, p.status)}
-      ${contentMonthSelectHTML("posts", p.id, p.monthId)}
       ${itemTools("posts", p.id)}
       ${metaRowHTML("posts", p)}
     </div>
@@ -3000,7 +3048,6 @@ function viewReels(q=""){
         <div class="reel-mini-head">
           <span class="num">${pubOrderLabel("reels", r.id, "# Reel")}</span>
           <input class="title-input" data-field data-coll="reels" data-id="${r.id}" data-key="title" value="${esc(r.title)}" placeholder="Título">
-          ${contentMonthSelectHTML("reels", r.id, r.monthId)}
           <button class="icon-btn lock-viewer lock-editor" data-del data-coll="reels" data-id="${r.id}" title="Eliminar" style="color:var(--danger)">
             <svg><use href="#i-trash"/></svg></button>
         </div>
@@ -3024,6 +3071,7 @@ function viewReels(q=""){
           ${field("Tomas — Desarrollo y acción","list", textarea("reels", r.id, "desarrollo", r.desarrollo, "Describe las tomas, el desarrollo y la acción de este reel: el guion completo va aquí...", "big", 8))}
           ${field("Copy","pen", textarea("reels", r.id, "copy", r.copy, "El copy que acompaña la publicación...", "soft", 4))}
           <div class="reel-checklist">
+            ${moverMesBtnHTML("reels", r.id)}
             ${reviewCheckHTML("reels", r.id, !!r.reviewed, "Aprobado para publicar")}
             ${publishCheckHTML("reels", r.id, !!r.published, "Publicado")}
             ${scheduleBtnHTML("reels", r.id)}
@@ -3056,7 +3104,6 @@ function viewYoutube(q=""){
         <div class="reel-mini-head">
           <span class="num">Video ${i+1}</span>
           <input class="title-input" data-field data-coll="youtube" data-id="${r.id}" data-key="title" value="${esc(r.title)}" placeholder="Título">
-          ${contentMonthSelectHTML("youtube", r.id, r.monthId)}
           <button class="icon-btn lock-viewer lock-editor" data-del data-coll="youtube" data-id="${r.id}" title="Eliminar" style="color:var(--danger)">
             <svg><use href="#i-trash"/></svg></button>
         </div>
@@ -3080,6 +3127,7 @@ function viewYoutube(q=""){
           ${field("Tomas — Desarrollo y acción","list", textarea("youtube", r.id, "desarrollo", r.desarrollo, "Describe las tomas, el desarrollo y la acción de este video: el guion completo va aquí...", "big", 8))}
           ${field("Copy","pen", textarea("youtube", r.id, "copy", r.copy, "El copy / descripción que acompaña la publicación...", "soft", 4))}
           <div class="reel-checklist">
+            ${moverMesBtnHTML("youtube", r.id)}
             ${reviewCheckHTML("youtube", r.id, !!r.reviewed, "Aprobado para publicar")}
             ${publishCheckHTML("youtube", r.id, !!r.published, "Publicado")}
             ${scheduleBtnHTML("youtube", r.id)}
@@ -3119,7 +3167,6 @@ function viewUrgente(q=""){
         <span class="num urgente-num"><svg width="12" height="12"><use href="#i-cal"/></svg> Fin de mes ${i+1}</span>
         <input class="title-input" data-field data-coll="urgente" data-id="${u.id}" data-key="title" value="${esc(u.title)}" placeholder="¿De qué se trata?">
         ${statusSelect("urgente", u.id, u.status)}
-        ${contentMonthSelectHTML("urgente", u.id, u.monthId)}
         ${itemTools("urgente", u.id, `<button class="btn btn-ghost btn-sm lock-viewer" data-add-slide data-coll="urgente" data-id="${u.id}"><svg><use href="#i-plus"/></svg> Agregar imagen</button>`)}
         ${metaRowHTML("urgente", u, {feed:false})}
       </div>
@@ -3173,7 +3220,6 @@ function viewCarousels(q=""){
         <span class="num">${pubOrderLabel("carousels", c.id, "# Carousel")}</span>
         <input class="title-input" data-field data-coll="carousels" data-id="${c.id}" data-key="title" value="${esc(c.title)}" placeholder="Carousel #${i+1}">
         ${statusSelect("carousels", c.id, c.status)}
-        ${contentMonthSelectHTML("carousels", c.id, c.monthId)}
         ${itemTools("carousels", c.id, `<button class="btn btn-ghost btn-sm lock-viewer" data-add-slide data-coll="carousels" data-id="${c.id}"><svg><use href="#i-plus"/></svg> Add Slide</button>`)}
         ${metaRowHTML("carousels", c)}
       </div>
@@ -3236,7 +3282,6 @@ function storyCard(s, i){
   <div class="story-card ${s.published ? "published-item" : ""}" data-item="${s.id}">
     <div class="story-top">
       <span class="num">#${i+1}</span>
-      ${contentMonthSelectHTML("stories", s.id, s.monthId)}
       <button class="icon-btn lock-viewer lock-editor" style="margin-left:auto;width:30px;height:30px;color:var(--danger)" data-del data-coll="stories" data-id="${s.id}" title="Eliminar">
         <svg width="15" height="15"><use href="#i-trash"/></svg></button>
     </div>
@@ -3251,6 +3296,7 @@ function storyCard(s, i){
     <div class="story-body">
       ${field("Idea original","list", textarea("stories", s.id, "idea", s.idea, "La idea de esta historia...", "", 2))}
       <div class="story-foot">
+        ${moverMesBtnHTML("stories", s.id)}
         ${reviewCheckHTML("stories", s.id, !!s.reviewed)}
         ${publishCheckHTML("stories", s.id, !!s.published)}
         ${designApprovalHTML("stories", s.id, s.designApproved, s.designNote)}
@@ -4393,6 +4439,9 @@ document.addEventListener("click", async e => {
   const t = e.target;
 
   // navegación
+  const mm = t.closest("[data-mover-mes]");
+  if(mm){ e.preventDefault(); abrirMoverMes(mm.dataset.coll, mm.dataset.id); return; }
+
   if(t.closest("#authLocal")){ e.preventDefault(); entrarConCopiaLocal(); return; }
   if(t.closest('[data-action="rellenar"]')){ e.preventDefault(); rellenarHuecos(); return; }
 
@@ -4778,12 +4827,6 @@ document.addEventListener("input", e => {
 });
 
 document.addEventListener("change", e => {
-  const cmr = e.target.closest("[data-content-month-reassign]");
-  if(cmr){
-    if(!canEdit()){ render(); return; }
-    moverPiezaDeMes(cmr.dataset.coll, cmr.dataset.id, e.target.value);
-    return;
-  }
   const mv = e.target.closest("[data-move-slot]");
   if(mv){
     if(!canEdit()){ render(); return; }
