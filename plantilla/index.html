@@ -479,13 +479,14 @@ button.mover-op:hover{border-color:var(--gold);background:var(--gold-pale)}
 .obs-note.muted{color:var(--muted);font-style:italic}
 .obs-arr{width:16px;height:16px;flex:none;color:var(--muted);margin-top:8px}
 
-/* Par de recuadros multimedia (video + portada) de Reels y YouTube.
+/* Recuadros multimedia de Reels (video + portada + referencia) y YouTube (video + portada).
    .wide = YouTube, horizontal: cada recuadro ocupa la mitad de la tarjeta.
-   .tall = Reels, vertical: se acota el ancho para que no queden larguísimos. */
+   .tall = Reels, vertical: se acota el ancho para que los tres quepan en la fila
+   junto al texto explicativo sin que queden larguísimos. */
 .media-pair{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px}
 .media-slot{min-width:0;display:flex;flex-direction:column;gap:7px}
 .media-pair.wide .media-slot{flex:1 1 0}
-.media-pair.tall .media-slot{flex:0 0 158px;max-width:158px}
+.media-pair.tall .media-slot{flex:0 0 136px;max-width:136px}
 .media-slot .cap{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 .media-slot .media{border-radius:12px}
 .media-slot .btn{align-self:flex-start}
@@ -3063,9 +3064,16 @@ function viewReels(q=""){
               ${mediaBox({coll:"reels", id:r.id, field:"cover", src:r.cover, ratio:"ratio-916", title:"Subir portada", hint:"9:16"})}
               ${r.cover ? `<button type="button" class="btn btn-ghost btn-sm lock-viewer" data-clear data-coll="reels" data-id="${r.id}" data-field="cover"><svg><use href="#i-trash"/></svg> Quitar</button>` : ""}
             </div>
+            <div class="media-slot">
+              <span class="cap">Referencia</span>
+              ${mediaBox({coll:"reels", id:r.id, field:"referencia", src:r.referencia, ratio:"ratio-916", title:"Subir referencia", hint:"Cómo se ve"})}
+              ${r.referencia ? `<button type="button" class="btn btn-ghost btn-sm lock-viewer" data-clear data-coll="reels" data-id="${r.id}" data-field="referencia"><svg><use href="#i-trash"/></svg> Quitar</button>` : ""}
+            </div>
             <div class="media-pair-info">
-              <b>Video y portada</b>
-              <small>El video es el reel ya editado; la portada es la miniatura con la que se ve en el Feed Preview. Arrastra los archivos encima o haz clic para subirlos.</small>
+              <b>Video, portada y referencia</b>
+              <small>El video es el reel ya editado y la portada es la miniatura con la que se ve en el Feed Preview.
+              La referencia es la foto que muestra cómo tiene que verse: locación, encuadre, pose o estilo.
+              Arrastra los archivos encima o haz clic para subirlos; cualquiera se amplía y se descarga.</small>
             </div>
           </div>
           ${field("Tomas — Desarrollo y acción","list", textarea("reels", r.id, "desarrollo", r.desarrollo, "Describe las tomas, el desarrollo y la acción de este reel: el guion completo va aquí...", "big", 8))}
@@ -3950,7 +3958,7 @@ function emptyState(title, text, coll){
   </div>`;
 }
 
-const SEARCH_EXCLUDE = new Set(["image","cover","media","slides","id","createdAt","order"]);
+const SEARCH_EXCLUDE = new Set(["image","cover","referencia","media","slides","id","createdAt","order"]);
 function matches(x, q){
   if(!q) return true;
   return JSON.stringify(Object.entries(x).filter(([k]) => !SEARCH_EXCLUDE.has(k)))
@@ -4059,7 +4067,7 @@ const CLEAN_TEXT = {
   urgente:["note","ciudad"]
 };
 /* Campos de imagen / portada. Los carruseles se tratan aparte (van por slide). */
-const CLEAN_MEDIA = {posts:["image"], reels:["cover","video"], youtube:["cover","video"], carousels:[], stories:["media"], urgente:[]};
+const CLEAN_MEDIA = {posts:["image"], reels:["cover","video","referencia"], youtube:["cover","video"], carousels:[], stories:["media"], urgente:[]};
 
 /* Piezas de una sección dentro del alcance elegido. monthIdx null = todos los meses. */
 function cleanScopeItems(coll, monthIdx){
@@ -4596,7 +4604,9 @@ document.addEventListener("click", async e => {
       name = `${c ? c.title : "Pieza"} - imagen ${idx + 1}`;
     }else if(coll){
       const it = find(coll, id);
-      name = `${it ? (it.title || it.idea || "Pieza") : "Pieza"}${fld === "video" ? " - video" : fld === "cover" ? " - portada" : ""}`;
+      const sufijo = fld === "video" ? " - video" : fld === "cover" ? " - portada"
+                   : fld === "referencia" ? " - referencia" : "";
+      name = `${it ? (it.title || it.idea || "Pieza") : "Pieza"}${sufijo}`;
     }
     downloadMedia(dlBtn.dataset.src, name);
     return;
