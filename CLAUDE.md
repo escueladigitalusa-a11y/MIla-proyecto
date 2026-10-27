@@ -91,7 +91,7 @@ el del código, se corre la actualización y después se guarda el sello nuevo.
 const CONTENT_STAMP = {
   finanzas:   "bloque-01-tomas",
   realestate: "mes-03-completo-b",
-  escapadita: "mes-01-v7"
+  escapadita: "mes-01-v8"
 };
 ```
 
