@@ -91,7 +91,7 @@ el del código, se corre la actualización y después se guarda el sello nuevo.
 const CONTENT_STAMP = {
   finanzas:   "bloque-01-tomas",
   realestate: "mes-03-completo-b",
-  escapadita: "mes-01-v2"
+  escapadita: "mes-01-v7"
 };
 ```
 
@@ -111,6 +111,12 @@ Dentro de la actualización hay tres mecanismos, de menos a más invasivo:
 4. **`reemplazarIntactas()`** va más lejos: reemplaza la pieza *entera* (otro título, otras
    láminas) si todos sus campos siguen intactos, y se lleva las que ya no existen. Las
    láminas conservan su imagen y su id: solo cambia el texto.
+
+**El orden importa: `reemplazarIntactas()` corre ANTES que `refrescar()`.** Al revés,
+`refrescar()` rellena un campo vacío con el texto nuevo y entonces `reemplazarIntactas()`
+ve una pieza con título viejo y copy nuevo, no reconoce ninguna versión entregada, la da
+por editada a mano y deja la mezcla. Solo comparando contra lo que la clienta realmente
+tiene se sabe si tocó la pieza.
 
 Una pieza se reconoce por su `num` y, si lo perdió, **por su título**. Y un campo cuenta
 como intacto también cuando está vacío.
