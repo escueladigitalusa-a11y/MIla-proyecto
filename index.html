@@ -517,6 +517,9 @@ button.mover-op:hover{border-color:var(--gold);background:var(--gold-pale)}
 .story-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
 .story-card{background:#fff;border:1px solid var(--line-2);border-radius:16px;box-shadow:var(--shadow-sm);overflow:hidden;display:flex;flex-direction:column}
 .story-top{display:flex;align-items:center;gap:8px;padding:12px 14px 0}
+.story-top-acciones{margin-left:auto;display:flex;align-items:center;gap:2px}
+.mover-icon{width:30px;height:30px;color:var(--muted)}
+.mover-icon:hover{color:var(--gold-deep);background:var(--gold-pale)}
 .story-top .num{font-family:var(--serif);font-size:13px;color:var(--navy);background:var(--cream-2);border:1px solid var(--line);border-radius:8px;padding:3px 9px}
 .story-media{margin:10px 14px 0}
 .story-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px;flex:1}
@@ -6959,13 +6962,21 @@ function deleteContentMonth(index){
 /* Botón "Mover a otro mes", en la misma fila que Programar y Marcar revisado.
    Antes esto era un desplegable diminuto que solo decía "Mes 1", pegado al de estado:
    nadie entendía que servía para mover la pieza. */
-function moverMesBtnHTML(coll, id){
+function moverMesBtnHTML(coll, id, compacto){
   const it = find(coll, id);
   if(!it || !usaMeses(coll) || (S.contentMonths || []).length < 2) return "";
   const actual = (S.contentMonths || []).find(m => m.id === it.monthId);
+  const donde = actual ? ` · ${esc(actual.label)}` : "";
+  /* La tarjeta de una historia es altísima: casi toda es el recuadro vertical 9:16.
+     El botón con texto quedaba hasta abajo del todo y había que bajar la tarjeta
+     entera para encontrarlo, así que ahí va arriba, junto al número, solo con el
+     icono del calendario y el mes en el tooltip. */
+  if(compacto) return `<button type="button" class="icon-btn mover-icon lock-viewer" data-mover-mes data-coll="${coll}" data-id="${id}"
+    title="Mover a otro mes${donde}" aria-label="Mover a otro mes${donde}">
+    <svg width="15" height="15"><use href="#i-cal"/></svg></button>`;
   return `<button type="button" class="prog-chip mover-chip lock-viewer" data-mover-mes data-coll="${coll}" data-id="${id}"
     title="Mover esta pieza a otro mes">
-    <svg><use href="#i-cal"/></svg>Mover a otro mes${actual ? ` · ${esc(actual.label)}` : ""}</button>`;
+    <svg><use href="#i-cal"/></svg>Mover a otro mes${donde}</button>`;
 }
 
 /* Al pulsarlo se abre la lista de meses. El mes actual aparece marcado y no se puede
@@ -7676,8 +7687,11 @@ function storyCard(s, i){
   <div class="story-card ${s.published ? "published-item" : ""}" data-item="${s.id}">
     <div class="story-top">
       <span class="num">#${i+1}</span>
-      <button class="icon-btn lock-viewer lock-editor" style="margin-left:auto;width:30px;height:30px;color:var(--danger)" data-del data-coll="stories" data-id="${s.id}" title="Eliminar">
-        <svg width="15" height="15"><use href="#i-trash"/></svg></button>
+      <span class="story-top-acciones">
+        ${moverMesBtnHTML("stories", s.id, true)}
+        <button class="icon-btn lock-viewer lock-editor" style="width:30px;height:30px;color:var(--danger)" data-del data-coll="stories" data-id="${s.id}" title="Eliminar">
+          <svg width="15" height="15"><use href="#i-trash"/></svg></button>
+      </span>
     </div>
     ${badge ? `<div class="story-top" style="padding-top:6px">${badge}</div>` : ""}
     <div class="story-media">
@@ -7690,7 +7704,6 @@ function storyCard(s, i){
     <div class="story-body">
       ${field("Idea original","list", textarea("stories", s.id, "idea", s.idea, "La idea de esta historia...", "", 2))}
       <div class="story-foot">
-        ${moverMesBtnHTML("stories", s.id)}
         ${reviewCheckHTML("stories", s.id, !!s.reviewed)}
         ${publishCheckHTML("stories", s.id, !!s.published)}
         ${designApprovalHTML("stories", s.id, s.designApproved, s.designNote)}
