@@ -142,6 +142,30 @@ muerta.
 
 ---
 
+## Qué hace la app, además de guardar texto
+
+Cosas que no se deducen leyendo los arreglos de contenido:
+
+- **Selector de marca** arriba del menú. Cambiar de marca reconstruye el estado entero.
+- **Meses de contenido.** Cada sección tiene pestañas de mes con su cupo (`48/30`). El
+  Feed Preview lleva su propio calendario de meses, aparte.
+- **Avisos en el menú.** Un ⚠ ámbar con cuántos campos de texto están vacíos y un icono
+  de imagen rota en rojo con cuántas piezas no tienen imagen. En carruseles **solo cuenta
+  la lámina 1**.
+- **"Mover a otro mes"** en cada post, reel, carrusel, video e historia. En las historias
+  es el icono de calendario arriba a la derecha, porque la tarjeta es demasiado alta para
+  poner el botón con texto al final.
+- **Recuadros multimedia.** Reels: video, portada y **foto de referencia** (cómo tiene que
+  verse la toma). YouTube: video y portada. Cualquiera se amplía a pantalla completa y se
+  descarga. Se suben con `mediaBox()`, que ya trae los botones de ampliar y descargar.
+- **Google Drive, opcional.** Si `GOOGLE_CLIENT_ID` y `GOOGLE_DRIVE_FOLDER_ID` están
+  puestos, las imágenes se suben a Drive y se guarda el link; los videos van siempre a
+  Drive. Si la autorización falla, la imagen se guarda embebida en el workspace.
+- **Settings → Rellenar lo que falte**, **Quitar imágenes**, y los roles Admin / Editor /
+  Viewer, que son una preferencia de cada navegador y no del workspace.
+
+---
+
 ## Cómo trabajar aquí
 
 **Edita el contenido con un script de Python**, no a mano. Los arreglos son JSON dentro del
@@ -201,6 +225,11 @@ literal "Primera casa vendida", "Segunda casa vendida"…
 - **Las piezas de credibilidad** tienen corchetes por llenar con datos reales.
 - **Los carruseles de comida de Escapadita** tienen `⭐ ___ · ___ reseñas` para confirmar
   antes de publicar.
+- **Si la autorización de Google Drive falla, el selector de archivos no abre.** El popup
+  de Google consume el gesto del clic y Chrome bloquea el diálogo después
+  («File chooser dialog can only be shown with a user activation»). Afecta a portada,
+  video y referencia por igual. Se arregla pidiendo el token *antes* del clic, o abriendo
+  el selector primero y subiendo a Drive después.
 
 ---
 
